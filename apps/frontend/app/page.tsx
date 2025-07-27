@@ -14,7 +14,6 @@ const CATEGORIES = ['all', 'coffee', 'ade', 'dessert'] as const;
 type Category = typeof CATEGORIES[number];
 
 export default function Home() {
-  // ... (데이터 로딩 및 핸들러 함수들은 이전과 동일합니다) ...
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
