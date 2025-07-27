@@ -1,10 +1,10 @@
 'use client';
 
-/* import */
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import type { Product, CartItem } from '@repo/types';
-import ProductCard from './components/ProductCard';
+import ProductCard from '../components/ProductCard';
 
 const API_URL = 'http://localhost:4000/api';
 
@@ -22,7 +22,7 @@ export default function Home() {
         setProducts(response.data);
       } catch (error) {
         console.error('상품 목록을 불러오는 데 실패했습니다:', error);
-        alert('상품 목록을 불러오는 데 실패했습니다.');
+        toast.error('상품 목록을 불러오는 데 실패했습니다.');
       } finally {
         setIsLoading(false);
       }
@@ -45,13 +45,15 @@ export default function Home() {
       }
       return [...prevCart, { ...product, quantity: 1 }];
     });
+    toast.success(`${product.name}을(를) 장바구니에 담았습니다!`);
   };
 
   const handleOrder = async () => {
     if (cart.length === 0) {
-      alert('장바구니가 비어있습니다.');
+      toast.error('장바구니가 비어있습니다.');
       return;
     }
+    const loadingToast = toast.loading('주문을 처리 중입니다...'); // 로딩 중 토스트
     try {
       const orderData = {
         items: cart.map(item => ({
@@ -63,14 +65,19 @@ export default function Home() {
         totalPrice: totalPrice,
       };
       await axios.post(`${API_URL}/orders`, orderData);
-      alert('주문이 성공적으로 완료되었습니다!');
+      
+      toast.dismiss(loadingToast); // 로딩 중 토스트를 닫고
+      toast.success('주문이 성공적으로 완료되었습니다!'); // 성공 토스트를 띄웁니다.
+      
       setCart([]);
     } catch (error) {
       console.error('주문 처리 중 오류가 발생했습니다:', error);
-      alert('주문 처리 중 오류가 발생했습니다.');
+      toast.dismiss(loadingToast); // 로딩 중 토스트를 닫고
+      toast.error('주문 처리 중 오류가 발생했습니다.'); // 실패 토스트를 띄웁니다.
     }
   };
 
+  // ... (return 부분의 JSX 코드는 이전과 동일합니다) ...
   return (
     <div className="container mx-auto p-4 flex font-sans bg-gray-50 min-h-screen">
       <div className="w-2/3 pr-4">
@@ -79,7 +86,6 @@ export default function Home() {
           <p className="text-center text-gray-500">메뉴를 불러오는 중...</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {/* ✅ 이 부분이 훨씬 간결해졌습니다! */}
             {products.map(product => (
               <ProductCard 
                 key={product._id} 
