@@ -1,3 +1,4 @@
+require('dotenv').config(); // ✅ 1. 파일 최상단에 이 코드를 추가합니다.
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -8,17 +9,24 @@ const Order = require('./models/Order');
 const app = express();
 const PORT = 4000;
 
-// 중요: YOUR_MONGODB_CONNECTION_STRING을 실제 주소로 바꿔주세요.
-const MONGO_URI = 'mongodb+srv://yonghun16:ehswnjas16@cluster0.cxp6bau.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+// ✅ 2. 이제 코드에서 직접 주소를 쓰는 대신, process.env에서 값을 불러옵니다.
+// process.env.MONGO_URI는 .env 파일에 있는 MONGO_URI 값을 가리킵니다.
+const MONGO_URI = process.env.MONGO_URI;
+
+// 만약 MONGO_URI가 없다면 에러를 발생시켜 서버 실행을 중지합니다.
+if (!MONGO_URI) {
+  console.error('❌ 에러: MONGO_URI 환경 변수가 설정되지 않았습니다.');
+  process.exit(1); // 프로세스 종료
+}
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ MongoDB에 성공적으로 연결되었습니다.'))
   .catch(err => console.error('❌ MongoDB 연결 실패:', err));
 
+// ... (나머지 코드는 이전과 동일합니다) ...
 app.use(cors()); 
 app.use(express.json());
 
-// --- 상품(Product) API ---
 app.get('/api/products', async (req, res) => {
   try {
     const products = await Product.find();
@@ -52,7 +60,6 @@ app.delete('/api/products/:id', async (req, res) => {
   }
 });
 
-// --- 주문(Order) API ---
 app.post('/api/orders', async (req, res) => {
   try {
     const newOrder = new Order({
