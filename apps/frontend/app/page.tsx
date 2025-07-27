@@ -1,102 +1,141 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+'use client';
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
+import { useState, useEffect } from 'react';
+import axios from 'axios'; // API 통신을 위한 라이브러리
+import type { Product, CartItem } from '@repo/types';
 
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
-  return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+// 백엔드 API의 기본 주소
+const API_URL = 'http://localhost:4000/api';
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  // 1. 임시 데이터를 비우고, 빈 배열로 시작합니다.
+  const [products, setProducts] = useState<Product[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.com/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+  // 2. 페이지가 처음 렌더링될 때 백엔드에서 상품 목록을 가져옵니다.
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`${API_URL}/products`);
+        setProducts(response.data); // 서버에서 받은 데이터로 상태를 업데이트합니다.
+      } catch (error) {
+        console.error('상품 목록을 불러오는 데 실패했습니다:', error);
+        alert('상품 목록을 불러오는 데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []); // []를 비워두면 컴포넌트가 처음 마운트될 때 한 번만 실행됩니다.
+
+  // 3. 장바구니 상태가 바뀔 때마다 총액을 다시 계산합니다.
+  useEffect(() => {
+    const newTotalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    setTotalPrice(newTotalPrice);
+  }, [cart]);
+
+  // 4. 장바구니에 상품을 추가하는 함수
+  const handleAddToCart = (product: Product) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item._id === product._id);
+      if (existingItem) {
+        // 이미 카트에 있으면 수량만 1 증가
+        return prevCart.map(item =>
+          item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      // 카트에 없으면 새로 추가
+      return [...prevCart, { ...product, quantity: 1 }];
+    });
+  };
+
+  // 5. 주문하기 함수
+  const handleOrder = async () => {
+    if (cart.length === 0) {
+      alert('장바구니가 비어있습니다.');
+      return;
+    }
+    try {
+      const orderData = {
+        items: cart.map(item => ({
+          productId: item._id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        totalPrice: totalPrice,
+      };
+      await axios.post(`${API_URL}/orders`, orderData);
+      alert('주문이 성공적으로 완료되었습니다!');
+      setCart([]); // 주문 후 장바구니 비우기
+    } catch (error) {
+      console.error('주문 처리 중 오류가 발생했습니다:', error);
+      alert('주문 처리 중 오류가 발생했습니다.');
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-4 flex font-sans bg-gray-50 min-h-screen">
+      {/* 왼쪽: 메뉴 목록 */}
+      <div className="w-2/3 pr-4">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">☕ Maid Kiosk</h1>
+        {isLoading ? (
+          <p className="text-center text-gray-500">메뉴를 불러오는 중...</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {products.map(product => (
+              <div
+                key={product._id}
+                className="border rounded-xl p-4 flex flex-col items-center cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all bg-white"
+                onClick={() => handleAddToCart(product)}
+              >
+                <img src={product.imageUrl} alt={product.name} className="w-32 h-32 object-cover mb-4 rounded-lg" />
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-700">{product.name}</h3>
+                  <p className="text-gray-600 mt-1">{product.price.toLocaleString()}원</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 오른쪽: 장바구니 및 주문 */}
+      <div className="w-1/3 border-l-2 border-gray-100 pl-6">
+        <div className="sticky top-4">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">🛒 주문 목록</h2>
+          <div className="space-y-3 mb-4 min-h-[200px] bg-white p-3 rounded-lg border">
+            {cart.length === 0 ? (
+              <p className="text-gray-400 text-center pt-20">장바구니가 비어있습니다.</p>
+            ) : (
+              cart.map(item => (
+                <div key={item._id} className="flex justify-between items-center bg-pink-50 p-2 rounded-md">
+                  <span className="font-medium">{item.name} x{item.quantity}</span>
+                  <span className="font-semibold">{(item.price * item.quantity).toLocaleString()}원</span>
+                </div>
+              ))
+            )}
+          </div>
+          <hr className="my-4" />
+          <div className="mt-4">
+            <div className="flex justify-between text-xl font-bold text-gray-800">
+              <span>총 금액:</span>
+              <span>{totalPrice.toLocaleString()}원</span>
+            </div>
+            <button
+              onClick={handleOrder}
+              className="w-full bg-pink-500 text-white p-3 rounded-lg mt-4 font-bold hover:bg-pink-600 transition-colors disabled:bg-gray-400"
+              disabled={cart.length === 0}
+            >
+              주문하기
+            </button>
+          </div>
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.com?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.com →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
