@@ -6,7 +6,10 @@ import { useProductStore } from '../../../features/product-management/model/stor
 
 export function ManageProductList() {
   // ✅ 상품 목록 데이터와 기능 모두 스토어에서 가져옵니다.
-  const { products, isLoading, fetchProducts, deleteProduct } = useProductStore();
+  const products = useProductStore((state) => state.products);
+  const isLoading = useProductStore((state) => state.isLoading);
+  const fetchProducts = useProductStore((state) => state.fetchProducts);
+  const deleteProduct = useProductStore((state) => state.deleteProduct);
 
   // ✅ 위젯이 처음 화면에 나타날 때, 상품 목록을 불러오는 함수를 실행합니다.
   useEffect(() => {

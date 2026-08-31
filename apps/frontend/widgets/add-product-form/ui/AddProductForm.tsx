@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useProductStore } from '../../../features/product-management/model/store';
 
 export function AddProductForm() {
@@ -16,17 +17,18 @@ export function AddProductForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !price || !imageUrl) {
-      // toast는 스토어가 아닌, UI 컴포넌트에서 직접 호출하는 것이 더 적합할 수 있습니다.
-      // 여기서는 간단하게 스토어에 위임합니다.
-      return; 
+      toast.error('모든 필드를 입력해주세요.');
+      return;
     }
-    
-    await addProduct({ name, price: Number(price), imageUrl, category });
+
+    const success = await addProduct({ name, price: Number(price), imageUrl, category });
 
     // 성공적으로 추가되면 폼을 초기화합니다.
-    setName('');
-    setPrice('');
-    setImageUrl('');
+    if (success) {
+      setName('');
+      setPrice('');
+      setImageUrl('');
+    }
   };
 
   return (
