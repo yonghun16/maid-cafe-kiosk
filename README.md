@@ -116,7 +116,8 @@ pnpm dev --filter=backend
 ## 배포
 
 - 프론트엔드: Vercel
-- 백엔드: Railway
+- 백엔드: Render (무료 티어). 오라클 클라우드에서 10분마다 `GET /health`로
+  핑을 보내 슬립을 방지합니다.
 
 ## 현재 상태
 

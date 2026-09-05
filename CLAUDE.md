@@ -24,8 +24,9 @@
 - Zustand
 
 ## 배포
-- Vercel
-- railway
+- Vercel (프론트엔드)
+- Render (백엔드) — 무료 티어 유지 목적. 오라클 클라우드에서 10분마다
+  헬스체크(`GET /health`)를 핑해 슬립을 방지
 
 ## 통신 방식
 REST API
