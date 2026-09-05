@@ -19,3 +19,17 @@ export interface Order {
   totalPrice: number;
   createdAt: Date;
 }
+
+// 주문 생성 요청(POST /api/orders)의 아이템 하나에 대한 타입
+export interface CreateOrderItemInput {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+// 주문 생성 요청(POST /api/orders)의 바디 타입 — 프론트/백엔드가 공유하는 계약
+export interface CreateOrderInput {
+  items: CreateOrderItemInput[];
+  totalPrice: number;
+}
