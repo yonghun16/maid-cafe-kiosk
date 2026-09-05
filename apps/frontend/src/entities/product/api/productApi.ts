@@ -1,5 +1,5 @@
 // @owner: ai
-import type { Product } from '@repo/types';
+import type { Product, UploadImageResponse } from '@repo/types';
 import { apiClient } from '../../../shared/api';
 
 /**
@@ -27,4 +27,16 @@ export async function createProduct(newProduct: Omit<Product, '_id'>): Promise<P
  */
 export async function deleteProductById(productId: string): Promise<void> {
   await apiClient.delete(`/products/${productId}`);
+}
+
+/**
+ * 상품 이미지 파일을 업로드합니다.
+ * @param file - 업로드할 이미지 파일
+ * @returns 업로드된 이미지의 공개 URL (Cloudflare R2)
+ */
+export async function uploadProductImage(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('image', file);
+  const response = await apiClient.post<UploadImageResponse>('/uploads', formData);
+  return response.data.url;
 }

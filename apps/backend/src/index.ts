@@ -1,15 +1,21 @@
 // @owner: ai
 import 'dotenv/config';
-import express, { type Request, type Response } from 'express';
+import { randomUUID } from 'crypto';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import type { CreateOrderInput, Product as ProductType } from '@repo/types';
+import multer from 'multer';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import type { CreateOrderInput, Product as ProductType, UploadImageResponse } from '@repo/types';
 
 import Product from './models/Product';
 import Order from './models/Order';
+import { r2Client, R2_BUCKET_NAME, R2_PUBLIC_URL } from './lib/r2Client';
 
 const app = express();
-const PORT = 4000;
+// Railway 등 배포 환경은 자체적으로 할당한 포트를 PORT 환경변수로 넘겨줍니다.
+// 로컬 개발 시에는 지정된 값이 없으므로 4000을 기본값으로 사용합니다.
+const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 
 // process.env.MONGO_URI는 .env 파일에 있는 MONGO_URI 값을 가리킵니다.
 const MONGO_URI = process.env.MONGO_URI;
@@ -27,6 +33,52 @@ mongoose
 
 app.use(cors());
 app.use(express.json());
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      cb(new Error('이미지 파일만 업로드할 수 있습니다.'));
+      return;
+    }
+    cb(null, true);
+  },
+});
+
+/**
+ * 이미지 파일을 Cloudflare R2에 업로드하고 공개 URL을 반환합니다. 응답 계약은
+ * `@repo/types`의 `UploadImageResponse`를 따르며, 프론트엔드
+ * `entities/product/api/productApi.ts`와 동일한 타입을 공유합니다.
+ * @route POST /api/uploads
+ * @param req.file - multipart/form-data의 "image" 필드로 전달된 이미지 파일
+ */
+app.post('/api/uploads', upload.single('image'), async (req: Request, res: Response) => {
+  if (!req.file) {
+    res.status(400).json({ message: '업로드할 이미지가 없습니다.' });
+    return;
+  }
+
+  try {
+    const extension = req.file.originalname.split('.').pop();
+    const key = extension ? `${randomUUID()}.${extension}` : randomUUID();
+
+    await r2Client.send(
+      new PutObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: key,
+        Body: req.file.buffer,
+        ContentType: req.file.mimetype,
+      }),
+    );
+
+    const response: UploadImageResponse = { url: `${R2_PUBLIC_URL}/${key}` };
+    res.status(201).json(response);
+  } catch (err) {
+    console.error('이미지 업로드 중 오류가 발생했습니다:', err);
+    res.status(500).json({ message: '이미지 업로드 중 오류가 발생했습니다.' });
+  }
+});
 
 /**
  * 전체 상품 목록을 조회합니다.
@@ -97,6 +149,12 @@ app.post(
     }
   },
 );
+
+// multer의 파일 크기/타입 검증 실패 등을 JSON 에러로 변환합니다.
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('요청 처리 중 오류가 발생했습니다:', err);
+  res.status(400).json({ message: err.message || '요청을 처리하는 중 오류가 발생했습니다.' });
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 백엔드 서버가 http://localhost:${PORT} 에서 실행 중입니다.`);

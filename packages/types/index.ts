@@ -33,3 +33,8 @@ export interface CreateOrderInput {
   items: CreateOrderItemInput[];
   totalPrice: number;
 }
+
+// 이미지 업로드 응답(POST /api/uploads)의 바디 타입 — 프론트/백엔드가 공유하는 계약
+export interface UploadImageResponse {
+  url: string;
+}
