@@ -1,6 +1,20 @@
 ---
-title: Welcome to Quartz
+title: 메이드 카페 키오스크 문서 허브
+description: 메이드 카페 키오스크 프로젝트의 기획/개발 문서를 모아 연결하는 허브(MOC) 문서
+tags: [허브]
+aliases: [홈, 허브]
+created: 2026-09-05
+updated: 2026-09-05
+status: active
 ---
 
-This is a blank Quartz installation.
-See the [documentation](https://quartz.jzhao.xyz) for how to get started.
+메이드 카페 키오스크 프로젝트의 기획·개발 문서 허브입니다. 아래 폴더와
+문서를 통해 탐색하세요.
+
+## 폴더
+- [[기획]] — 요구사항, 기능 정의 등 기획 문서
+- [[개발]] — 개발 프로세스, 구현 프롬프트 등 개발 관련 문서
+
+## 핵심 문서
+- [[기획서]] — 서비스 목적, 사용자 흐름, 기능 범위와 범위 밖 항목
+- [[개발계획서]] — 현재 아키텍처, 완료된 마일스톤, 다음 우선순위 로드맵
