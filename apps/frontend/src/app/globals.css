@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+@theme {
+  --font-script: var(--font-dancing-script), cursive;
+}
+
+.bg-kiosk-pattern {
+  background-color: #fdf2f8;
+  background-image: radial-gradient(rgba(236, 72, 153, 0.15) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}

@@ -9,7 +9,14 @@ interface CartState {
   items: CartItem[];
   totalPrice: number;
   addToCart: (product: Product) => void;
+  increaseQuantity: (productId: string) => void;
+  decreaseQuantity: (productId: string) => void;
+  removeFromCart: (productId: string) => void;
   submitOrder: () => Promise<void>;
+}
+
+function calculateTotalPrice(items: CartItem[]): number {
+  return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
@@ -36,15 +43,33 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
 
     // 상태 업데이트
-    set({ items: updatedItems });
-    // 총액 다시 계산
-    const newTotalPrice = updatedItems.reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0,
-    );
-    set({ totalPrice: newTotalPrice });
+    set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
 
     toast.success(`${product.name}을(를) 장바구니에 담았습니다!`);
+  },
+
+  increaseQuantity: (productId) => {
+    const { items } = get();
+    const updatedItems = items.map((item) =>
+      item._id === productId ? { ...item, quantity: item.quantity + 1 } : item,
+    );
+    set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
+  },
+
+  decreaseQuantity: (productId) => {
+    const { items } = get();
+    const updatedItems = items
+      .map((item) =>
+        item._id === productId ? { ...item, quantity: item.quantity - 1 } : item,
+      )
+      .filter((item) => item.quantity > 0);
+    set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
+  },
+
+  removeFromCart: (productId) => {
+    const { items } = get();
+    const updatedItems = items.filter((item) => item._id !== productId);
+    set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
   },
 
   submitOrder: async () => {
