@@ -9,11 +9,6 @@ export function HomePage() {
         <ProductList />
         <OrderSummary />
       </div>
-      <footer className="mt-8 flex items-center justify-between bg-pink-500 px-6 py-3 text-sm font-medium text-white">
-        <span>🐾 환영합니다 주인님!</span>
-        <span className="hidden sm:inline">오늘도 귀여운 하루 되세요, 주인님! ✨</span>
-        <span>💗</span>
-      </footer>
     </div>
   );
 }

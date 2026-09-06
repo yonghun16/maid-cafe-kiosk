@@ -24,7 +24,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         <img
           src={product.imageUrl}
           alt={product.name}
-          className="h-28 w-full rounded-lg object-cover transition-transform duration-300 group-hover:scale-105 sm:h-36" // ✅ 마우스 올렸을 때 이미지 확대 효과
+          className="aspect-[3/4] w-full rounded-lg object-cover transition-transform duration-300 group-hover:scale-105" // ✅ 마우스 올렸을 때 이미지 확대 효과
         />
       </div>
       <div className="relative p-3 sm:p-4">
