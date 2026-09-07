@@ -13,6 +13,7 @@ import type {
   AdminSessionResponse,
   CreateOrderInput,
   Product as ProductType,
+  UpdateSoldOutInput,
   UploadImageResponse,
 } from '@repo/types';
 
@@ -248,6 +249,37 @@ app.put(
       res.json(updatedProduct);
     } catch (err) {
       res.status(400).json({ message: '상품 수정 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 상품의 품절 여부를 변경합니다. 관리자 세션이 없으면 `requireAdmin`에서
+ * 401로 막습니다.
+ * @route PATCH /api/products/:id/sold-out
+ * @param req.body - `@repo/types`의 `UpdateSoldOutInput` (`isSoldOut`)
+ */
+app.patch(
+  '/api/products/:id/sold-out',
+  requireAdmin,
+  async (req: Request<{ id: string }, unknown, UpdateSoldOutInput>, res: Response) => {
+    if (typeof req.body?.isSoldOut !== 'boolean') {
+      res.status(400).json({ message: 'isSoldOut 값이 올바르지 않습니다.' });
+      return;
+    }
+    try {
+      const updatedProduct = await Product.findByIdAndUpdate(
+        req.params.id,
+        { isSoldOut: req.body.isSoldOut },
+        { new: true, runValidators: true },
+      );
+      if (!updatedProduct) {
+        res.status(404).json({ message: '상품을 찾을 수 없습니다.' });
+        return;
+      }
+      res.json(updatedProduct);
+    } catch (err) {
+      res.status(400).json({ message: '품절 상태 변경 중 오류가 발생했습니다.' });
     }
   },
 );

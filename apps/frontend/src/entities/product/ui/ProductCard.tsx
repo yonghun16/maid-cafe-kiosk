@@ -1,4 +1,5 @@
 // @owner: ai
+import toast from 'react-hot-toast';
 import type { Product } from '@repo/types';
 
 interface ProductCardProps {
@@ -15,16 +16,33 @@ const CATEGORY_STYLES: Record<Product['category'], { bg: string; paw: string }> 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const style = CATEGORY_STYLES[product.category];
 
+  const handleClick = () => {
+    if (product.isSoldOut) {
+      toast.error('품절된 메뉴입니다.');
+      return;
+    }
+    onAddToCart(product);
+  };
+
   return (
     <div
-      className="group relative cursor-pointer overflow-hidden rounded-2xl border border-pink-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-      onClick={() => onAddToCart(product)}
+      className={`group relative overflow-hidden rounded-2xl border border-pink-100 bg-white shadow-sm transition-all duration-300 ${
+        product.isSoldOut ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:-translate-y-1 hover:shadow-lg'
+      }`}
+      onClick={handleClick}
     >
+      {product.isSoldOut && (
+        <span className="absolute left-3 top-3 z-10 rounded-full bg-gray-700/90 px-3 py-1 text-xs font-bold text-white">
+          품절
+        </span>
+      )}
       <div className={`${style.bg} p-3`}>
         <img
           src={product.imageUrl}
           alt={product.name}
-          className="aspect-[3/4] w-full rounded-lg object-cover transition-transform duration-300 group-hover:scale-105" // ✅ 마우스 올렸을 때 이미지 확대 효과
+          className={`aspect-[3/4] w-full rounded-lg object-cover transition-transform duration-300 ${
+            product.isSoldOut ? 'grayscale' : 'group-hover:scale-105' // ✅ 마우스 올렸을 때 이미지 확대 효과(품절 시에는 비활성)
+          }`}
         />
       </div>
       <div className="relative p-3 sm:p-4">

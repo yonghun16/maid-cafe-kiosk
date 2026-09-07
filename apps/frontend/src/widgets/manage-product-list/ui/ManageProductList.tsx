@@ -1,5 +1,5 @@
 // @owner: ai
-//  역할: 현재 메뉴 목록을 보여주고, 수정/삭제 기능을 제공합니다.
+//  역할: 현재 메뉴 목록을 보여주고, 수정/품절 처리/삭제 기능을 제공합니다.
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -11,6 +11,7 @@ export function ManageProductList() {
   const products = useProductStore((state) => state.products);
   const isLoading = useProductStore((state) => state.isLoading);
   const fetchProducts = useProductStore((state) => state.fetchProducts);
+  const toggleSoldOut = useProductStore((state) => state.toggleSoldOut);
   const deleteProduct = useProductStore((state) => state.deleteProduct);
 
   // ✅ 지금 수정 폼이 펼쳐져 있는 상품의 id. 한 번에 하나만 수정합니다.
@@ -35,13 +36,30 @@ export function ManageProductList() {
           ) : (
             <div key={product._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-4">
-                <img src={product.imageUrl} alt={product.name} className="w-12 h-12 rounded-md object-cover" />
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className={`w-12 h-12 rounded-md object-cover ${product.isSoldOut ? 'opacity-40 grayscale' : ''}`}
+                />
                 <div>
-                  <p className="font-semibold">{product.name}</p>
+                  <p className="flex items-center gap-2 font-semibold">
+                    {product.name}
+                    {product.isSoldOut && (
+                      <span className="rounded-full bg-gray-400 px-2 py-0.5 text-xs font-semibold text-white">
+                        품절
+                      </span>
+                    )}
+                  </p>
                   <p className="text-sm text-gray-500">{product.price.toLocaleString()}원</p>
                 </div>
               </div>
               <div className="flex gap-3">
+                <button
+                  onClick={() => toggleSoldOut(product._id, !product.isSoldOut)}
+                  className="font-semibold text-gray-500 hover:text-gray-700"
+                >
+                  {product.isSoldOut ? '판매 재개' : '품절 처리'}
+                </button>
                 <button
                   onClick={() => setEditingProductId(product._id)}
                   className="text-pink-500 hover:text-pink-700 font-semibold"

@@ -3,6 +3,7 @@ export {
   getProducts,
   createProduct,
   updateProduct,
+  updateSoldOutStatus,
   deleteProductById,
   uploadProductImage,
 } from './api/productApi';

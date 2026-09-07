@@ -1,5 +1,5 @@
 // @owner: ai
-import type { Product, UploadImageResponse } from '@repo/types';
+import type { Product, UpdateSoldOutInput, UploadImageResponse } from '@repo/types';
 import { apiClient } from '../../../shared/api';
 
 /**
@@ -32,6 +32,18 @@ export async function updateProduct(
   updatedProduct: Omit<Product, '_id'>,
 ): Promise<Product> {
   const response = await apiClient.put<Product>(`/products/${productId}`, updatedProduct);
+  return response.data;
+}
+
+/**
+ * 상품의 품절 여부를 변경합니다.
+ * @param productId - 대상 상품의 id
+ * @param isSoldOut - true면 품절, false면 판매중으로 표시
+ * @returns 수정된 상품
+ */
+export async function updateSoldOutStatus(productId: string, isSoldOut: boolean): Promise<Product> {
+  const payload: UpdateSoldOutInput = { isSoldOut };
+  const response = await apiClient.patch<Product>(`/products/${productId}/sold-out`, payload);
   return response.data;
 }
 

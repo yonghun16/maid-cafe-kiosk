@@ -13,6 +13,7 @@ const productSchema = new Schema<ProductDocument>({
     required: true,
     enum: ['coffee', 'ade', 'dessert'],
   },
+  isSoldOut: { type: Boolean, default: false },
 });
 
 export default mongoose.model<ProductDocument>('Product', productSchema);
