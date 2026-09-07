@@ -22,6 +22,7 @@
 ## 기술 스택
 - MongoDB
 - Zustand
+- Cloudflare R2 (상품 이미지 업로드/저장)
 
 ## 배포
 - Vercel (프론트엔드)

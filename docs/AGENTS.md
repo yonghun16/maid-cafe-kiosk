@@ -57,6 +57,11 @@ LeanSpec으로 기능 단위 스펙을 관리합니다.]]
 > 현재 이 프로젝트는 CLI로 사용 중. MCP 서버 등록 시 위 표의 MCP Tool 칼럼이
 > 우선 적용됨.
 >
+> ⚠️ **2026-09-07 재확인**: 여전히 동일합니다. 또한 `lean-spec` 명령
+> 실행 시 `"lean-spec" is deprecated. Use "leanspec" instead.` 경고가 뜹니다
+> — 패키지명이 `leanspec`으로 바뀌는 중이므로, 새 버전으로 마이그레이션할
+> 때는 CLI 호출도 `lean-spec` → `leanspec`으로 함께 바꿔야 합니다.
+>
 > ⚠️ **2026-09-05 CLI 스모크 테스트 결과**: 설치된 `@leanspec/cli@0.3.0`
 > (npm 최신 버전) 기준으로 `validate`, `tokens`, `deps`, `analyze`, `rel`
 > 명령어가 전부 `Error: '<cmd>' is not yet migrated to the adapter API`로
