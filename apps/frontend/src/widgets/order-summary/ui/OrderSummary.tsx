@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useCartStore } from '../../../features/cart';
+import { useOrderTypeStore } from '../../../features/order-type';
 
 export function OrderSummary() {
   const items = useCartStore((state) => state.items);
@@ -11,7 +12,18 @@ export function OrderSummary() {
   const increaseQuantity = useCartStore((state) => state.increaseQuantity);
   const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const orderType = useOrderTypeStore((state) => state.orderType);
+  const resetOrderType = useOrderTypeStore((state) => state.resetOrderType);
   const [isMobileListOpen, setIsMobileListOpen] = useState(false);
+
+  // ✅ 주문이 성공하면 다음 손님을 위해 매장/포장 선택 화면으로 되돌립니다.
+  const handleOrderSubmit = async () => {
+    if (!orderType) return;
+    const success = await submitOrder(orderType);
+    if (success) {
+      resetOrderType();
+    }
+  };
 
   const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -76,7 +88,7 @@ export function OrderSummary() {
   const orderButton = (
     <button
       type="button"
-      onClick={submitOrder}
+      onClick={handleOrderSubmit}
       disabled={items.length === 0}
       className="w-full rounded-full bg-pink-500 py-3 text-lg font-bold text-white shadow-md transition-all hover:bg-pink-600 disabled:bg-gray-300 disabled:shadow-none"
     >
@@ -89,6 +101,9 @@ export function OrderSummary() {
       {/* 데스크톱/태블릿: 항상 펼쳐진 사이드바 */}
       <div className="sticky top-8 hidden rounded-2xl bg-white p-6 shadow-lg md:block">
         <h2 className="text-center text-xl font-bold text-pink-500">🎀 주문 목록 🎀</h2>
+        <p className="mt-1 text-center text-sm text-gray-400">
+          {orderType === 'dine-in' ? '🍽️ 매장에서' : '🥡 포장'}
+        </p>
         <div className="mt-4 min-h-[160px] rounded-xl bg-pink-50 p-4">{itemList}</div>
         {divider}
         <div className="mb-3 flex justify-between text-lg font-bold">

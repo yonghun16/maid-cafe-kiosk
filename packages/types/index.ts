@@ -15,11 +15,15 @@ export interface CartItem extends Product {
   quantity: number;
 }
 
+// 매장 내(dine-in) / 포장(takeout) 구분
+export type OrderType = 'dine-in' | 'takeout';
+
 // 주문 정보 타입
 export interface Order {
   _id: string;
   items: CartItem[];
   totalPrice: number;
+  orderType: OrderType;
   createdAt: Date;
 }
 
@@ -35,6 +39,7 @@ export interface CreateOrderItemInput {
 export interface CreateOrderInput {
   items: CreateOrderItemInput[];
   totalPrice: number;
+  orderType: OrderType;
 }
 
 // 이미지 업로드 응답(POST /api/uploads)의 바디 타입 — 프론트/백엔드가 공유하는 계약

@@ -11,6 +11,7 @@ export interface OrderItemDocument {
 export interface OrderDocument extends Document {
   items: OrderItemDocument[];
   totalPrice: number;
+  orderType: 'dine-in' | 'takeout';
   createdAt: Date;
 }
 
@@ -24,6 +25,7 @@ const orderSchema = new Schema<OrderDocument>({
     },
   ],
   totalPrice: { type: Number, required: true },
+  orderType: { type: String, required: true, enum: ['dine-in', 'takeout'] },
   createdAt: { type: Date, default: Date.now },
 });
 

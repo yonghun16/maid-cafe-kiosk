@@ -317,6 +317,7 @@ app.post(
       const newOrder = new Order({
         items: req.body.items,
         totalPrice: req.body.totalPrice,
+        orderType: req.body.orderType,
       });
       await newOrder.save();
       res.status(201).json(newOrder);

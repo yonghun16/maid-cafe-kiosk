@@ -1,7 +1,7 @@
 // @owner: ai
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
-import type { Product, CartItem } from '@repo/types';
+import type { OrderType, Product, CartItem } from '@repo/types';
 import { submitOrder as submitOrderRequest } from '../api/orderApi';
 
 // 장바구니 스토어의 상태와 액션에 대한 타입 정의
@@ -12,7 +12,7 @@ interface CartState {
   increaseQuantity: (productId: string) => void;
   decreaseQuantity: (productId: string) => void;
   removeFromCart: (productId: string) => void;
-  submitOrder: () => Promise<void>;
+  submitOrder: (orderType: OrderType) => Promise<boolean>;
 }
 
 function calculateTotalPrice(items: CartItem[]): number {
@@ -72,11 +72,11 @@ export const useCartStore = create<CartState>((set, get) => ({
     set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
   },
 
-  submitOrder: async () => {
+  submitOrder: async (orderType) => {
     const { items, totalPrice } = get();
     if (items.length === 0) {
       toast.error('장바구니가 비어있습니다.');
-      return;
+      return false;
     }
 
     const loadingToast = toast.loading('주문을 처리 중입니다...');
@@ -89,6 +89,7 @@ export const useCartStore = create<CartState>((set, get) => ({
           quantity: item.quantity,
         })),
         totalPrice,
+        orderType,
       });
 
       toast.dismiss(loadingToast);
@@ -96,10 +97,12 @@ export const useCartStore = create<CartState>((set, get) => ({
 
       // 주문 완료 후 장바구니 비우기
       set({ items: [], totalPrice: 0 });
+      return true;
     } catch (error) {
       console.error('주문 처리 중 오류가 발생했습니다:', error);
       toast.dismiss(loadingToast);
       toast.error('주문 처리 중 오류가 발생했습니다.');
+      return false;
     }
   },
 }));
