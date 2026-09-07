@@ -306,6 +306,21 @@ app.delete('/api/products/:id', requireAdmin, async (req: Request<{ id: string }
 });
 
 /**
+ * 전체 주문 목록을 최신순으로 조회합니다. 주방/관리자가 들어온 주문을
+ * 확인하는 용도입니다. 관리자 세션이 없으면 `requireAdmin`에서 401로
+ * 막습니다.
+ * @route GET /api/orders
+ */
+app.get('/api/orders', requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: '주문 목록을 불러오는 중 오류가 발생했습니다.' });
+  }
+});
+
+/**
  * 장바구니 내용을 주문으로 생성합니다. 요청 바디 계약은 `@repo/types`의 `CreateOrderInput`을 따르며,
  * 프론트엔드 `features/cart/api/orderApi.ts`와 동일한 타입을 공유합니다.
  * @route POST /api/orders
