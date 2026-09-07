@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import type { Product } from '@repo/types';
-import { getProducts, createProduct, deleteProductById } from '../../../entities/product';
+import { getProducts, createProduct, updateProduct, deleteProductById } from '../../../entities/product';
 
 // 상품 관리 스토어의 타입 정의
 interface ProductState {
@@ -10,6 +10,7 @@ interface ProductState {
   isLoading: boolean;
   fetchProducts: () => Promise<void>;
   addProduct: (newProductData: Omit<Product, '_id'>) => Promise<boolean>;
+  editProduct: (productId: string, updatedData: Omit<Product, '_id'>) => Promise<boolean>;
   deleteProduct: (productId: string) => Promise<void>;
 }
 
@@ -41,6 +42,20 @@ export const useProductStore = create<ProductState>((set, get) => ({
     } catch (error) {
       console.error('상품 추가 중 오류가 발생했습니다:', error);
       toast.error('상품 추가에 실패했습니다.');
+      return false;
+    }
+  },
+
+  editProduct: async (productId, updatedData) => {
+    try {
+      await updateProduct(productId, updatedData);
+      toast.success('상품 정보를 수정했습니다!');
+      // 성공 시, 상품 목록을 다시 불러와서 화면을 갱신합니다.
+      get().fetchProducts();
+      return true;
+    } catch (error) {
+      console.error('상품 수정 중 오류가 발생했습니다:', error);
+      toast.error('상품 수정에 실패했습니다.');
       return false;
     }
   },

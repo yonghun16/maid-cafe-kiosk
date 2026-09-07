@@ -223,6 +223,36 @@ app.post(
 );
 
 /**
+ * 상품 정보를 수정합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로 막습니다.
+ * @route PUT /api/products/:id
+ * @param req.body - `_id`를 제외한 상품 정보(전체 필드)
+ */
+app.put(
+  '/api/products/:id',
+  requireAdmin,
+  async (
+    req: Request<{ id: string }, unknown, Omit<ProductType, '_id'>>,
+    res: Response,
+  ) => {
+    const { name, price, imageUrl, category } = req.body;
+    try {
+      const updatedProduct = await Product.findByIdAndUpdate(
+        req.params.id,
+        { name, price, imageUrl, category },
+        { new: true, runValidators: true },
+      );
+      if (!updatedProduct) {
+        res.status(404).json({ message: '상품을 찾을 수 없습니다.' });
+        return;
+      }
+      res.json(updatedProduct);
+    } catch (err) {
+      res.status(400).json({ message: '상품 수정 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
  * 상품을 삭제합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로 막습니다.
  * @route DELETE /api/products/:id
  */

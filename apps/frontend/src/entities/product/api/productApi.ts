@@ -22,6 +22,20 @@ export async function createProduct(newProduct: Omit<Product, '_id'>): Promise<P
 }
 
 /**
+ * 상품 정보를 수정합니다.
+ * @param productId - 수정할 상품의 id
+ * @param updatedProduct - `_id`를 제외한 상품 정보(전체 필드)
+ * @returns 수정된 상품
+ */
+export async function updateProduct(
+  productId: string,
+  updatedProduct: Omit<Product, '_id'>,
+): Promise<Product> {
+  const response = await apiClient.put<Product>(`/products/${productId}`, updatedProduct);
+  return response.data;
+}
+
+/**
  * 상품을 삭제합니다.
  * @param productId - 삭제할 상품의 id
  */
