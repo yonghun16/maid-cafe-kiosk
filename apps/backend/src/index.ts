@@ -320,16 +320,34 @@ app.get('/api/orders', requireAdmin, async (_req: Request, res: Response) => {
   }
 });
 
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+/**
+ * 한국 시간(KST) 기준 오늘 자정에 해당하는 UTC 시각을 반환합니다.
+ * 당일 주문번호를 매길 때 "오늘"의 기준으로 사용합니다.
+ */
+function getKstStartOfToday(): Date {
+  const kstNow = new Date(Date.now() + KST_OFFSET_MS);
+  kstNow.setUTCHours(0, 0, 0, 0);
+  return new Date(kstNow.getTime() - KST_OFFSET_MS);
+}
+
 /**
  * 장바구니 내용을 주문으로 생성합니다. 요청 바디 계약은 `@repo/types`의 `CreateOrderInput`을 따르며,
- * 프론트엔드 `features/cart/api/orderApi.ts`와 동일한 타입을 공유합니다.
+ * 프론트엔드 `features/cart/api/orderApi.ts`와 동일한 타입을 공유합니다. 응답의
+ * `orderNumber`는 한국 시간(KST) 기준 당일 자정부터 1번씩 다시 매기는 짧은
+ * 주문번호입니다(스타벅스 매장 주문번호 방식).
  * @route POST /api/orders
  */
 app.post(
   '/api/orders',
   async (req: Request<Record<string, never>, unknown, CreateOrderInput>, res: Response) => {
     try {
+      const ordersToday = await Order.countDocuments({
+        createdAt: { $gte: getKstStartOfToday() },
+      });
       const newOrder = new Order({
+        orderNumber: ordersToday + 1,
         items: req.body.items,
         totalPrice: req.body.totalPrice,
         orderType: req.body.orderType,

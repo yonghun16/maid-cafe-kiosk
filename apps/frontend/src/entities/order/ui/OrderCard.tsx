@@ -6,7 +6,12 @@ interface OrderCardProps {
 }
 
 export function OrderCard({ order }: OrderCardProps) {
-  const time = new Date(order.createdAt).toLocaleTimeString('ko-KR', {
+  const createdAt = new Date(order.createdAt);
+  const date = createdAt.toLocaleDateString('ko-KR', {
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const time = createdAt.toLocaleTimeString('ko-KR', {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -14,14 +19,21 @@ export function OrderCard({ order }: OrderCardProps) {
   return (
     <div className="rounded-xl border border-gray-100 bg-gray-50 p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <span
-          className={`rounded-full px-4 py-1.5 text-base font-bold text-white ${
-            order.orderType === 'dine-in' ? 'bg-amber-400' : 'bg-pink-500'
-          }`}
-        >
-          {order.orderType === 'dine-in' ? '🍽️ 매장' : '🥡 포장'}
+        <div className="flex items-center gap-3">
+          <span
+            className={`rounded-full px-4 py-1.5 text-base font-bold text-white ${
+              order.orderType === 'dine-in' ? 'bg-amber-400' : 'bg-pink-500'
+            }`}
+          >
+            {order.orderType === 'dine-in' ? '🍽️ 매장' : '🥡 포장'}
+          </span>
+          {order.orderNumber != null && (
+            <span className="text-xl font-extrabold text-gray-700">No. {order.orderNumber}</span>
+          )}
+        </div>
+        <span className="text-lg font-semibold text-gray-400">
+          {date} {time}
         </span>
-        <span className="text-lg font-semibold text-gray-400">{time}</span>
       </div>
       <ul className="mt-4 space-y-3">
         {order.items.map((item) => (

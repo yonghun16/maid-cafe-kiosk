@@ -10,6 +10,7 @@ export interface OrderItemDocument {
 }
 
 export interface OrderDocument extends Document {
+  orderNumber: number;
   items: OrderItemDocument[];
   totalPrice: number;
   orderType: 'dine-in' | 'takeout';
@@ -17,6 +18,9 @@ export interface OrderDocument extends Document {
 }
 
 const orderSchema = new Schema<OrderDocument>({
+  // 당일 자정(KST) 기준으로 1부터 다시 매기는 짧은 주문번호(스타벅스 매장
+  // 주문번호 방식). MongoDB의 긴 _id 대신 고객 응대용으로 사용합니다.
+  orderNumber: { type: Number, required: true },
   items: [
     {
       productId: { type: Schema.Types.ObjectId, ref: 'Product' },

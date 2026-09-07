@@ -33,6 +33,7 @@ export interface OrderItem {
 // 주문 정보 타입
 export interface Order {
   _id: string;
+  orderNumber: number; // 당일(KST) 자정 기준 1부터 다시 매기는 짧은 주문번호
   items: OrderItem[];
   totalPrice: number;
   orderType: OrderType;
