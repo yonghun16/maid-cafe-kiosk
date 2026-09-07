@@ -1,3 +1,5 @@
+// @owner: ai
+
 // 상품 정보 타입
 export interface Product {
   _id: string;
@@ -37,4 +39,15 @@ export interface CreateOrderInput {
 // 이미지 업로드 응답(POST /api/uploads)의 바디 타입 — 프론트/백엔드가 공유하는 계약
 export interface UploadImageResponse {
   url: string;
+}
+
+// 관리자 로그인 요청(POST /api/admin/login)의 바디 타입 — 프론트/백엔드가 공유하는 계약
+export interface AdminLoginInput {
+  password: string;
+}
+
+// 관리자 인증 상태 응답(POST /api/admin/login, GET /api/admin/session,
+// POST /api/admin/logout)의 바디 타입 — 프론트/백엔드가 공유하는 계약
+export interface AdminSessionResponse {
+  isAdmin: boolean;
 }
