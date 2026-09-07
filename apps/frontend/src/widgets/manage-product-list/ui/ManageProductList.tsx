@@ -24,8 +24,8 @@ export function ManageProductList() {
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-700 mb-4">메뉴 목록</h2>
-      <div className="space-y-3">
+      <h2 className="text-3xl font-bold text-gray-700 mb-5">메뉴 목록</h2>
+      <div className="space-y-4">
         {isLoading ? <p>로딩 중...</p> : products.map(product => (
           editingProductId === product._id ? (
             <EditProductForm
@@ -34,26 +34,26 @@ export function ManageProductList() {
               onCancel={() => setEditingProductId(null)}
             />
           ) : (
-            <div key={product._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-4">
+            <div key={product._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-5">
                 <img
                   src={product.imageUrl}
                   alt={product.name}
-                  className={`w-12 h-12 rounded-md object-cover ${product.isSoldOut ? 'opacity-40 grayscale' : ''}`}
+                  className={`h-20 w-20 rounded-md object-cover ${product.isSoldOut ? 'opacity-40 grayscale' : ''}`}
                 />
                 <div>
-                  <p className="flex items-center gap-2 font-semibold">
+                  <p className="flex items-center gap-2 text-lg font-semibold">
                     {product.name}
                     {product.isSoldOut && (
-                      <span className="rounded-full bg-gray-400 px-2 py-0.5 text-xs font-semibold text-white">
+                      <span className="rounded-full bg-gray-400 px-2.5 py-1 text-sm font-semibold text-white">
                         품절
                       </span>
                     )}
                   </p>
-                  <p className="text-sm text-gray-500">{product.price.toLocaleString()}원</p>
+                  <p className="text-base text-gray-500">{product.price.toLocaleString()}원</p>
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-4 text-base">
                 <button
                   onClick={() => toggleSoldOut(product._id, !product.isSoldOut)}
                   className="font-semibold text-gray-500 hover:text-gray-700"

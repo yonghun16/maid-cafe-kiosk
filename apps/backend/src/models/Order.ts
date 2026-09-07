@@ -5,6 +5,7 @@ export interface OrderItemDocument {
   productId: mongoose.Types.ObjectId;
   name: string;
   price: number;
+  imageUrl: string;
   quantity: number;
 }
 
@@ -21,6 +22,7 @@ const orderSchema = new Schema<OrderDocument>({
       productId: { type: Schema.Types.ObjectId, ref: 'Product' },
       name: String,
       price: Number,
+      imageUrl: String,
       quantity: Number,
     },
   ],

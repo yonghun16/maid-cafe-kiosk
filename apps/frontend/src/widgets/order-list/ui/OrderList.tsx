@@ -34,12 +34,12 @@ export function OrderList() {
 
   return (
     <div className="rounded-xl bg-white p-6 shadow-lg">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-700">주문 내역</h2>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-3xl font-bold text-gray-700">주문 내역</h2>
         <button
           type="button"
           onClick={fetchOrders}
-          className="rounded-md border border-pink-300 px-3 py-1 text-sm font-semibold text-pink-500 hover:bg-pink-50"
+          className="rounded-md border border-pink-300 px-4 py-2 text-base font-semibold text-pink-500 hover:bg-pink-50"
         >
           새로고침
         </button>
@@ -50,7 +50,7 @@ export function OrderList() {
       ) : orders.length === 0 ? (
         <p className="text-gray-400">아직 들어온 주문이 없습니다.</p>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {orders.map((order) => (
             <OrderCard key={order._id} order={order} />
           ))}

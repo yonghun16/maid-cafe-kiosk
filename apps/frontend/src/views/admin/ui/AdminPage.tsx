@@ -33,7 +33,7 @@ export function AdminPage() {
   }
 
   return (
-    <div className="container mx-auto p-8 font-sans">
+    <div className="mx-auto w-full max-w-[1800px] p-8 font-sans">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-4xl font-bold text-pink-500">🛠️ 관리자 페이지</h1>
         <button
@@ -49,7 +49,7 @@ export function AdminPage() {
         <button
           type="button"
           onClick={() => setActiveTab('menu')}
-          className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all ${
+          className={`rounded-full px-5 py-2.5 text-base font-semibold shadow-sm transition-all ${
             activeTab === 'menu'
               ? 'bg-pink-500 text-white shadow-md'
               : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'
@@ -60,7 +60,7 @@ export function AdminPage() {
         <button
           type="button"
           onClick={() => setActiveTab('orders')}
-          className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all ${
+          className={`rounded-full px-5 py-2.5 text-base font-semibold shadow-sm transition-all ${
             activeTab === 'orders'
               ? 'bg-pink-500 text-white shadow-md'
               : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'

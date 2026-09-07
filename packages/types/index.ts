@@ -18,13 +18,15 @@ export interface CartItem extends Product {
 // 매장 내(dine-in) / 포장(takeout) 구분
 export type OrderType = 'dine-in' | 'takeout';
 
-// 주문에 담긴 아이템 하나의 타입. 상품 스냅샷(이름/가격)만 남기고 상품
-// 자체(이미지, 카테고리 등)는 참조하지 않습니다 — 나중에 상품이 수정/삭제돼도
-// 과거 주문 내역은 그대로 남아야 하기 때문입니다.
+// 주문에 담긴 아이템 하나의 타입. 이름/가격/이미지를 주문 시점 스냅샷으로
+// 남기고 상품 자체(카테고리 등)는 참조하지 않습니다 — 나중에 상품이
+// 수정/삭제돼도 과거 주문 내역은 그대로 남아야 하기 때문입니다. 이미지는
+// 주방에서 어떤 메뉴인지 한눈에 알아보기 위해 포함합니다.
 export interface OrderItem {
   productId: string;
   name: string;
   price: number;
+  imageUrl: string;
   quantity: number;
 }
 
