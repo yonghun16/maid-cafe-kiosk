@@ -37,8 +37,12 @@ export interface Order {
   items: OrderItem[];
   totalPrice: number;
   orderType: OrderType;
+  isCompleted: boolean; // true면 지난 주문(완료)으로 취급
   createdAt: Date;
 }
+
+// 주문 목록 조회(GET /api/orders) 시 진행중/지난 주문을 나누는 필터 값
+export type OrderStatusFilter = 'pending' | 'completed';
 
 // 주문 생성 요청(POST /api/orders)의 바디 타입 — 프론트/백엔드가 공유하는 계약
 export interface CreateOrderInput {

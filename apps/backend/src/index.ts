@@ -12,6 +12,7 @@ import type {
   AdminLoginInput,
   AdminSessionResponse,
   CreateOrderInput,
+  OrderStatusFilter,
   Product as ProductType,
   UpdateSoldOutInput,
   UploadImageResponse,
@@ -306,17 +307,50 @@ app.delete('/api/products/:id', requireAdmin, async (req: Request<{ id: string }
 });
 
 /**
- * 전체 주문 목록을 최신순으로 조회합니다. 주방/관리자가 들어온 주문을
- * 확인하는 용도입니다. 관리자 세션이 없으면 `requireAdmin`에서 401로
- * 막습니다.
+ * 주문 목록을 최신순으로 조회합니다. 주방/관리자가 들어온 주문을 확인하는
+ * 용도입니다. `status` 쿼리로 진행중(`pending`)/완료(`completed`) 주문만
+ * 걸러볼 수 있고, 생략하면 전체를 반환합니다. 관리자 세션이 없으면
+ * `requireAdmin`에서 401로 막습니다.
  * @route GET /api/orders
+ * @param req.query.status - `@repo/types`의 `OrderStatusFilter` (선택)
  */
-app.get('/api/orders', requireAdmin, async (_req: Request, res: Response) => {
+app.get(
+  '/api/orders',
+  requireAdmin,
+  async (req: Request<Record<string, never>, unknown, unknown, { status?: OrderStatusFilter }>, res: Response) => {
+    try {
+      const filter: Record<string, boolean> = {};
+      if (req.query.status === 'pending') filter.isCompleted = false;
+      if (req.query.status === 'completed') filter.isCompleted = true;
+
+      const orders = await Order.find(filter).sort({ createdAt: -1 });
+      res.json(orders);
+    } catch (err) {
+      res.status(500).json({ message: '주문 목록을 불러오는 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 주문을 완료 처리합니다. 완료된 주문은 진행중 목록에서 빠지고 지난
+ * 주문 목록으로 이동합니다. 관리자 세션이 없으면 `requireAdmin`에서
+ * 401로 막습니다.
+ * @route PATCH /api/orders/:id/complete
+ */
+app.patch('/api/orders/:id/complete', requireAdmin, async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json(orders);
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.id,
+      { isCompleted: true },
+      { new: true },
+    );
+    if (!updatedOrder) {
+      res.status(404).json({ message: '주문을 찾을 수 없습니다.' });
+      return;
+    }
+    res.json(updatedOrder);
   } catch (err) {
-    res.status(500).json({ message: '주문 목록을 불러오는 중 오류가 발생했습니다.' });
+    res.status(400).json({ message: '주문 완료 처리 중 오류가 발생했습니다.' });
   }
 });
 

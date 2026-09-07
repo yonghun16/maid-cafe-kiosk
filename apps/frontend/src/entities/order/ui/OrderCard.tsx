@@ -3,9 +3,11 @@ import type { Order } from '@repo/types';
 
 interface OrderCardProps {
   order: Order;
+  /** 전달하면 카드에 "완료" 버튼이 표시되고, 클릭 시 호출됩니다. */
+  onComplete?: () => void;
 }
 
-export function OrderCard({ order }: OrderCardProps) {
+export function OrderCard({ order, onComplete }: OrderCardProps) {
   const createdAt = new Date(order.createdAt);
   const date = createdAt.toLocaleDateString('ko-KR', {
     month: '2-digit',
@@ -57,10 +59,19 @@ export function OrderCard({ order }: OrderCardProps) {
           </li>
         ))}
       </ul>
-      <div className="mt-4 flex justify-between border-t border-gray-200 pt-3 text-xl font-bold text-gray-800">
+      <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-3 text-xl font-bold text-gray-800">
         <span>합계</span>
         <span>{order.totalPrice.toLocaleString()}원</span>
       </div>
+      {onComplete && (
+        <button
+          type="button"
+          onClick={onComplete}
+          className="mt-4 w-full rounded-lg bg-pink-500 py-2.5 text-lg font-bold text-white transition-colors hover:bg-pink-600"
+        >
+          ✅ 완료
+        </button>
+      )}
     </div>
   );
 }

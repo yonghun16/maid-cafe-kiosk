@@ -7,7 +7,13 @@ import { AddProductForm } from '../../../widgets/add-product-form';
 import { ManageProductList } from '../../../widgets/manage-product-list';
 import { OrderList } from '../../../widgets/order-list';
 
-type AdminTab = 'menu' | 'orders';
+type AdminTab = 'menu' | 'orders' | 'history';
+
+const TABS: { key: AdminTab; label: string }[] = [
+  { key: 'menu', label: '메뉴 관리' },
+  { key: 'orders', label: '진행중 주문' },
+  { key: 'history', label: '지난 주문' },
+];
 
 export function AdminPage() {
   const isAdmin = useAdminAuthStore((state) => state.isAdmin);
@@ -46,31 +52,23 @@ export function AdminPage() {
       </div>
 
       <div className="mb-6 flex gap-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab('menu')}
-          className={`rounded-full px-5 py-2.5 text-base font-semibold shadow-sm transition-all ${
-            activeTab === 'menu'
-              ? 'bg-pink-500 text-white shadow-md'
-              : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'
-          }`}
-        >
-          메뉴 관리
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('orders')}
-          className={`rounded-full px-5 py-2.5 text-base font-semibold shadow-sm transition-all ${
-            activeTab === 'orders'
-              ? 'bg-pink-500 text-white shadow-md'
-              : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'
-          }`}
-        >
-          주문 내역
-        </button>
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveTab(tab.key)}
+            className={`rounded-full px-5 py-2.5 text-base font-semibold shadow-sm transition-all ${
+              activeTab === tab.key
+                ? 'bg-pink-500 text-white shadow-md'
+                : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {activeTab === 'menu' ? (
+      {activeTab === 'menu' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
             <AddProductForm />
@@ -79,9 +77,9 @@ export function AdminPage() {
             <ManageProductList />
           </div>
         </div>
-      ) : (
-        <OrderList />
       )}
+      {activeTab === 'orders' && <OrderList status="pending" />}
+      {activeTab === 'history' && <OrderList status="completed" />}
     </div>
   );
 }

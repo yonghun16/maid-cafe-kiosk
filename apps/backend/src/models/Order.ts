@@ -14,6 +14,7 @@ export interface OrderDocument extends Document {
   items: OrderItemDocument[];
   totalPrice: number;
   orderType: 'dine-in' | 'takeout';
+  isCompleted: boolean;
   createdAt: Date;
 }
 
@@ -32,6 +33,9 @@ const orderSchema = new Schema<OrderDocument>({
   ],
   totalPrice: { type: Number, required: true },
   orderType: { type: String, required: true, enum: ['dine-in', 'takeout'] },
+  // 주방/관리자가 "완료" 처리했는지 여부. true가 되면 진행중 목록에서
+  // 빠지고 지난 주문 목록으로 이동합니다.
+  isCompleted: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 
