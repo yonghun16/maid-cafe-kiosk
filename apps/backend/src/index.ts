@@ -26,6 +26,10 @@ import { requireAdmin } from './middleware/requireAdmin';
 // 있으면 컴파일 시 자동으로 적용됩니다.
 
 const app = express();
+// Render는 앞단 프록시(Cloudflare)가 HTTPS를 종료하고 내부적으론 HTTP로
+// 전달합니다. 이걸 신뢰하지 않으면 Express가 연결을 안전하지 않다고
+// 판단해 `cookie.secure: true`인 세션 쿠키를 아예 심지 않습니다.
+app.set('trust proxy', 1);
 // Railway 등 배포 환경은 자체적으로 할당한 포트를 PORT 환경변수로 넘겨줍니다.
 // 로컬 개발 시에는 지정된 값이 없으므로 4000을 기본값으로 사용합니다.
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
