@@ -6,7 +6,12 @@ import { useEffect, useState } from 'react';
 import { useProductStore } from '../../../features/product-management';
 import { EditProductForm } from './EditProductForm';
 
-export function ManageProductList() {
+interface ManageProductListProps {
+  /** 'all'이면 전체, 아니면 이 이름과 category가 같은 상품만 보여줍니다. */
+  selectedCategory: string;
+}
+
+export function ManageProductList({ selectedCategory }: ManageProductListProps) {
   // ✅ 상품 목록 데이터와 기능 모두 스토어에서 가져옵니다.
   const products = useProductStore((state) => state.products);
   const isLoading = useProductStore((state) => state.isLoading);
@@ -22,11 +27,21 @@ export function ManageProductList() {
     fetchProducts();
   }, [fetchProducts]);
 
+  const visibleProducts =
+    selectedCategory === 'all' ? products : products.filter((p) => p.category === selectedCategory);
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg">
-      <h2 className="text-3xl font-bold text-gray-700 mb-5">메뉴 목록</h2>
+      <h2 className="text-3xl font-bold text-gray-700 mb-5">
+        메뉴 목록{selectedCategory !== 'all' && ` · ${selectedCategory}`}
+      </h2>
       <div className="space-y-4">
-        {isLoading ? <p>로딩 중...</p> : products.map(product => (
+        {isLoading ? (
+          <p>로딩 중...</p>
+        ) : visibleProducts.length === 0 ? (
+          <p className="text-gray-400">이 카테고리에는 메뉴가 없습니다.</p>
+        ) : (
+          visibleProducts.map(product => (
           editingProductId === product._id ? (
             <EditProductForm
               key={product._id}
@@ -72,7 +87,8 @@ export function ManageProductList() {
               </div>
             </div>
           )
-        ))}
+        ))
+        )}
       </div>
     </div>
   );

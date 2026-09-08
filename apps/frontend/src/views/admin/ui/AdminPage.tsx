@@ -8,11 +8,10 @@ import { ManageProductList } from '../../../widgets/manage-product-list';
 import { ManageCategoryList } from '../../../widgets/manage-category-list';
 import { OrderList } from '../../../widgets/order-list';
 
-type AdminTab = 'menu' | 'categories' | 'orders' | 'history';
+type AdminTab = 'menu' | 'orders' | 'history';
 
 const TABS: { key: AdminTab; label: string }[] = [
   { key: 'menu', label: '메뉴 관리' },
-  { key: 'categories', label: '카테고리 관리' },
   { key: 'orders', label: '진행중 주문' },
   { key: 'history', label: '지난 주문' },
 ];
@@ -23,6 +22,8 @@ export function AdminPage() {
   const checkSession = useAdminAuthStore((state) => state.checkSession);
   const logout = useAdminAuthStore((state) => state.logout);
   const [activeTab, setActiveTab] = useState<AdminTab>('menu');
+  // ✅ "메뉴 관리" 탭 안에서 카테고리 칩을 눌러 고른 필터. 'all'이면 전체.
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
     checkSession();
@@ -71,16 +72,18 @@ export function AdminPage() {
       </div>
 
       {activeTab === 'menu' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <AddProductForm />
+        <>
+          <ManageCategoryList selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1">
+              <AddProductForm />
+            </div>
+            <div className="lg:col-span-2">
+              <ManageProductList selectedCategory={selectedCategory} />
+            </div>
           </div>
-          <div className="lg:col-span-2">
-            <ManageProductList />
-          </div>
-        </div>
+        </>
       )}
-      {activeTab === 'categories' && <ManageCategoryList />}
       {activeTab === 'orders' && <OrderList status="pending" />}
       {activeTab === 'history' && <OrderList status="completed" />}
     </div>

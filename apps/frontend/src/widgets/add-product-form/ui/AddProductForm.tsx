@@ -97,7 +97,7 @@ export function AddProductForm() {
           <label htmlFor="category" className="block text-sm font-medium text-gray-600">카테고리</label>
           {categories.length === 0 ? (
             <p className="mt-1 text-sm text-gray-500">
-              먼저 &ldquo;카테고리 관리&rdquo; 탭에서 카테고리를 추가해주세요.
+              먼저 위의 카테고리 목록에서 카테고리를 추가해주세요.
             </p>
           ) : (
             <select

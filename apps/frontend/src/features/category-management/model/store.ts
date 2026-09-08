@@ -30,7 +30,7 @@ interface CategoryState {
   fetchCategories: () => Promise<void>;
   addCategory: (name: string) => Promise<boolean>;
   editCategory: (categoryId: string, name: string) => Promise<boolean>;
-  deleteCategory: (categoryId: string) => Promise<void>;
+  deleteCategory: (categoryId: string) => Promise<boolean>;
   moveCategory: (categoryId: string, direction: 'up' | 'down') => Promise<void>;
 }
 
@@ -80,15 +80,17 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
 
   deleteCategory: async (categoryId) => {
     if (!window.confirm('이 카테고리를 삭제하면 여기 속한 메뉴도 전부 함께 삭제됩니다. 정말 삭제하시겠습니까?')) {
-      return;
+      return false;
     }
     try {
       await deleteCategoryById(categoryId);
       toast.success('카테고리와 소속 메뉴를 삭제했습니다.');
       get().fetchCategories();
+      return true;
     } catch (error) {
       console.error('카테고리 삭제 중 오류가 발생했습니다:', error);
       toast.error(getErrorMessage(error, '카테고리 삭제에 실패했습니다.'));
+      return false;
     }
   },
 
