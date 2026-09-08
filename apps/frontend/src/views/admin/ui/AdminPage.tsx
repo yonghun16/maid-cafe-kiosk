@@ -7,6 +7,7 @@ import { AddProductForm } from '../../../widgets/add-product-form';
 import { ManageProductList } from '../../../widgets/manage-product-list';
 import { ManageCategoryList } from '../../../widgets/manage-category-list';
 import { OrderList } from '../../../widgets/order-list';
+import { Modal } from '../../../shared/ui';
 
 type AdminTab = 'menu' | 'orders' | 'history';
 
@@ -24,6 +25,8 @@ export function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('menu');
   // ✅ "메뉴 관리" 탭 안에서 카테고리 칩을 눌러 고른 필터. 'all'이면 전체.
   const [selectedCategory, setSelectedCategory] = useState('all');
+  // ✅ "메뉴 추가" 버튼을 누르면 뜨는 모달의 열림/닫힘 상태.
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   useEffect(() => {
     checkSession();
@@ -74,14 +77,19 @@ export function AdminPage() {
       {activeTab === 'menu' && (
         <>
           <ManageCategoryList selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
-              <AddProductForm />
-            </div>
-            <div className="lg:col-span-2">
-              <ManageProductList selectedCategory={selectedCategory} />
-            </div>
+          <div className="mb-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
+              className="rounded-md bg-pink-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-pink-600"
+            >
+              + 메뉴 추가
+            </button>
           </div>
+          <ManageProductList selectedCategory={selectedCategory} />
+          <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="새 메뉴 추가">
+            <AddProductForm onSuccess={() => setIsAddModalOpen(false)} />
+          </Modal>
         </>
       )}
       {activeTab === 'orders' && <OrderList status="pending" />}

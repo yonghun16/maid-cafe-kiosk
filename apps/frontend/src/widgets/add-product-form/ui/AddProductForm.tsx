@@ -7,7 +7,12 @@ import { uploadProductImage } from '../../../entities/product';
 import { useProductStore } from '../../../features/product-management';
 import { useCategoryStore } from '../../../features/category-management';
 
-export function AddProductForm() {
+interface AddProductFormProps {
+  /** 메뉴 추가에 성공하면 호출됩니다 (모달을 닫는 용도 등). */
+  onSuccess?: () => void;
+}
+
+export function AddProductForm({ onSuccess }: AddProductFormProps) {
   // ✅ 폼 입력값은 위젯 내부의 자체 상태로 관리합니다.
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
@@ -63,65 +68,63 @@ export function AddProductForm() {
       setName('');
       setPrice('');
       setImageUrl('');
+      onSuccess?.();
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-700 mb-4">새 메뉴 추가</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-600">메뉴 이름</label>
-          <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
-        </div>
-        <div>
-          <label htmlFor="price" className="block text-sm font-medium text-gray-600">가격</label>
-          <input type="number" id="price" value={price} onChange={(e) => setPrice(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
-        </div>
-        <div>
-          <label htmlFor="image" className="block text-sm font-medium text-gray-600">메뉴 이미지</label>
-          <input
-            type="file"
-            id="image"
-            accept="image/*"
-            onChange={handleImageChange}
-            disabled={isUploadingImage}
-            className="mt-1 block w-full text-sm text-gray-600 file:mr-4 file:rounded-md file:border-0 file:bg-pink-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-pink-600 hover:file:bg-pink-100"
-          />
-          {isUploadingImage && <p className="mt-1 text-sm text-gray-500">업로드 중...</p>}
-          {!isUploadingImage && imageUrl && (
-            <img src={imageUrl} alt="미리보기" className="mt-2 h-20 w-20 rounded-md object-cover" />
-          )}
-        </div>
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-600">카테고리</label>
-          {categories.length === 0 ? (
-            <p className="mt-1 text-sm text-gray-500">
-              먼저 위의 카테고리 목록에서 카테고리를 추가해주세요.
-            </p>
-          ) : (
-            <select
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
-            >
-              {categories.map((c) => (
-                <option key={c._id} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-        <button
-          type="submit"
-          disabled={isUploadingImage || categories.length === 0}
-          className="w-full bg-pink-500 text-white py-2 px-4 rounded-md font-bold hover:bg-pink-600 transition-colors disabled:bg-gray-300"
-        >
-          추가하기
-        </button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-600">메뉴 이름</label>
+        <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
+      </div>
+      <div>
+        <label htmlFor="price" className="block text-sm font-medium text-gray-600">가격</label>
+        <input type="number" id="price" value={price} onChange={(e) => setPrice(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
+      </div>
+      <div>
+        <label htmlFor="image" className="block text-sm font-medium text-gray-600">메뉴 이미지</label>
+        <input
+          type="file"
+          id="image"
+          accept="image/*"
+          onChange={handleImageChange}
+          disabled={isUploadingImage}
+          className="mt-1 block w-full text-sm text-gray-600 file:mr-4 file:rounded-md file:border-0 file:bg-pink-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-pink-600 hover:file:bg-pink-100"
+        />
+        {isUploadingImage && <p className="mt-1 text-sm text-gray-500">업로드 중...</p>}
+        {!isUploadingImage && imageUrl && (
+          <img src={imageUrl} alt="미리보기" className="mt-2 h-20 w-20 rounded-md object-cover" />
+        )}
+      </div>
+      <div>
+        <label htmlFor="category" className="block text-sm font-medium text-gray-600">카테고리</label>
+        {categories.length === 0 ? (
+          <p className="mt-1 text-sm text-gray-500">
+            먼저 위의 카테고리 목록에서 카테고리를 추가해주세요.
+          </p>
+        ) : (
+          <select
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+          >
+            {categories.map((c) => (
+              <option key={c._id} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      <button
+        type="submit"
+        disabled={isUploadingImage || categories.length === 0}
+        className="w-full bg-pink-500 text-white py-2 px-4 rounded-md font-bold hover:bg-pink-600 transition-colors disabled:bg-gray-300"
+      >
+        추가하기
+      </button>
+    </form>
   );
 }
