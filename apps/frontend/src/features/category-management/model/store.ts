@@ -8,6 +8,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategoryById,
+  reorderCategories,
 } from '../../../entities/category';
 
 /**
@@ -30,6 +31,7 @@ interface CategoryState {
   addCategory: (name: string) => Promise<boolean>;
   editCategory: (categoryId: string, name: string) => Promise<boolean>;
   deleteCategory: (categoryId: string) => Promise<void>;
+  moveCategory: (categoryId: string, direction: 'up' | 'down') => Promise<void>;
 }
 
 export const useCategoryStore = create<CategoryState>((set, get) => ({
@@ -87,6 +89,32 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       console.error('카테고리 삭제 중 오류가 발생했습니다:', error);
       toast.error(getErrorMessage(error, '카테고리 삭제에 실패했습니다.'));
+    }
+  },
+
+  moveCategory: async (categoryId, direction) => {
+    const { categories } = get();
+    const index = categories.findIndex((c) => c._id === categoryId);
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (index === -1 || targetIndex < 0 || targetIndex >= categories.length) {
+      return;
+    }
+
+    const reordered = [...categories];
+    const moved = reordered[index];
+    if (!moved) return;
+    reordered.splice(index, 1);
+    reordered.splice(targetIndex, 0, moved);
+
+    // 낙관적 업데이트: 서버 응답을 기다리지 않고 화면부터 바꿔서 버튼을
+    // 눌렀을 때 바로 반응하게 합니다. 실패하면 원래 목록을 다시 불러옵니다.
+    set({ categories: reordered });
+    try {
+      await reorderCategories(reordered.map((c) => c._id));
+    } catch (error) {
+      console.error('카테고리 순서 변경 중 오류가 발생했습니다:', error);
+      toast.error(getErrorMessage(error, '카테고리 순서 변경에 실패했습니다.'));
+      get().fetchCategories();
     }
   },
 }));

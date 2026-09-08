@@ -15,6 +15,7 @@ import type {
   CreateOrderInput,
   OrderStatusFilter,
   Product as ProductType,
+  ReorderCategoriesInput,
   UpdateSoldOutInput,
   UploadImageResponse,
 } from '@repo/types';
@@ -60,8 +61,31 @@ async function ensureDefaultCategories(): Promise<void> {
   const distinctCategoryNames = await Product.distinct('category');
   if (distinctCategoryNames.length === 0) return;
 
-  await Category.insertMany(distinctCategoryNames.map((name) => ({ name })));
+  await Category.insertMany(
+    distinctCategoryNames.map((name, index) => ({ name, order: index })),
+  );
   console.log(`✅ 기존 상품 카테고리로부터 Category ${distinctCategoryNames.length}개를 초기화했습니다.`);
+}
+
+/**
+ * `order` 필드가 도입되기 전에 만들어진 카테고리(값이 없는 카테고리)에
+ * 순서를 부여합니다. 기존 화면에 보이던 이름순 그대로 이어지도록
+ * 이름순으로 정렬해 번호를 매깁니다. 1회성·멱등이며, 대상이 없으면
+ * 아무 것도 하지 않습니다.
+ */
+async function ensureCategoryOrder(): Promise<void> {
+  const unordered = await Category.find({ order: { $exists: false } }).sort({ name: 1 });
+  if (unordered.length === 0) return;
+
+  const lastOrdered = await Category.findOne({ order: { $exists: true } }).sort({ order: -1 });
+  let nextOrder = lastOrdered ? lastOrdered.order + 1 : 0;
+
+  for (const category of unordered) {
+    category.order = nextOrder;
+    await category.save();
+    nextOrder += 1;
+  }
+  console.log(`✅ 순서가 없던 카테고리 ${unordered.length}개에 순서를 지정했습니다.`);
 }
 
 mongoose
@@ -69,6 +93,7 @@ mongoose
   .then(async () => {
     console.log('✅ MongoDB에 성공적으로 연결되었습니다.');
     await ensureDefaultCategories();
+    await ensureCategoryOrder();
   })
   .catch((err) => console.error('❌ MongoDB 연결 실패:', err));
 
@@ -219,13 +244,13 @@ app.post('/api/uploads', requireAdmin, upload.single('image'), async (req: Reque
 });
 
 /**
- * 전체 카테고리 목록을 이름순으로 조회합니다. 고객 화면의 카테고리
- * 필터에도 쓰이므로 인증 없이 공개합니다.
+ * 전체 카테고리 목록을 지정된 순서(`order`)대로 조회합니다. 고객 화면의
+ * 카테고리 필터에도 쓰이므로 인증 없이 공개합니다.
  * @route GET /api/categories
  */
 app.get('/api/categories', async (_req: Request, res: Response) => {
   try {
-    const categories = await Category.find().sort({ name: 1 });
+    const categories = await Category.find().sort({ order: 1, name: 1 });
     res.json(categories);
   } catch (err) {
     res.status(500).json({ message: '카테고리 목록을 불러오는 중 오류가 발생했습니다.' });
@@ -233,8 +258,8 @@ app.get('/api/categories', async (_req: Request, res: Response) => {
 });
 
 /**
- * 새 카테고리를 등록합니다. 관리자 세션이 없으면 `requireAdmin`에서
- * 401로 막습니다.
+ * 새 카테고리를 등록합니다. 순서는 항상 맨 뒤로 배정됩니다. 관리자
+ * 세션이 없으면 `requireAdmin`에서 401로 막습니다.
  * @route POST /api/categories
  * @param req.body - `@repo/types`의 `CategoryInput` (`name`)
  */
@@ -243,11 +268,40 @@ app.post(
   requireAdmin,
   async (req: Request<Record<string, never>, unknown, CategoryInput>, res: Response) => {
     try {
-      const category = new Category({ name: req.body.name });
+      const order = await Category.countDocuments();
+      const category = new Category({ name: req.body.name, order });
       const newCategory = await category.save();
       res.status(201).json(newCategory);
     } catch (err) {
       res.status(400).json({ message: '이미 있는 카테고리이거나 등록 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 카테고리 노출 순서를 한 번에 재배열합니다. 원하는 순서대로 나열한
+ * 카테고리 id 배열을 받아 배열 인덱스를 그대로 `order` 값으로 저장합니다.
+ * 관리자 세션이 없으면 `requireAdmin`에서 401로 막습니다.
+ * @route PATCH /api/categories/reorder
+ * @param req.body - `@repo/types`의 `ReorderCategoriesInput` (`orderedIds`)
+ */
+app.patch(
+  '/api/categories/reorder',
+  requireAdmin,
+  async (req: Request<Record<string, never>, unknown, ReorderCategoriesInput>, res: Response) => {
+    const { orderedIds } = req.body;
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
+      res.status(400).json({ message: 'orderedIds 값이 올바르지 않습니다.' });
+      return;
+    }
+    try {
+      await Promise.all(
+        orderedIds.map((id, index) => Category.updateOne({ _id: id }, { $set: { order: index } })),
+      );
+      const categories = await Category.find().sort({ order: 1, name: 1 });
+      res.json(categories);
+    } catch (err) {
+      res.status(400).json({ message: '카테고리 순서 변경 중 오류가 발생했습니다.' });
     }
   },
 );

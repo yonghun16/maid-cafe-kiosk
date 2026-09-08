@@ -14,6 +14,7 @@ export function ManageCategoryList() {
   const addCategory = useCategoryStore((state) => state.addCategory);
   const editCategory = useCategoryStore((state) => state.editCategory);
   const deleteCategory = useCategoryStore((state) => state.deleteCategory);
+  const moveCategory = useCategoryStore((state) => state.moveCategory);
 
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -79,7 +80,7 @@ export function ManageCategoryList() {
         <p className="text-gray-400">아직 카테고리가 없습니다. 위에서 먼저 추가해주세요.</p>
       ) : (
         <div className="space-y-3">
-          {categories.map((category) =>
+          {categories.map((category, index) =>
             editingId === category._id ? (
               <form
                 key={category._id}
@@ -115,7 +116,27 @@ export function ManageCategoryList() {
                 key={category._id}
                 className="flex items-center justify-between rounded-lg bg-gray-50 p-4"
               >
-                <span className="text-lg font-semibold text-gray-800">{category.name}</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col">
+                    <button
+                      onClick={() => moveCategory(category._id, 'up')}
+                      disabled={index === 0}
+                      aria-label="위로 이동"
+                      className="leading-none text-gray-400 hover:text-pink-500 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      onClick={() => moveCategory(category._id, 'down')}
+                      disabled={index === categories.length - 1}
+                      aria-label="아래로 이동"
+                      className="leading-none text-gray-400 hover:text-pink-500 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                  <span className="text-lg font-semibold text-gray-800">{category.name}</span>
+                </div>
                 <div className="flex gap-4">
                   <button
                     onClick={() => startEditing(category._id, category.name)}

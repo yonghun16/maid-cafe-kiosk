@@ -1,9 +1,9 @@
 // @owner: ai
-import type { Category, CategoryInput } from '@repo/types';
+import type { Category, CategoryInput, ReorderCategoriesInput } from '@repo/types';
 import { apiClient } from '../../../shared/api';
 
 /**
- * 전체 카테고리 목록을 이름순으로 조회합니다.
+ * 전체 카테고리 목록을 지정된 순서대로 조회합니다.
  * @returns 카테고리 배열
  */
 export async function getCategories(): Promise<Category[]> {
@@ -42,4 +42,15 @@ export async function updateCategory(categoryId: string, name: string): Promise<
  */
 export async function deleteCategoryById(categoryId: string): Promise<void> {
   await apiClient.delete(`/categories/${categoryId}`);
+}
+
+/**
+ * 카테고리 노출 순서를 한 번에 재배열합니다.
+ * @param orderedIds - 원하는 순서대로 나열한 카테고리 id 배열
+ * @returns 순서가 반영된 전체 카테고리 목록
+ */
+export async function reorderCategories(orderedIds: string[]): Promise<Category[]> {
+  const payload: ReorderCategoriesInput = { orderedIds };
+  const response = await apiClient.patch<Category[]>('/categories/reorder', payload);
+  return response.data;
 }

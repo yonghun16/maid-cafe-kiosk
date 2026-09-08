@@ -16,12 +16,19 @@ export interface Product {
 export interface Category {
   _id: string;
   name: string;
+  order: number; // 값이 작을수록 앞에 표시됨
 }
 
 // 카테고리 생성/수정 요청(POST/PUT /api/categories)의 바디 타입 —
 // 프론트/백엔드가 공유하는 계약
 export interface CategoryInput {
   name: string;
+}
+
+// 카테고리 순서 변경 요청(PATCH /api/categories/reorder)의 바디 타입 —
+// 원하는 순서대로 나열한 카테고리 id 배열을 그대로 보냅니다.
+export interface ReorderCategoriesInput {
+  orderedIds: string[];
 }
 
 // 장바구니 아이템 타입 (상품 정보에 수량을 추가)

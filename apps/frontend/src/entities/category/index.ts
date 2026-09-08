@@ -4,4 +4,5 @@ export {
   createCategory,
   updateCategory,
   deleteCategoryById,
+  reorderCategories,
 } from './api/categoryApi';
