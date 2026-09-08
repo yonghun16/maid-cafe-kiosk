@@ -23,6 +23,20 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+/** `categoryId`를 `toIndex` 위치로 옮긴 새 배열을 반환합니다. 옮길 게 없으면 null. */
+function reorderArray(categories: Category[], categoryId: string, toIndex: number): Category[] | null {
+  const fromIndex = categories.findIndex((c) => c._id === categoryId);
+  if (fromIndex === -1 || toIndex < 0 || toIndex >= categories.length || fromIndex === toIndex) {
+    return null;
+  }
+  const reordered = [...categories];
+  const moved = reordered[fromIndex];
+  if (!moved) return null;
+  reordered.splice(fromIndex, 1);
+  reordered.splice(toIndex, 0, moved);
+  return reordered;
+}
+
 // 카테고리 관리 스토어의 타입 정의
 interface CategoryState {
   categories: Category[];
@@ -34,6 +48,14 @@ interface CategoryState {
   moveCategory: (categoryId: string, direction: 'up' | 'down') => Promise<void>;
   /** 드래그 앤 드롭 등으로 임의의 위치로 옮길 때 씁니다. */
   moveCategoryToIndex: (categoryId: string, toIndex: number) => Promise<void>;
+  /**
+   * 서버 호출 없이 화면 상태만 즉시 재배치합니다. 포인터 기반 드래그 중
+   * 프레임마다 불러도 API가 매번 나가지 않도록 분리했고, 실제 저장은
+   * `commitCategoryOrder`가 드롭 시점에 한 번만 합니다.
+   */
+  reorderLocally: (categoryId: string, toIndex: number) => void;
+  /** `reorderLocally`로 바뀐 현재 화면 순서를 서버에 저장합니다. */
+  commitCategoryOrder: () => Promise<void>;
 }
 
 export const useCategoryStore = create<CategoryState>((set, get) => ({
@@ -105,25 +127,33 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   },
 
   moveCategoryToIndex: async (categoryId, toIndex) => {
-    const { categories } = get();
-    const fromIndex = categories.findIndex((c) => c._id === categoryId);
-    if (fromIndex === -1 || toIndex < 0 || toIndex >= categories.length || fromIndex === toIndex) {
-      return;
-    }
+    const reordered = reorderArray(get().categories, categoryId, toIndex);
+    if (!reordered) return;
 
-    const reordered = [...categories];
-    const moved = reordered[fromIndex];
-    if (!moved) return;
-    reordered.splice(fromIndex, 1);
-    reordered.splice(toIndex, 0, moved);
-
-    // 낙관적 업데이트: 서버 응답을 기다리지 않고 화면부터 바꿔서 버튼/
-    // 드래그에 바로 반응하게 합니다. 실패하면 원래 목록을 다시 불러옵니다.
+    // 낙관적 업데이트: 서버 응답을 기다리지 않고 화면부터 바꿔서 버튼에
+    // 바로 반응하게 합니다. 실패하면 원래 목록을 다시 불러옵니다.
     set({ categories: reordered });
     try {
       await reorderCategories(reordered.map((c) => c._id));
     } catch (error) {
       console.error('카테고리 순서 변경 중 오류가 발생했습니다:', error);
+      toast.error(getErrorMessage(error, '카테고리 순서 변경에 실패했습니다.'));
+      get().fetchCategories();
+    }
+  },
+
+  reorderLocally: (categoryId, toIndex) => {
+    const reordered = reorderArray(get().categories, categoryId, toIndex);
+    if (!reordered) return;
+    set({ categories: reordered });
+  },
+
+  commitCategoryOrder: async () => {
+    const { categories } = get();
+    try {
+      await reorderCategories(categories.map((c) => c._id));
+    } catch (error) {
+      console.error('카테고리 순서 저장 중 오류가 발생했습니다:', error);
       toast.error(getErrorMessage(error, '카테고리 순서 변경에 실패했습니다.'));
       get().fetchCategories();
     }
