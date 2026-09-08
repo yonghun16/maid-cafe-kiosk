@@ -1,7 +1,7 @@
 // @owner: ai
 //  역할: 카테고리를 칩 형태로 보여주며, 클릭하면 그 카테고리로 메뉴 목록을
-//  필터링합니다. 각 칩에서 순서 이동(◀▶)/이름 수정(✎)/삭제(✕)도 함께
-//  처리합니다. 카테고리를 삭제하면 그 카테고리에 속한 메뉴도 서버에서
+//  필터링합니다. 각 칩에서 순서 이동(드래그 또는 ◀▶)/이름 수정(✎)/삭제(✕)도
+//  함께 처리합니다. 카테고리를 삭제하면 그 카테고리에 속한 메뉴도 서버에서
 //  함께 삭제됩니다.
 'use client';
 
@@ -24,11 +24,15 @@ export function ManageCategoryList({ selectedCategory, onSelectCategory }: Manag
   const editCategory = useCategoryStore((state) => state.editCategory);
   const deleteCategory = useCategoryStore((state) => state.deleteCategory);
   const moveCategory = useCategoryStore((state) => state.moveCategory);
+  const moveCategoryToIndex = useCategoryStore((state) => state.moveCategoryToIndex);
 
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
+  // ✅ 지금 드래그로 옮기고 있는 카테고리의 id. 드래그 중인 칩을 흐리게
+  // 표시하는 데도 씁니다.
+  const [draggedId, setDraggedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -77,6 +81,13 @@ export function ManageCategoryList({ selectedCategory, onSelectCategory }: Manag
     }
   };
 
+  const handleDrop = (targetIndex: number) => {
+    if (draggedId) {
+      moveCategoryToIndex(draggedId, targetIndex);
+    }
+    setDraggedId(null);
+  };
+
   return (
     <div className="mb-6 rounded-xl bg-white p-4 shadow-lg">
       <div className="flex flex-wrap items-center gap-2">
@@ -123,7 +134,17 @@ export function ManageCategoryList({ selectedCategory, onSelectCategory }: Manag
           ) : (
             <div
               key={category._id}
-              className={`flex items-center gap-0.5 rounded-full pl-4 pr-1.5 py-1.5 shadow-sm transition-all ${
+              draggable
+              onDragStart={() => setDraggedId(category._id)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                handleDrop(index);
+              }}
+              onDragEnd={() => setDraggedId(null)}
+              className={`flex cursor-grab items-center gap-0.5 rounded-full pl-4 pr-1.5 py-1.5 shadow-sm transition-all active:cursor-grabbing ${
+                draggedId === category._id ? 'opacity-40' : ''
+              } ${
                 selectedCategory === category.name
                   ? 'bg-pink-500 text-white shadow-md'
                   : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'

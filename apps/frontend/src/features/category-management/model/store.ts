@@ -32,6 +32,8 @@ interface CategoryState {
   editCategory: (categoryId: string, name: string) => Promise<boolean>;
   deleteCategory: (categoryId: string) => Promise<boolean>;
   moveCategory: (categoryId: string, direction: 'up' | 'down') => Promise<void>;
+  /** 드래그 앤 드롭 등으로 임의의 위치로 옮길 때 씁니다. */
+  moveCategoryToIndex: (categoryId: string, toIndex: number) => Promise<void>;
 }
 
 export const useCategoryStore = create<CategoryState>((set, get) => ({
@@ -97,19 +99,26 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   moveCategory: async (categoryId, direction) => {
     const { categories } = get();
     const index = categories.findIndex((c) => c._id === categoryId);
+    if (index === -1) return;
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (index === -1 || targetIndex < 0 || targetIndex >= categories.length) {
+    await get().moveCategoryToIndex(categoryId, targetIndex);
+  },
+
+  moveCategoryToIndex: async (categoryId, toIndex) => {
+    const { categories } = get();
+    const fromIndex = categories.findIndex((c) => c._id === categoryId);
+    if (fromIndex === -1 || toIndex < 0 || toIndex >= categories.length || fromIndex === toIndex) {
       return;
     }
 
     const reordered = [...categories];
-    const moved = reordered[index];
+    const moved = reordered[fromIndex];
     if (!moved) return;
-    reordered.splice(index, 1);
-    reordered.splice(targetIndex, 0, moved);
+    reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
 
-    // 낙관적 업데이트: 서버 응답을 기다리지 않고 화면부터 바꿔서 버튼을
-    // 눌렀을 때 바로 반응하게 합니다. 실패하면 원래 목록을 다시 불러옵니다.
+    // 낙관적 업데이트: 서버 응답을 기다리지 않고 화면부터 바꿔서 버튼/
+    // 드래그에 바로 반응하게 합니다. 실패하면 원래 목록을 다시 불러옵니다.
     set({ categories: reordered });
     try {
       await reorderCategories(reordered.map((c) => c._id));
