@@ -8,14 +8,14 @@ import { ProductCard, getProducts } from '../../../entities/product';
 import { getCategories } from '../../../entities/category';
 import { useCartStore } from '../../../features/cart';
 
-const ALL_CATEGORY = 'all';
-
 export function ProductList() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>(ALL_CATEGORY);
+  // ✅ 손님은 "전체보기"에서 메뉴를 고르지 않고 항상 카테고리를 먼저
+  // 골라 담기 때문에, "전체" 옵션 없이 첫 카테고리를 기본 선택으로 둡니다.
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   // ✅ Zustand 스토어에서 장바구니에 담는 함수만 가져옵니다.
   const addToCart = useCartStore((state) => state.addToCart);
@@ -26,8 +26,8 @@ export function ProductList() {
         setIsLoading(true);
         const [products, categoryList] = await Promise.all([getProducts(), getCategories()]);
         setAllProducts(products);
-        setFilteredProducts(products);
         setCategories(categoryList);
+        setSelectedCategory(categoryList[0]?.name ?? '');
       } catch (error) {
         console.error('메뉴 목록을 불러오는 중 오류가 발생했습니다:', error);
         toast.error('메뉴 목록을 불러오는 데 실패했습니다.');
@@ -39,7 +39,7 @@ export function ProductList() {
   }, []);
 
   useEffect(() => {
-    if (selectedCategory === ALL_CATEGORY) {
+    if (!selectedCategory) {
       setFilteredProducts(allProducts);
     } else {
       const filtered = allProducts.filter(product => product.category === selectedCategory);
@@ -65,12 +65,6 @@ export function ProductList() {
       </header>
 
       <div className="mb-4 flex flex-wrap justify-center gap-2 md:justify-start">
-        <button
-          onClick={() => setSelectedCategory(ALL_CATEGORY)}
-          className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 ${selectedCategory === ALL_CATEGORY ? 'bg-pink-500 text-white shadow-md' : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'}`}
-        >
-          🎀 전체
-        </button>
         {categories.map(category => (
           <button
             key={category._id}
