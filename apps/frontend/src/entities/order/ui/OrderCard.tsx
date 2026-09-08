@@ -67,9 +67,9 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
         <button
           type="button"
           onClick={onComplete}
-          className="mt-4 w-full rounded-lg bg-pink-500 py-2.5 text-lg font-bold text-white transition-colors hover:bg-pink-600"
+          className="mt-4 w-full rounded-lg border border-gray-300 py-2.5 text-lg font-semibold text-gray-500 transition-colors hover:border-pink-300 hover:bg-pink-50 hover:text-pink-500"
         >
-          ✅ 완료
+          완료
         </button>
       )}
     </div>
