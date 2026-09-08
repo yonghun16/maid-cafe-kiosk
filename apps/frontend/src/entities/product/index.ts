@@ -6,5 +6,6 @@ export {
   updateSoldOutStatus,
   deleteProductById,
   uploadProductImage,
+  reorderProducts,
 } from './api/productApi';
 export { default as ProductCard } from './ui/ProductCard';

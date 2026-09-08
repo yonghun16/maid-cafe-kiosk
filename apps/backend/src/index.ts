@@ -14,8 +14,9 @@ import type {
   CategoryInput,
   CreateOrderInput,
   OrderStatusFilter,
-  Product as ProductType,
+  ProductInput,
   ReorderCategoriesInput,
+  ReorderProductsInput,
   UpdateSoldOutInput,
   UploadImageResponse,
 } from '@repo/types';
@@ -88,12 +89,33 @@ async function ensureCategoryOrder(): Promise<void> {
   console.log(`✅ 순서가 없던 카테고리 ${unordered.length}개에 순서를 지정했습니다.`);
 }
 
+/**
+ * `order` 필드가 도입되기 전에 만들어진 상품(값이 없는 상품)에 카테고리별
+ * 순서를 부여합니다. 상품 순서는 카테고리 안에서만 의미가 있으므로,
+ * 기존 생성순 그대로 이어지도록 생성순으로 정렬해 카테고리마다 0부터
+ * 번호를 매깁니다. 1회성·멱등이며, 대상이 없으면 아무 것도 하지 않습니다.
+ */
+async function ensureProductOrder(): Promise<void> {
+  const unordered = await Product.find({ order: { $exists: false } }).sort({ _id: 1 });
+  if (unordered.length === 0) return;
+
+  const nextOrderByCategory: Record<string, number> = {};
+  for (const product of unordered) {
+    const order = nextOrderByCategory[product.category] ?? 0;
+    product.order = order;
+    await product.save();
+    nextOrderByCategory[product.category] = order + 1;
+  }
+  console.log(`✅ 순서가 없던 상품 ${unordered.length}개에 카테고리별 순서를 지정했습니다.`);
+}
+
 mongoose
   .connect(MONGO_URI)
   .then(async () => {
     console.log('✅ MongoDB에 성공적으로 연결되었습니다.');
     await ensureDefaultCategories();
     await ensureCategoryOrder();
+    await ensureProductOrder();
   })
   .catch((err) => console.error('❌ MongoDB 연결 실패:', err));
 
@@ -355,12 +377,12 @@ app.delete('/api/categories/:id', requireAdmin, async (req: Request<{ id: string
 });
 
 /**
- * 전체 상품 목록을 조회합니다.
+ * 전체 상품 목록을 카테고리 → 순서(`order`) 순으로 조회합니다.
  * @route GET /api/products
  */
 app.get('/api/products', async (_req: Request, res: Response) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().sort({ category: 1, order: 1 });
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: '상품을 불러오는 중 오류가 발생했습니다.' });
@@ -368,17 +390,19 @@ app.get('/api/products', async (_req: Request, res: Response) => {
 });
 
 /**
- * 새 상품을 등록합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로 막습니다.
+ * 새 상품을 등록합니다. 순서는 같은 카테고리 안에서 항상 맨 뒤로
+ * 배정됩니다. 관리자 세션이 없으면 `requireAdmin`에서 401로 막습니다.
  * @route POST /api/products
- * @param req.body - `_id`를 제외한 상품 정보
+ * @param req.body - `@repo/types`의 `ProductInput`
  */
 app.post(
   '/api/products',
   requireAdmin,
-  async (req: Request<Record<string, never>, unknown, Omit<ProductType, '_id'>>, res: Response) => {
+  async (req: Request<Record<string, never>, unknown, ProductInput>, res: Response) => {
     const { name, price, imageUrl, category } = req.body;
-    const product = new Product({ name, price, imageUrl, category });
     try {
+      const order = await Product.countDocuments({ category });
+      const product = new Product({ name, price, imageUrl, category, order });
       const newProduct = await product.save();
       res.status(201).json(newProduct);
     } catch (err) {
@@ -388,15 +412,44 @@ app.post(
 );
 
 /**
+ * 상품 노출 순서를 한 번에 재배열합니다. 같은 카테고리 안에서만 의미가
+ * 있으므로, 그 카테고리에 속한 상품 id를 원하는 순서대로 나열한 배열을
+ * 받아 배열 인덱스를 그대로 `order` 값으로 저장합니다. 관리자 세션이
+ * 없으면 `requireAdmin`에서 401로 막습니다.
+ * @route PATCH /api/products/reorder
+ * @param req.body - `@repo/types`의 `ReorderProductsInput` (`orderedIds`)
+ */
+app.patch(
+  '/api/products/reorder',
+  requireAdmin,
+  async (req: Request<Record<string, never>, unknown, ReorderProductsInput>, res: Response) => {
+    const { orderedIds } = req.body;
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
+      res.status(400).json({ message: 'orderedIds 값이 올바르지 않습니다.' });
+      return;
+    }
+    try {
+      await Promise.all(
+        orderedIds.map((id, index) => Product.updateOne({ _id: id }, { $set: { order: index } })),
+      );
+      const products = await Product.find().sort({ category: 1, order: 1 });
+      res.json(products);
+    } catch (err) {
+      res.status(400).json({ message: '상품 순서 변경 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
  * 상품 정보를 수정합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로 막습니다.
  * @route PUT /api/products/:id
- * @param req.body - `_id`를 제외한 상품 정보(전체 필드)
+ * @param req.body - `@repo/types`의 `ProductInput`
  */
 app.put(
   '/api/products/:id',
   requireAdmin,
   async (
-    req: Request<{ id: string }, unknown, Omit<ProductType, '_id'>>,
+    req: Request<{ id: string }, unknown, ProductInput>,
     res: Response,
   ) => {
     const { name, price, imageUrl, category } = req.body;
