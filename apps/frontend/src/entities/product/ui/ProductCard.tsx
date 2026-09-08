@@ -7,15 +7,11 @@ interface ProductCardProps {
   onAddToCart: (product: Product) => void;
 }
 
-const CATEGORY_STYLES: Record<Product['category'], { bg: string; paw: string }> = {
-  coffee: { bg: 'bg-amber-50', paw: 'text-amber-400' },
-  ade: { bg: 'bg-green-50', paw: 'text-green-400' },
-  dessert: { bg: 'bg-pink-50', paw: 'text-pink-400' },
-};
+// 카테고리를 관리자가 자유롭게 추가/삭제할 수 있어 카테고리별 고정 색상
+// 대신 카드 전체에 하나의 통일된 스타일을 씁니다.
+const CARD_STYLE = { bg: 'bg-pink-50', paw: 'text-pink-400' };
 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
-  const style = CATEGORY_STYLES[product.category];
-
   const handleClick = () => {
     if (product.isSoldOut) {
       toast.error('품절된 메뉴입니다.');
@@ -36,7 +32,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
           품절
         </span>
       )}
-      <div className={`${style.bg} p-3`}>
+      <div className={`${CARD_STYLE.bg} p-3`}>
         <img
           src={product.imageUrl}
           alt={product.name}
@@ -51,7 +47,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
           <span className="text-pink-400">♥</span>
         </h3>
         <p className="mt-1 font-bold text-pink-600">{product.price.toLocaleString()}원</p>
-        <span className={`absolute bottom-3 right-3 ${style.paw}`}>🐾</span>
+        <span className={`absolute bottom-3 right-3 ${CARD_STYLE.paw}`}>🐾</span>
       </div>
     </div>
   );

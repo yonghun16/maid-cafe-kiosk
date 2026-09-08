@@ -3,58 +3,49 @@
 
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import type { Product } from '@repo/types';
+import type { Category, Product } from '@repo/types';
 import { ProductCard, getProducts } from '../../../entities/product';
+import { getCategories } from '../../../entities/category';
 import { useCartStore } from '../../../features/cart';
 
-const CATEGORIES = ['all', 'coffee', 'ade', 'dessert'] as const;
-type Category = typeof CATEGORIES[number];
+const ALL_CATEGORY = 'all';
 
 export function ProductList() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<Category>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>(ALL_CATEGORY);
 
   // ✅ Zustand 스토어에서 장바구니에 담는 함수만 가져옵니다.
   const addToCart = useCartStore((state) => state.addToCart);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchInitialData = async () => {
       try {
         setIsLoading(true);
-        const products = await getProducts();
+        const [products, categoryList] = await Promise.all([getProducts(), getCategories()]);
         setAllProducts(products);
         setFilteredProducts(products);
+        setCategories(categoryList);
       } catch (error) {
-        console.error('상품 목록을 불러오는 중 오류가 발생했습니다:', error);
-        toast.error('상품 목록을 불러오는 데 실패했습니다.');
+        console.error('메뉴 목록을 불러오는 중 오류가 발생했습니다:', error);
+        toast.error('메뉴 목록을 불러오는 데 실패했습니다.');
       } finally {
         setIsLoading(false);
       }
     };
-    fetchProducts();
+    fetchInitialData();
   }, []);
 
   useEffect(() => {
-    if (selectedCategory === 'all') {
+    if (selectedCategory === ALL_CATEGORY) {
       setFilteredProducts(allProducts);
     } else {
       const filtered = allProducts.filter(product => product.category === selectedCategory);
       setFilteredProducts(filtered);
     }
   }, [selectedCategory, allProducts]);
-
-  const getCategoryName = (category: Category) => {
-    // ... (이전과 동일)
-    switch (category) {
-      case 'all': return '🎀 전체';
-      case 'coffee': return '☕ 커피';
-      case 'ade': return '🍹 에이드';
-      case 'dessert': return '🍰 디저트';
-      default: return '';
-    }
-  }
 
   return (
     <main className="w-full md:w-3/5 lg:w-2/3">
@@ -74,13 +65,19 @@ export function ProductList() {
       </header>
 
       <div className="mb-4 flex flex-wrap justify-center gap-2 md:justify-start">
-        {CATEGORIES.map(category => (
+        <button
+          onClick={() => setSelectedCategory(ALL_CATEGORY)}
+          className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 ${selectedCategory === ALL_CATEGORY ? 'bg-pink-500 text-white shadow-md' : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'}`}
+        >
+          🎀 전체
+        </button>
+        {categories.map(category => (
           <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 ${selectedCategory === category ? 'bg-pink-500 text-white shadow-md' : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'}`}
+            key={category._id}
+            onClick={() => setSelectedCategory(category.name)}
+            className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 ${selectedCategory === category.name ? 'bg-pink-500 text-white shadow-md' : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'}`}
           >
-            {getCategoryName(category)}
+            {category.name}
           </button>
         ))}
       </div>

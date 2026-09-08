@@ -1,21 +1,37 @@
 // @owner: ai
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { uploadProductImage } from '../../../entities/product';
 import { useProductStore } from '../../../features/product-management';
+import { useCategoryStore } from '../../../features/category-management';
 
 export function AddProductForm() {
   // ✅ 폼 입력값은 위젯 내부의 자체 상태로 관리합니다.
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [category, setCategory] = useState<'coffee' | 'ade' | 'dessert'>('coffee');
+  const [category, setCategory] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // ✅ 실제 상품을 추가하는 '기능'은 스토어에서 가져옵니다.
   const addProduct = useProductStore((state) => state.addProduct);
+
+  // ✅ 카테고리 목록은 관리자가 자유롭게 추가/수정/삭제할 수 있어 서버에서 불러옵니다.
+  const categories = useCategoryStore((state) => state.categories);
+  const fetchCategories = useCategoryStore((state) => state.fetchCategories);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  // ✅ 카테고리 목록이 도착하면 첫 번째 카테고리를 기본 선택값으로 씁니다.
+  useEffect(() => {
+    if (!category && categories[0]) {
+      setCategory(categories[0].name);
+    }
+  }, [categories, category]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -35,7 +51,7 @@ export function AddProductForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !price || !imageUrl) {
+    if (!name || !price || !imageUrl || !category) {
       toast.error('모든 필드를 입력해주세요.');
       return;
     }
@@ -79,15 +95,28 @@ export function AddProductForm() {
         </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-600">카테고리</label>
-          <select id="category" value={category} onChange={(e) => setCategory(e.target.value as 'coffee' | 'ade' | 'dessert')} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500">
-            <option value="coffee">커피</option>
-            <option value="ade">에이드</option>
-            <option value="dessert">디저트</option>
-          </select>
+          {categories.length === 0 ? (
+            <p className="mt-1 text-sm text-gray-500">
+              먼저 &ldquo;카테고리 관리&rdquo; 탭에서 카테고리를 추가해주세요.
+            </p>
+          ) : (
+            <select
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+            >
+              {categories.map((c) => (
+                <option key={c._id} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <button
           type="submit"
-          disabled={isUploadingImage}
+          disabled={isUploadingImage || categories.length === 0}
           className="w-full bg-pink-500 text-white py-2 px-4 rounded-md font-bold hover:bg-pink-600 transition-colors disabled:bg-gray-300"
         >
           추가하기

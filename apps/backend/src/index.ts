@@ -11,6 +11,7 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import type {
   AdminLoginInput,
   AdminSessionResponse,
+  CategoryInput,
   CreateOrderInput,
   OrderStatusFilter,
   Product as ProductType,
@@ -20,6 +21,7 @@ import type {
 
 import Product from './models/Product';
 import Order from './models/Order';
+import Category from './models/Category';
 import { r2Client, R2_BUCKET_NAME, R2_PUBLIC_URL } from './lib/r2Client';
 import { requireAdmin } from './middleware/requireAdmin';
 // './types/session'은 express-session의 SessionData를 확장하는 타입 전용
@@ -44,9 +46,30 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 
+/**
+ * Category 컬렉션이 비어 있으면 기존 `Product.category` 값들로부터 자동
+ * 생성합니다. 카테고리가 고정 enum에서 자유 입력으로 바뀌면서, 이미 저장된
+ * 상품들이 쓰던 카테고리 이름이 최소 하나씩은 목록에 등록돼 있도록
+ * 보장하기 위한 1회성 시딩입니다. 이미 카테고리가 하나라도 있으면
+ * 아무 것도 하지 않습니다.
+ */
+async function ensureDefaultCategories(): Promise<void> {
+  const existingCount = await Category.countDocuments();
+  if (existingCount > 0) return;
+
+  const distinctCategoryNames = await Product.distinct('category');
+  if (distinctCategoryNames.length === 0) return;
+
+  await Category.insertMany(distinctCategoryNames.map((name) => ({ name })));
+  console.log(`✅ 기존 상품 카테고리로부터 Category ${distinctCategoryNames.length}개를 초기화했습니다.`);
+}
+
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log('✅ MongoDB에 성공적으로 연결되었습니다.'))
+  .then(async () => {
+    console.log('✅ MongoDB에 성공적으로 연결되었습니다.');
+    await ensureDefaultCategories();
+  })
   .catch((err) => console.error('❌ MongoDB 연결 실패:', err));
 
 // 프론트엔드(Vercel)와 백엔드(Render)가 다른 오리진이라 세션 쿠키를 주고받으려면
@@ -192,6 +215,88 @@ app.post('/api/uploads', requireAdmin, upload.single('image'), async (req: Reque
   } catch (err) {
     console.error('이미지 업로드 중 오류가 발생했습니다:', err);
     res.status(500).json({ message: '이미지 업로드 중 오류가 발생했습니다.' });
+  }
+});
+
+/**
+ * 전체 카테고리 목록을 이름순으로 조회합니다. 고객 화면의 카테고리
+ * 필터에도 쓰이므로 인증 없이 공개합니다.
+ * @route GET /api/categories
+ */
+app.get('/api/categories', async (_req: Request, res: Response) => {
+  try {
+    const categories = await Category.find().sort({ name: 1 });
+    res.json(categories);
+  } catch (err) {
+    res.status(500).json({ message: '카테고리 목록을 불러오는 중 오류가 발생했습니다.' });
+  }
+});
+
+/**
+ * 새 카테고리를 등록합니다. 관리자 세션이 없으면 `requireAdmin`에서
+ * 401로 막습니다.
+ * @route POST /api/categories
+ * @param req.body - `@repo/types`의 `CategoryInput` (`name`)
+ */
+app.post(
+  '/api/categories',
+  requireAdmin,
+  async (req: Request<Record<string, never>, unknown, CategoryInput>, res: Response) => {
+    try {
+      const category = new Category({ name: req.body.name });
+      const newCategory = await category.save();
+      res.status(201).json(newCategory);
+    } catch (err) {
+      res.status(400).json({ message: '이미 있는 카테고리이거나 등록 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 카테고리 이름을 수정합니다. 상품은 카테고리를 이름으로 참조하므로,
+ * 기존 이름을 쓰던 상품들도 새 이름으로 함께 갱신합니다. 관리자 세션이
+ * 없으면 `requireAdmin`에서 401로 막습니다.
+ * @route PUT /api/categories/:id
+ * @param req.body - `@repo/types`의 `CategoryInput` (`name`)
+ */
+app.put(
+  '/api/categories/:id',
+  requireAdmin,
+  async (req: Request<{ id: string }, unknown, CategoryInput>, res: Response) => {
+    try {
+      const category = await Category.findById(req.params.id);
+      if (!category) {
+        res.status(404).json({ message: '카테고리를 찾을 수 없습니다.' });
+        return;
+      }
+      const oldName = category.name;
+      category.name = req.body.name;
+      await category.save();
+      await Product.updateMany({ category: oldName }, { $set: { category: req.body.name } });
+      res.json(category);
+    } catch (err) {
+      res.status(400).json({ message: '이미 있는 카테고리이거나 수정 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 카테고리를 삭제합니다. 이 카테고리에 속한 상품도 함께 전부 삭제됩니다.
+ * 관리자 세션이 없으면 `requireAdmin`에서 401로 막습니다.
+ * @route DELETE /api/categories/:id
+ */
+app.delete('/api/categories/:id', requireAdmin, async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) {
+      res.status(404).json({ message: '카테고리를 찾을 수 없습니다.' });
+      return;
+    }
+    await Product.deleteMany({ category: category.name });
+    await category.deleteOne();
+    res.json({ message: '카테고리와 소속 상품을 삭제했습니다.' });
+  } catch (err) {
+    res.status(500).json({ message: '카테고리 삭제 중 오류가 발생했습니다.' });
   }
 });
 

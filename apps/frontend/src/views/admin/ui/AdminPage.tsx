@@ -5,12 +5,14 @@ import { useEffect, useState } from 'react';
 import { LoginForm, useAdminAuthStore } from '../../../features/admin-auth';
 import { AddProductForm } from '../../../widgets/add-product-form';
 import { ManageProductList } from '../../../widgets/manage-product-list';
+import { ManageCategoryList } from '../../../widgets/manage-category-list';
 import { OrderList } from '../../../widgets/order-list';
 
-type AdminTab = 'menu' | 'orders' | 'history';
+type AdminTab = 'menu' | 'categories' | 'orders' | 'history';
 
 const TABS: { key: AdminTab; label: string }[] = [
   { key: 'menu', label: '메뉴 관리' },
+  { key: 'categories', label: '카테고리 관리' },
   { key: 'orders', label: '진행중 주문' },
   { key: 'history', label: '지난 주문' },
 ];
@@ -78,6 +80,7 @@ export function AdminPage() {
           </div>
         </div>
       )}
+      {activeTab === 'categories' && <ManageCategoryList />}
       {activeTab === 'orders' && <OrderList status="pending" />}
       {activeTab === 'history' && <OrderList status="completed" />}
     </div>

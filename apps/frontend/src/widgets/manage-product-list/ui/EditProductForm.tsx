@@ -1,11 +1,12 @@
 // @owner: ai
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Product } from '@repo/types';
 import { uploadProductImage } from '../../../entities/product';
 import { useProductStore } from '../../../features/product-management';
+import { useCategoryStore } from '../../../features/category-management';
 
 interface EditProductFormProps {
   product: Product;
@@ -16,11 +17,19 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
   const [name, setName] = useState(product.name);
   const [price, setPrice] = useState(String(product.price));
   const [imageUrl, setImageUrl] = useState(product.imageUrl);
-  const [category, setCategory] = useState<'coffee' | 'ade' | 'dessert'>(product.category);
+  const [category, setCategory] = useState(product.category);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const editProduct = useProductStore((state) => state.editProduct);
+
+  // ✅ 카테고리 목록은 관리자가 자유롭게 추가/수정/삭제할 수 있어 서버에서 불러옵니다.
+  const categories = useCategoryStore((state) => state.categories);
+  const fetchCategories = useCategoryStore((state) => state.fetchCategories);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -109,12 +118,18 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
         <select
           id={`edit-category-${product._id}`}
           value={category}
-          onChange={(e) => setCategory(e.target.value as 'coffee' | 'ade' | 'dessert')}
+          onChange={(e) => setCategory(e.target.value)}
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
         >
-          <option value="coffee">커피</option>
-          <option value="ade">에이드</option>
-          <option value="dessert">디저트</option>
+          {/* 상품이 이미 가리키던 카테고리가 삭제/변경돼 목록에 없을 수 있어, 그 경우엔 현재 값도 옵션으로 끼워 넣습니다. */}
+          {!categories.some((c) => c.name === category) && (
+            <option value={category}>{category}</option>
+          )}
+          {categories.map((c) => (
+            <option key={c._id} value={c.name}>
+              {c.name}
+            </option>
+          ))}
         </select>
       </div>
       <div className="flex gap-2">

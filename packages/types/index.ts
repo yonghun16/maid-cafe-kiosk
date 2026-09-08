@@ -6,8 +6,22 @@ export interface Product {
   name: string;
   price: number;
   imageUrl: string;
-  category: 'coffee' | 'ade' | 'dessert'; // 예시 카테고리
+  category: string; // Category.name 값. 관리자가 자유롭게 추가/수정/삭제 가능
   isSoldOut?: boolean; // 품절 여부. 없으면 판매 중으로 취급
+}
+
+// 메뉴 카테고리 타입. 상품의 `category` 필드는 이 이름을 그대로 참조합니다
+// (별도 id 참조가 아니라 이름 문자열 매칭 — 카테고리 이름을 바꾸면 그
+// 이름을 쓰던 상품도 함께 갱신됩니다).
+export interface Category {
+  _id: string;
+  name: string;
+}
+
+// 카테고리 생성/수정 요청(POST/PUT /api/categories)의 바디 타입 —
+// 프론트/백엔드가 공유하는 계약
+export interface CategoryInput {
+  name: string;
 }
 
 // 장바구니 아이템 타입 (상품 정보에 수량을 추가)
