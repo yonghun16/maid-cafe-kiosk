@@ -7,7 +7,15 @@ const nextConfig = {
   // 만들어서, 브라우저 입장에서는 항상 같은 오리진(퍼스트파티)에만 요청을
   // 보내도록 바꾼다.
   async rewrites() {
-    const backendOrigin = process.env.BACKEND_ORIGIN ?? 'http://localhost:4000';
+    // BACKEND_ORIGIN 환경변수가 설정 안 돼 있어도 운영 배포가 깨지지
+    // 않도록, NODE_ENV가 production이면 실제 Render 주소를 기본값으로
+    // 씁니다. 환경변수가 있으면 그 값이 우선합니다(스테이징 등 다른
+    // 백엔드로 바꿔야 할 때 사용).
+    const backendOrigin =
+      process.env.BACKEND_ORIGIN ??
+      (process.env.NODE_ENV === 'production'
+        ? 'https://maid-cafe-kiosk.onrender.com'
+        : 'http://localhost:4000');
     return [
       {
         source: '/api/:path*',
