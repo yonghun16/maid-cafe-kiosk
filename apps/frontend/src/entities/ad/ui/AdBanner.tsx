@@ -33,8 +33,12 @@ export function AdBanner() {
   if (!activeAd) return null;
 
   return (
-    <div className="w-full max-w-md overflow-hidden rounded-2xl shadow-lg">
-      <img src={activeAd.imageUrl} alt="광고" className="h-40 w-full object-cover" />
+    <div className="w-full max-w-sm overflow-hidden rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl">
+      <img
+        src={activeAd.imageUrl}
+        alt="광고"
+        className="h-56 w-full object-cover sm:h-72 md:h-80 lg:h-96"
+      />
       {ads.length > 1 && (
         <div className="flex justify-center gap-1.5 bg-white py-2">
           {ads.map((ad, index) => (

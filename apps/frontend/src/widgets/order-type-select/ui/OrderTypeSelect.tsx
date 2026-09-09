@@ -18,6 +18,8 @@ export function OrderTypeSelect() {
         </p>
       </div>
 
+      <AdBanner />
+
       <div className="flex w-full max-w-md flex-col gap-4 sm:flex-row">
         <button
           type="button"
@@ -38,8 +40,6 @@ export function OrderTypeSelect() {
           포장
         </button>
       </div>
-
-      <AdBanner />
     </div>
   );
 }
