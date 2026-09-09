@@ -9,6 +9,7 @@ import {
   updateSoldOutStatus,
   deleteProductById,
   reorderProducts,
+  updateStock,
 } from '../../../entities/product';
 
 /**
@@ -48,6 +49,8 @@ interface ProductState {
   addProduct: (newProductData: ProductInput) => Promise<boolean>;
   editProduct: (productId: string, updatedData: ProductInput) => Promise<boolean>;
   toggleSoldOut: (productId: string, isSoldOut: boolean) => Promise<void>;
+  /** 재고 수량을 절대값으로 설정합니다. 0 이하면 자동으로 품절 처리됩니다. */
+  adjustStock: (productId: string, stock: number) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
   /** ◀▶ 버튼 등으로 같은 카테고리 안에서 앞/뒤 상품과 순서를 바꿉니다. */
   moveProduct: (productId: string, direction: 'up' | 'down') => Promise<void>;
@@ -122,6 +125,17 @@ export const useProductStore = create<ProductState>((set, get) => ({
     } catch (error) {
       console.error('품절 상태 변경 중 오류가 발생했습니다:', error);
       toast.error('품절 상태 변경에 실패했습니다.');
+    }
+  },
+
+  adjustStock: async (productId, stock) => {
+    try {
+      await updateStock(productId, stock);
+      // 성공 시, 상품 목록을 다시 불러와서 화면을 갱신합니다.
+      get().fetchProducts();
+    } catch (error) {
+      console.error('재고 수량 변경 중 오류가 발생했습니다:', error);
+      toast.error('재고 수량 변경에 실패했습니다.');
     }
   },
 

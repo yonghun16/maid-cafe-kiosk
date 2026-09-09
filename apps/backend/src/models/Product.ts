@@ -14,6 +14,9 @@ const productSchema = new Schema<ProductDocument>({
   // 같은 카테고리 안에서의 노출 순서. 값이 작을수록 앞에 표시됨.
   order: { type: Number, required: true, default: 0 },
   isSoldOut: { type: Boolean, default: false },
+  // 재고 수량. 선택 필드라 값이 없으면(undefined) 재고를 추적하지
+  // 않는 상품으로 취급합니다.
+  stock: { type: Number, required: false },
 });
 
 export default mongoose.model<ProductDocument>('Product', productSchema);

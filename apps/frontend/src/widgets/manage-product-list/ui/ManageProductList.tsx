@@ -22,6 +22,7 @@ export function ManageProductList({ selectedCategory }: ManageProductListProps) 
   const moveProduct = useProductStore((state) => state.moveProduct);
   const reorderLocally = useProductStore((state) => state.reorderLocally);
   const commitProductOrder = useProductStore((state) => state.commitProductOrder);
+  const adjustStock = useProductStore((state) => state.adjustStock);
 
   // ✅ 지금 수정 폼이 펼쳐져 있는 상품의 id. 한 번에 하나만 수정합니다.
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -131,6 +132,27 @@ export function ManageProductList({ selectedCategory }: ManageProductListProps) 
                     )}
                   </p>
                   <p className="text-base text-gray-500">{product.price.toLocaleString()}원</p>
+                  {product.stock != null && (
+                    <p className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                      재고 {product.stock}개
+                      <button
+                        type="button"
+                        onClick={() => adjustStock(product._id, Math.max(product.stock! - 1, 0))}
+                        aria-label="재고 1 감소"
+                        className="rounded border border-gray-300 px-1.5 leading-tight hover:bg-gray-100"
+                      >
+                        －
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => adjustStock(product._id, product.stock! + 1)}
+                        aria-label="재고 1 증가"
+                        className="rounded border border-gray-300 px-1.5 leading-tight hover:bg-gray-100"
+                      >
+                        ＋
+                      </button>
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-4 text-base">

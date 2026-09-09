@@ -14,12 +14,14 @@ import type {
   AdminSessionResponse,
   CategoryInput,
   CreateOrderInput,
+  OrderItem,
   OrderStatusFilter,
   ProductInput,
   ReorderAdsInput,
   ReorderCategoriesInput,
   ReorderProductsInput,
   UpdateSoldOutInput,
+  UpdateStockInput,
   UploadImageResponse,
 } from '@repo/types';
 
@@ -422,10 +424,10 @@ app.post(
   '/api/products',
   requireAdmin,
   async (req: Request<Record<string, never>, unknown, ProductInput>, res: Response) => {
-    const { name, price, imageUrl, category } = req.body;
+    const { name, price, imageUrl, category, stock } = req.body;
     try {
       const order = await Product.countDocuments({ category });
-      const product = new Product({ name, price, imageUrl, category, order });
+      const product = new Product({ name, price, imageUrl, category, order, stock });
       const newProduct = await product.save();
       res.status(201).json(newProduct);
     } catch (err) {
@@ -475,11 +477,11 @@ app.put(
     req: Request<{ id: string }, unknown, ProductInput>,
     res: Response,
   ) => {
-    const { name, price, imageUrl, category } = req.body;
+    const { name, price, imageUrl, category, stock } = req.body;
     try {
       const updatedProduct = await Product.findByIdAndUpdate(
         req.params.id,
-        { name, price, imageUrl, category },
+        { name, price, imageUrl, category, ...(stock !== undefined ? { stock } : {}) },
         { new: true, runValidators: true },
       );
       if (!updatedProduct) {
@@ -520,6 +522,40 @@ app.patch(
       res.json(updatedProduct);
     } catch (err) {
       res.status(400).json({ message: '품절 상태 변경 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 상품의 재고 수량을 절대값으로 설정합니다(증감이 아니라 새 값을 그대로
+ * 저장). 0 이하로 설정하면 자동으로 품절 처리되고, 0보다 큰 값으로
+ * 설정하면 자동으로 품절이 해제됩니다(재입고 시나리오). 관리자 세션이
+ * 없으면 `requireAdmin`에서 401로 막습니다.
+ * @route PATCH /api/products/:id/stock
+ * @param req.body - `@repo/types`의 `UpdateStockInput` (`stock`)
+ */
+app.patch(
+  '/api/products/:id/stock',
+  requireAdmin,
+  async (req: Request<{ id: string }, unknown, UpdateStockInput>, res: Response) => {
+    if (typeof req.body?.stock !== 'number' || Number.isNaN(req.body.stock)) {
+      res.status(400).json({ message: 'stock 값이 올바르지 않습니다.' });
+      return;
+    }
+    try {
+      const stock = Math.max(0, Math.round(req.body.stock));
+      const updatedProduct = await Product.findByIdAndUpdate(
+        req.params.id,
+        { stock, isSoldOut: stock <= 0 },
+        { new: true, runValidators: true },
+      );
+      if (!updatedProduct) {
+        res.status(404).json({ message: '상품을 찾을 수 없습니다.' });
+        return;
+      }
+      res.json(updatedProduct);
+    } catch (err) {
+      res.status(400).json({ message: '재고 수량 변경 중 오류가 발생했습니다.' });
     }
   },
 );
@@ -711,6 +747,23 @@ function getKstStartOfToday(): Date {
 }
 
 /**
+ * 주문에 담긴 아이템만큼 상품 재고를 줄입니다. 재고를 추적하지 않는
+ * 상품(`stock`이 없음)은 건너뜁니다. 재고가 0 이하로 떨어지면 자동으로
+ * `isSoldOut: true`가 됩니다. 재고 갱신은 주문 성공 여부에 영향을 주지
+ * 않도록 호출 쪽에서 별도로 감싸 처리합니다([[재고관리]] 참고).
+ */
+async function decrementStockForOrder(items: OrderItem[]): Promise<void> {
+  for (const item of items) {
+    const product = await Product.findById(item.productId);
+    if (!product || product.stock == null) continue;
+    const nextStock = Math.max(product.stock - item.quantity, 0);
+    product.stock = nextStock;
+    if (nextStock <= 0) product.isSoldOut = true;
+    await product.save();
+  }
+}
+
+/**
  * 장바구니 내용을 주문으로 생성합니다. 요청 바디 계약은 `@repo/types`의 `CreateOrderInput`을 따르며,
  * 프론트엔드 `features/cart/api/orderApi.ts`와 동일한 타입을 공유합니다. 응답의
  * `orderNumber`는 한국 시간(KST) 기준 당일 자정부터 1번씩 다시 매기는 짧은
@@ -732,6 +785,15 @@ app.post(
       });
       await newOrder.save();
       res.status(201).json(newOrder);
+
+      // 재고 갱신은 주문 자체의 성공/실패와 분리합니다 — 이미 응답을
+      // 보낸 뒤이므로 여기서 오류가 나도 손님의 주문 제출에는 영향이
+      // 없고, 로그만 남깁니다.
+      try {
+        await decrementStockForOrder(req.body.items);
+      } catch (stockErr) {
+        console.error('주문 후 재고 갱신 중 오류가 발생했습니다:', stockErr);
+      }
     } catch (err) {
       res.status(400).json({ message: '주문을 처리하는 중 오류가 발생했습니다.' });
     }

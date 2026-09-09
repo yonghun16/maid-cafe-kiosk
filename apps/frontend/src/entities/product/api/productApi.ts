@@ -1,5 +1,11 @@
 // @owner: ai
-import type { Product, ProductInput, ReorderProductsInput, UpdateSoldOutInput } from '@repo/types';
+import type {
+  Product,
+  ProductInput,
+  ReorderProductsInput,
+  UpdateSoldOutInput,
+  UpdateStockInput,
+} from '@repo/types';
 import { apiClient } from '../../../shared/api';
 
 /**
@@ -64,4 +70,18 @@ export async function updateSoldOutStatus(productId: string, isSoldOut: boolean)
  */
 export async function deleteProductById(productId: string): Promise<void> {
   await apiClient.delete(`/products/${productId}`);
+}
+
+/**
+ * 상품의 재고 수량을 절대값으로 설정합니다(증감이 아니라 새 값을 그대로
+ * 저장). 0 이하로 설정하면 자동으로 품절 처리되고, 0보다 크게 설정하면
+ * 자동으로 품절이 해제됩니다.
+ * @param productId - 대상 상품의 id
+ * @param stock - 새 재고 수량
+ * @returns 수정된 상품
+ */
+export async function updateStock(productId: string, stock: number): Promise<Product> {
+  const payload: UpdateStockInput = { stock };
+  const response = await apiClient.patch<Product>(`/products/${productId}/stock`, payload);
+  return response.data;
 }

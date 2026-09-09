@@ -18,6 +18,8 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
   const [price, setPrice] = useState(String(product.price));
   const [imageUrl, setImageUrl] = useState(product.imageUrl);
   const [category, setCategory] = useState(product.category);
+  // ✅ 비워두면 이 메뉴는 재고를 추적하지 않는 상품이 됩니다([[재고관리]] 참고).
+  const [stock, setStock] = useState(product.stock != null ? String(product.stock) : '');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -60,6 +62,7 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
       price: Number(price),
       imageUrl,
       category,
+      ...(stock.trim() ? { stock: Number(stock) } : {}),
     });
     setIsSaving(false);
 
@@ -131,6 +134,20 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
             </option>
           ))}
         </select>
+      </div>
+      <div>
+        <label htmlFor={`edit-stock-${product._id}`} className="block text-sm font-medium text-gray-600">
+          재고 수량 (선택)
+        </label>
+        <input
+          type="number"
+          id={`edit-stock-${product._id}`}
+          min={0}
+          value={stock}
+          onChange={(e) => setStock(e.target.value)}
+          placeholder="비워두면 재고를 추적하지 않음"
+          className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
+        />
       </div>
       <div className="flex gap-2">
         <button

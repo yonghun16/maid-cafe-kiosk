@@ -9,22 +9,35 @@ export interface Product {
   category: string; // Category.name 값. 관리자가 자유롭게 추가/수정/삭제 가능
   order: number; // 같은 카테고리 안에서의 노출 순서. 값이 작을수록 앞에 표시됨
   isSoldOut?: boolean; // 품절 여부. 없으면 판매 중으로 취급
+  // 재고 수량. 상품마다 선택적으로만 추적합니다 — 값이 없으면(`undefined`)
+  // 이 메뉴는 재고 추적을 안 하는 상품이라는 뜻이고, 품절 처리는 여전히
+  // 수동 토글로만 이뤄집니다. 값이 있으면 주문 시마다 자동으로 줄고,
+  // 0이 되면 자동으로 `isSoldOut: true`가 됩니다([[재고관리]] 참고).
+  stock?: number;
 }
 
 // 상품 생성/수정 요청(POST/PUT /api/products)의 바디 타입 — 프론트/백엔드가
 // 공유하는 계약. `order`는 서버가 정하므로(생성 시 맨 뒤로 배정, 순서
-// 변경은 별도 API) 여기 포함하지 않습니다.
+// 변경은 별도 API) 여기 포함하지 않습니다. `stock`은 선택 필드이며,
+// 생략하면 재고를 추적하지 않는 상품이 됩니다.
 export interface ProductInput {
   name: string;
   price: number;
   imageUrl: string;
   category: string;
+  stock?: number;
 }
 
 // 상품 순서 변경 요청(PATCH /api/products/reorder)의 바디 타입 — 같은
 // 카테고리 안에서 원하는 순서대로 나열한 상품 id 배열을 그대로 보냅니다.
 export interface ReorderProductsInput {
   orderedIds: string[];
+}
+
+// 재고 수량 변경 요청(PATCH /api/products/:id/stock)의 바디 타입 —
+// 프론트/백엔드가 공유하는 계약. 절대값으로 설정합니다(증감이 아님).
+export interface UpdateStockInput {
+  stock: number;
 }
 
 // 메뉴 카테고리 타입. 상품의 `category` 필드는 이 이름을 그대로 참조합니다

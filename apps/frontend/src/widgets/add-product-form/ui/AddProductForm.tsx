@@ -18,6 +18,8 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
   const [price, setPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [category, setCategory] = useState('');
+  // ✅ 비워두면 이 메뉴는 재고를 추적하지 않는 상품이 됩니다([[재고관리]] 참고).
+  const [stock, setStock] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // ✅ 실제 상품을 추가하는 '기능'은 스토어에서 가져옵니다.
@@ -61,13 +63,20 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
       return;
     }
 
-    const success = await addProduct({ name, price: Number(price), imageUrl, category });
+    const success = await addProduct({
+      name,
+      price: Number(price),
+      imageUrl,
+      category,
+      ...(stock.trim() ? { stock: Number(stock) } : {}),
+    });
 
     // 성공적으로 추가되면 폼을 초기화합니다.
     if (success) {
       setName('');
       setPrice('');
       setImageUrl('');
+      setStock('');
       onSuccess?.();
     }
   };
@@ -117,6 +126,20 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
             ))}
           </select>
         )}
+      </div>
+      <div>
+        <label htmlFor="stock" className="block text-sm font-medium text-gray-600">
+          재고 수량 (선택)
+        </label>
+        <input
+          type="number"
+          id="stock"
+          min={0}
+          value={stock}
+          onChange={(e) => setStock(e.target.value)}
+          placeholder="비워두면 재고를 추적하지 않음"
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+        />
       </div>
       <button
         type="submit"
