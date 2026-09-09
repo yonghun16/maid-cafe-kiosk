@@ -69,7 +69,7 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-pink-50 p-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor={`edit-name-${product._id}`} className="block text-sm font-medium text-gray-600">
           메뉴 이름

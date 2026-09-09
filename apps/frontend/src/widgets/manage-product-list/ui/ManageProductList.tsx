@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useProductStore } from '../../../features/product-management';
+import { Modal } from '../../../shared/ui';
 import { EditProductForm } from './EditProductForm';
 
 interface ManageProductListProps {
@@ -37,6 +38,10 @@ export function ManageProductList({ selectedCategory }: ManageProductListProps) 
 
   const visibleProducts =
     selectedCategory === 'all' ? products : products.filter((p) => p.category === selectedCategory);
+
+  // ✅ 수정 모달에 띄울 상품. 목록 필터와 무관하게 항상 찾을 수 있도록
+  // 전체 상품 목록에서 찾습니다.
+  const editingProduct = products.find((p) => p._id === editingProductId) ?? null;
 
   // ✅ 순서는 카테고리 안에서만 의미가 있어서, 특정 카테고리를 골랐을
   // 때만(=화면에 그 카테고리 상품만 보일 때만) 드래그/버튼 순서 변경을
@@ -90,14 +95,7 @@ export function ManageProductList({ selectedCategory }: ManageProductListProps) 
         ) : visibleProducts.length === 0 ? (
           <p className="text-gray-400">이 카테고리에는 메뉴가 없습니다.</p>
         ) : (
-          visibleProducts.map((product, index) =>
-          editingProductId === product._id ? (
-            <EditProductForm
-              key={product._id}
-              product={product}
-              onCancel={() => setEditingProductId(null)}
-            />
-          ) : (
+          visibleProducts.map((product, index) => (
             <div
               key={product._id}
               ref={(el) => {
@@ -179,6 +177,11 @@ export function ManageProductList({ selectedCategory }: ManageProductListProps) 
         )
         )}
       </div>
+      <Modal isOpen={editingProduct != null} onClose={() => setEditingProductId(null)} title="메뉴 수정">
+        {editingProduct && (
+          <EditProductForm product={editingProduct} onCancel={() => setEditingProductId(null)} />
+        )}
+      </Modal>
     </div>
   );
 }
