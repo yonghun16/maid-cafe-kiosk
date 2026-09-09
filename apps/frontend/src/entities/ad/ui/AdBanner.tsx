@@ -1,19 +1,24 @@
 // @owner: ai
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Ad } from '@repo/types';
 import { getAds } from '../api/adApi';
 
 const ROTATE_INTERVAL_MS = 5000;
+// 이 픽셀 이상 좌우로 드래그해야 슬라이드가 넘어갑니다(살짝 스친 정도로는
+// 안 넘어가게 하는 최소 이동 거리).
+const SWIPE_THRESHOLD_PX = 40;
 
 /**
- * 등록된 광고 배너를 순서대로 자동 전환하며 보여줍니다. 등록된 광고가
- * 없으면 아무것도 렌더링하지 않습니다.
+ * 등록된 광고 배너를 순서대로 자동 전환하며 보여줍니다. 좌우로
+ * 드래그(스와이프)해서 직접 넘길 수도 있습니다. 등록된 광고가 없으면
+ * 아무것도 렌더링하지 않습니다.
  */
 export function AdBanner() {
   const [ads, setAds] = useState<Ad[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const dragStartX = useRef<number | null>(null);
 
   useEffect(() => {
     getAds()
@@ -29,22 +34,47 @@ export function AdBanner() {
     return () => clearInterval(timer);
   }, [ads.length]);
 
+  const goToOffset = (offset: number) => {
+    setActiveIndex((prev) => (prev + offset + ads.length) % ads.length);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    dragStartX.current = e.clientX;
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (dragStartX.current == null) return;
+    const deltaX = e.clientX - dragStartX.current;
+    dragStartX.current = null;
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX) return;
+    // 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전 광고로.
+    goToOffset(deltaX < 0 ? 1 : -1);
+  };
+
   const activeAd = ads[activeIndex];
   if (!activeAd) return null;
 
   return (
-    <div className="w-full max-w-sm overflow-hidden rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl">
+    <div className="relative w-full max-w-sm touch-pan-y select-none overflow-hidden rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl">
       <img
         src={activeAd.imageUrl}
         alt="광고"
-        className="h-56 w-full object-cover sm:h-72 md:h-80 lg:h-96"
+        draggable={false}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={() => {
+          dragStartX.current = null;
+        }}
+        className="h-56 w-full cursor-grab object-cover active:cursor-grabbing sm:h-72 md:h-80 lg:h-96"
       />
       {ads.length > 1 && (
-        <div className="flex justify-center gap-1.5 bg-white py-2">
+        <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
           {ads.map((ad, index) => (
             <span
               key={ad._id}
-              className={`h-1.5 w-1.5 rounded-full ${index === activeIndex ? 'bg-pink-500' : 'bg-pink-100'}`}
+              className={`h-1.5 w-1.5 rounded-full shadow ${
+                index === activeIndex ? 'bg-pink-500' : 'bg-white/70'
+              }`}
             />
           ))}
         </div>
