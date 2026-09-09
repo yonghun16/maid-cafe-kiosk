@@ -24,14 +24,14 @@ export async function completeOrder(orderId: string): Promise<Order> {
 }
 
 /**
- * 최근 N개월의 월별 매출/판매량 추이를 조회합니다(KST 기준, 주문 없는
- * 달도 0으로 채워서 내려옴). 관리자 세션이 필요합니다.
- * @param months - 조회할 개월 수(기본 6)
- * @returns 오래된 달 → 최신 달 순서의 월별 집계 배열
+ * 특정 연도 1~12월의 월별 매출/판매량 추이를 조회합니다(KST 기준,
+ * 주문 없는 달도 0으로 채워서 내려옴). 관리자 세션이 필요합니다.
+ * @param year - 조회할 연도(생략하면 서버가 올해로 취급)
+ * @returns 1월 → 12월 순서의 월별 집계 배열(12개)
  */
-export async function getMonthlySalesSummary(months = 6): Promise<MonthlySalesSummary[]> {
+export async function getMonthlySalesSummary(year?: number): Promise<MonthlySalesSummary[]> {
   const response = await apiClient.get<MonthlySalesSummary[]>('/orders/stats/monthly', {
-    params: { months },
+    params: year ? { year } : undefined,
   });
   return response.data;
 }

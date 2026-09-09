@@ -748,20 +748,19 @@ function getKstStartOfToday(): Date {
   return new Date(kstNow.getTime() - KST_OFFSET_MS);
 }
 
-/**
- * KST 기준 최근 `count`개월의 'YYYY-MM' 라벨을 오래된 달 → 최신 달
- * 순서로 반환합니다(예: count=3, 오늘이 KST 9월이면 ['2026-07',
- * '2026-08', '2026-09']). [[매출통계대시보드]]의 월별 추이 x축으로
- * 씁니다.
- */
-function getLastNMonthLabels(count: number): string[] {
+/** KST 기준 현재 연도를 반환합니다. */
+function getKstYear(): number {
   const kstNow = new Date(Date.now() + KST_OFFSET_MS);
-  const labels: string[] = [];
-  for (let i = count - 1; i >= 0; i--) {
-    const d = new Date(Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth() - i, 1));
-    labels.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`);
-  }
-  return labels;
+  return kstNow.getUTCFullYear();
+}
+
+/**
+ * 주어진 연도의 1월~12월 'YYYY-MM' 라벨 12개를 반환합니다(예:
+ * year=2026이면 ['2026-01', ..., '2026-12']). [[매출통계대시보드]]의
+ * 연도별 월간 추이 x축으로 씁니다.
+ */
+function getMonthLabelsForYear(year: number): string[] {
+  return Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`);
 }
 
 /** 'YYYY-MM' 라벨이 가리키는 KST 기준 월의 시작/끝(다음 달 시작, exclusive)을 UTC Date로 반환합니다. */
@@ -827,25 +826,26 @@ app.post(
 );
 
 /**
- * 최근 N개월(기본 6, 최대 24)의 월별 매출/판매량 추이를 KST 기준으로
+ * 특정 연도(기본값: 올해, KST 기준) 1~12월의 월별 매출/판매량 추이를
  * 집계해 조회합니다. 주문이 없는 달도 0으로 채워 넣어 차트 x축이
  * 끊기지 않게 합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로
  * 막습니다.
  * @route GET /api/orders/stats/monthly
- * @param req.query.months - 조회할 개월 수(선택, 기본 6)
+ * @param req.query.year - 조회할 연도(선택, 기본 올해)
  */
 app.get(
   '/api/orders/stats/monthly',
   requireAdmin,
-  async (req: Request<Record<string, never>, unknown, unknown, { months?: string }>, res: Response) => {
+  async (req: Request<Record<string, never>, unknown, unknown, { year?: string }>, res: Response) => {
     try {
-      const months = Math.min(Math.max(Number(req.query.months) || 6, 1), 24);
-      const labels = getLastNMonthLabels(months);
+      const year = Number(req.query.year) || getKstYear();
+      const labels = getMonthLabelsForYear(year);
       const rangeStart = getKstMonthRange(labels[0]!).start;
+      const rangeEnd = getKstMonthRange(labels[labels.length - 1]!).end;
 
       const rows: { _id: string; totalRevenue: number; totalQuantity: number; orderCount: number }[] =
         await Order.aggregate([
-          { $match: { createdAt: { $gte: rangeStart } } },
+          { $match: { createdAt: { $gte: rangeStart, $lt: rangeEnd } } },
           {
             $project: {
               month: { $dateToString: { format: '%Y-%m', date: '$createdAt', timezone: '+09:00' } },

@@ -1,6 +1,6 @@
 ---
 title: 매출/통계 집계 API
-description: 최근 N개월 월별 매출/판매량 추이와 특정 달의 메뉴별 판매 순위를 MongoDB 집계로 계산해 제공하는 API
+description: 특정 연도의 월별 매출/판매량 추이와 특정 달의 메뉴별 판매 순위를 MongoDB 집계로 계산해 제공하는 API
 tags: [기능, 백엔드, 완료]
 aliases: []
 created: 2026-09-06
@@ -19,9 +19,11 @@ status: active
   여부와 무관하게 생성된 모든 주문을 집계.
 - **성능**: 사전 집계 없이 요청마다 실시간 MongoDB 집계
   (`$group`/`$unwind`) — 매장 1곳 규모에서는 충분함.
-- **응답 형태**: `GET /api/orders/stats/monthly`(최근 N개월 추이, 없는
-  달은 0으로 채움), `GET /api/orders/stats/monthly/:month`(그 달의
-  메뉴별 판매 순위, 판매량 내림차순).
+- **응답 형태**: `GET /api/orders/stats/monthly?year=YYYY`(그 해 1~12월
+  추이, 생략하면 올해, 없는 달은 0으로 채움), `GET
+  /api/orders/stats/monthly/:month`(그 달의 메뉴별 판매 순위, 판매량
+  내림차순). 처음엔 "최근 N개월" 방식이었는데, 프론트에 연도 선택
+  필터를 추가하면서 연도 기준으로 바꿨습니다.
 
 ## 관련 문서
 - [[기획서]]
