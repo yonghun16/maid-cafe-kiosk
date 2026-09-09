@@ -913,10 +913,23 @@ app.get(
           { $sort: { quantitySold: -1 } },
         ]);
 
+      // 주문 아이템은 주문 시점 스냅샷이라, `imageUrl` 필드가 상품/주문
+      // 코드에 나중에 추가되기 전에 만들어진 옛 주문에는 값이 없습니다.
+      // 그런 경우엔 지금 상품 정보의 이미지로 대신 채웁니다(상품이
+      // 삭제됐으면 그냥 빈 문자열).
+      const missingImageIds = rows.filter((r) => !r.imageUrl).map((r) => r._id);
+      const fallbackImageById = new Map<string, string>();
+      if (missingImageIds.length > 0) {
+        const products = await Product.find({ _id: { $in: missingImageIds } }, 'imageUrl');
+        for (const product of products) {
+          fallbackImageById.set(String(product._id), product.imageUrl);
+        }
+      }
+
       const ranking: ProductSalesRanking[] = rows.map((r) => ({
         productId: r._id,
         name: r.name,
-        imageUrl: r.imageUrl,
+        imageUrl: r.imageUrl || fallbackImageById.get(String(r._id)) || '',
         quantitySold: r.quantitySold,
         revenue: r.revenue,
       }));
