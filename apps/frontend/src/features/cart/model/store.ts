@@ -2,21 +2,34 @@
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import type { OrderType, Product, CartItem } from '@repo/types';
+import { EXTRA_SHOT_PRICE } from '../../../entities/product';
 import { submitOrder as submitOrderRequest } from '../api/orderApi';
+
+interface AddToCartOptions {
+  hasExtraShot?: boolean;
+}
 
 // 장바구니 스토어의 상태와 액션에 대한 타입 정의
 interface CartState {
   items: CartItem[];
   totalPrice: number;
-  addToCart: (product: Product) => void;
-  increaseQuantity: (productId: string) => void;
-  decreaseQuantity: (productId: string) => void;
-  removeFromCart: (productId: string) => void;
+  addToCart: (product: Product, options?: AddToCartOptions) => void;
+  increaseQuantity: (cartItemId: string) => void;
+  decreaseQuantity: (cartItemId: string) => void;
+  removeFromCart: (cartItemId: string) => void;
   submitOrder: (orderType: OrderType) => Promise<boolean>;
 }
 
 function calculateTotalPrice(items: CartItem[]): number {
   return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+}
+
+/**
+ * 상품 id + 선택한 옵션으로 장바구니 줄의 고유 id를 만듭니다. 같은
+ * 상품이라도 옵션이 다르면 다른 줄로 취급해야 하기 때문입니다.
+ */
+function makeCartItemId(productId: string, hasExtraShot: boolean): string {
+  return hasExtraShot ? `${productId}:extra-shot` : productId;
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
@@ -25,50 +38,54 @@ export const useCartStore = create<CartState>((set, get) => ({
   totalPrice: 0,
 
   // 2. 액션 (상태를 변경하는 함수)
-  addToCart: (product) => {
+  addToCart: (product, options) => {
+    const hasExtraShot = options?.hasExtraShot ?? false;
+    const cartItemId = makeCartItemId(product._id, hasExtraShot);
+
     const { items } = get(); // 현재 장바구니 상태 가져오기
-    const existingItem = items.find((item) => item._id === product._id);
+    const existingItem = items.find((item) => item.cartItemId === cartItemId);
 
     let updatedItems: CartItem[];
     if (existingItem) {
-      // 이미 있으면 수량만 1 증가
+      // 이미 같은 옵션으로 담겨 있으면 수량만 1 증가
       updatedItems = items.map((item) =>
-        item._id === product._id
+        item.cartItemId === cartItemId
           ? { ...item, quantity: item.quantity + 1 }
           : item,
       );
     } else {
-      // 없으면 새로 추가
-      updatedItems = [...items, { ...product, quantity: 1 }];
+      // 없으면 새로 추가. 옵션 추가금은 여기서 가격에 미리 더해둡니다.
+      const price = product.price + (hasExtraShot ? EXTRA_SHOT_PRICE : 0);
+      updatedItems = [...items, { ...product, price, quantity: 1, cartItemId, hasExtraShot }];
     }
 
     // 상태 업데이트
     set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
 
-    toast.success(`${product.name}을(를) 장바구니에 담았습니다!`);
+    toast.success(`${product.name}${hasExtraShot ? ' (샷 추가)' : ''}을(를) 장바구니에 담았습니다!`);
   },
 
-  increaseQuantity: (productId) => {
+  increaseQuantity: (cartItemId) => {
     const { items } = get();
     const updatedItems = items.map((item) =>
-      item._id === productId ? { ...item, quantity: item.quantity + 1 } : item,
+      item.cartItemId === cartItemId ? { ...item, quantity: item.quantity + 1 } : item,
     );
     set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
   },
 
-  decreaseQuantity: (productId) => {
+  decreaseQuantity: (cartItemId) => {
     const { items } = get();
     const updatedItems = items
       .map((item) =>
-        item._id === productId ? { ...item, quantity: item.quantity - 1 } : item,
+        item.cartItemId === cartItemId ? { ...item, quantity: item.quantity - 1 } : item,
       )
       .filter((item) => item.quantity > 0);
     set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
   },
 
-  removeFromCart: (productId) => {
+  removeFromCart: (cartItemId) => {
     const { items } = get();
-    const updatedItems = items.filter((item) => item._id !== productId);
+    const updatedItems = items.filter((item) => item.cartItemId !== cartItemId);
     set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
   },
 
@@ -88,6 +105,7 @@ export const useCartStore = create<CartState>((set, get) => ({
           price: item.price,
           imageUrl: item.imageUrl,
           quantity: item.quantity,
+          hasExtraShot: item.hasExtraShot,
         })),
         totalPrice,
         orderType,

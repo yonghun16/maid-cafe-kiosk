@@ -36,16 +36,19 @@ export function OrderSummary() {
         </div>
       ) : (
         items.map((item) => (
-          <div key={item._id} className="rounded-md bg-white p-3 shadow-sm">
+          <div key={item.cartItemId} className="rounded-md bg-white p-3 shadow-sm">
             <div className="flex items-center gap-3">
               <img src={item.imageUrl} alt={item.name} className="h-12 w-12 shrink-0 rounded-md object-cover" />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-gray-800">{item.name}</p>
+                <p className="truncate font-semibold text-gray-800">
+                  {item.name}
+                  {item.hasExtraShot && <span className="ml-1 text-xs font-normal text-pink-500">(샷 추가)</span>}
+                </p>
                 <p className="whitespace-nowrap text-sm text-gray-500">{item.price.toLocaleString()}원</p>
               </div>
               <button
                 type="button"
-                onClick={() => removeFromCart(item._id)}
+                onClick={() => removeFromCart(item.cartItemId)}
                 aria-label="삭제"
                 className="shrink-0 text-gray-300 hover:text-red-400"
               >
@@ -55,7 +58,7 @@ export function OrderSummary() {
             <div className="mt-2 flex items-center justify-end gap-1">
               <button
                 type="button"
-                onClick={() => decreaseQuantity(item._id)}
+                onClick={() => decreaseQuantity(item.cartItemId)}
                 aria-label="수량 감소"
                 className="flex h-6 w-6 items-center justify-center rounded-full border border-pink-200 text-pink-500 hover:bg-pink-50"
               >
@@ -64,7 +67,7 @@ export function OrderSummary() {
               <span className="w-5 text-center text-sm font-semibold">{item.quantity}</span>
               <button
                 type="button"
-                onClick={() => increaseQuantity(item._id)}
+                onClick={() => increaseQuantity(item.cartItemId)}
                 aria-label="수량 증가"
                 className="flex h-6 w-6 items-center justify-center rounded-full border border-pink-200 text-pink-500 hover:bg-pink-50"
               >

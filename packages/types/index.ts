@@ -64,6 +64,13 @@ export interface ReorderCategoriesInput {
 // 장바구니 아이템 타입 (상품 정보에 수량을 추가)
 export interface CartItem extends Product {
   quantity: number;
+  // 장바구니 안에서 이 줄을 구분하는 고유 id. 같은 상품이라도 옵션이
+  // 다르면(예: 샷 추가 여부) 다른 줄로 취급해야 해서, 상품 `_id`와는
+  // 별도로 둡니다.
+  cartItemId: string;
+  // 샷 추가 옵션을 선택했는지 여부([[상품옵션선택]] 참고). 지금은 옵션이
+  // 이거 하나뿐이라 별도 옵션 그룹 모델 없이 단순 boolean으로 둡니다.
+  hasExtraShot?: boolean;
 }
 
 // 매장 내(dine-in) / 포장(takeout) 구분
@@ -76,9 +83,15 @@ export type OrderType = 'dine-in' | 'takeout';
 export interface OrderItem {
   productId: string;
   name: string;
-  price: number;
+  price: number; // 옵션 추가금이 있으면 이미 더해진 최종 단가
   imageUrl: string;
   quantity: number;
+  // 샷 추가 옵션을 골랐는지 여부([[상품옵션선택]] 참고).
+  hasExtraShot?: boolean;
+  // MongoDB가 하위 문서에 자동으로 부여하는 id. 주문 생성 요청 바디에는
+  // 없고(서버가 저장하며 채움), 저장된 주문을 조회할 때만 내려옵니다 —
+  // 같은 상품이 옵션만 다르게 두 줄로 들어간 경우를 구분하는 key로 씁니다.
+  _id?: string;
 }
 
 // 주문 정보 타입

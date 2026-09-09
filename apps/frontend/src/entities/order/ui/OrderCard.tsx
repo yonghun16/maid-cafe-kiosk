@@ -38,8 +38,8 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
         </span>
       </div>
       <ul className="mt-4 space-y-3">
-        {order.items.map((item) => (
-          <li key={item.productId} className="flex items-center gap-3">
+        {order.items.map((item, index) => (
+          <li key={item._id ?? `${item.productId}-${index}`} className="flex items-center gap-3">
             {item.imageUrl && (
               <img
                 src={item.imageUrl}
@@ -48,7 +48,14 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
               />
             )}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-lg font-semibold text-gray-800">{item.name}</p>
+              <p className="truncate text-lg font-semibold text-gray-800">
+                {item.name}
+                {item.hasExtraShot && (
+                  <span className="ml-2 rounded-full bg-pink-100 px-2 py-0.5 text-sm font-semibold text-pink-600">
+                    샷 추가
+                  </span>
+                )}
+              </p>
               <p className="text-base text-gray-500">
                 {item.price.toLocaleString()}원 × {item.quantity}
               </p>
