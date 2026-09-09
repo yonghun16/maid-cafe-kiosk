@@ -45,9 +45,6 @@ interface CategoryState {
   addCategory: (name: string) => Promise<boolean>;
   editCategory: (categoryId: string, name: string) => Promise<boolean>;
   deleteCategory: (categoryId: string) => Promise<boolean>;
-  moveCategory: (categoryId: string, direction: 'up' | 'down') => Promise<void>;
-  /** 드래그 앤 드롭 등으로 임의의 위치로 옮길 때 씁니다. */
-  moveCategoryToIndex: (categoryId: string, toIndex: number) => Promise<void>;
   /**
    * 서버 호출 없이 화면 상태만 즉시 재배치합니다. 포인터 기반 드래그 중
    * 프레임마다 불러도 API가 매번 나가지 않도록 분리했고, 실제 저장은
@@ -115,30 +112,6 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       console.error('카테고리 삭제 중 오류가 발생했습니다:', error);
       toast.error(getErrorMessage(error, '카테고리 삭제에 실패했습니다.'));
       return false;
-    }
-  },
-
-  moveCategory: async (categoryId, direction) => {
-    const { categories } = get();
-    const index = categories.findIndex((c) => c._id === categoryId);
-    if (index === -1) return;
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    await get().moveCategoryToIndex(categoryId, targetIndex);
-  },
-
-  moveCategoryToIndex: async (categoryId, toIndex) => {
-    const reordered = reorderArray(get().categories, categoryId, toIndex);
-    if (!reordered) return;
-
-    // 낙관적 업데이트: 서버 응답을 기다리지 않고 화면부터 바꿔서 버튼에
-    // 바로 반응하게 합니다. 실패하면 원래 목록을 다시 불러옵니다.
-    set({ categories: reordered });
-    try {
-      await reorderCategories(reordered.map((c) => c._id));
-    } catch (error) {
-      console.error('카테고리 순서 변경 중 오류가 발생했습니다:', error);
-      toast.error(getErrorMessage(error, '카테고리 순서 변경에 실패했습니다.'));
-      get().fetchCategories();
     }
   },
 

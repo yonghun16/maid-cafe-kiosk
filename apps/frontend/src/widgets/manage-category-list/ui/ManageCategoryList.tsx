@@ -1,6 +1,6 @@
 // @owner: ai
 //  역할: 카테고리를 칩 형태로 보여주며, 클릭하면 그 카테고리로 메뉴 목록을
-//  필터링합니다. 각 칩에서 순서 이동(드래그 또는 ◀▶)/이름 수정(✎)/삭제(✕)도
+//  필터링합니다. 각 칩에서 드래그로 순서 변경/이름 수정(✎)/삭제(✕)도
 //  함께 처리합니다. 카테고리를 삭제하면 그 카테고리에 속한 메뉴도 서버에서
 //  함께 삭제됩니다.
 'use client';
@@ -23,7 +23,6 @@ export function ManageCategoryList({ selectedCategory, onSelectCategory }: Manag
   const addCategory = useCategoryStore((state) => state.addCategory);
   const editCategory = useCategoryStore((state) => state.editCategory);
   const deleteCategory = useCategoryStore((state) => state.deleteCategory);
-  const moveCategory = useCategoryStore((state) => state.moveCategory);
   const reorderLocally = useCategoryStore((state) => state.reorderLocally);
   const commitCategoryOrder = useCategoryStore((state) => state.commitCategoryOrder);
 
@@ -140,7 +139,7 @@ export function ManageCategoryList({ selectedCategory, onSelectCategory }: Manag
           🎀 전체
         </button>
 
-        {categories.map((category, index) =>
+        {categories.map((category) =>
           editingId === category._id ? (
             <form
               key={category._id}
@@ -196,24 +195,6 @@ export function ManageCategoryList({ selectedCategory, onSelectCategory }: Manag
                 className="px-1 pr-2 text-sm font-semibold"
               >
                 {category.name}
-              </button>
-              <button
-                type="button"
-                onClick={() => moveCategory(category._id, 'up')}
-                disabled={index === 0}
-                aria-label="앞으로 이동"
-                className="rounded px-1 text-xs disabled:opacity-30"
-              >
-                ◀
-              </button>
-              <button
-                type="button"
-                onClick={() => moveCategory(category._id, 'down')}
-                disabled={index === categories.length - 1}
-                aria-label="뒤로 이동"
-                className="rounded px-1 text-xs disabled:opacity-30"
-              >
-                ▶
               </button>
               <button
                 type="button"
