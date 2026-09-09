@@ -19,7 +19,6 @@ export function ManageProductList({ selectedCategory }: ManageProductListProps) 
   const fetchProducts = useProductStore((state) => state.fetchProducts);
   const toggleSoldOut = useProductStore((state) => state.toggleSoldOut);
   const deleteProduct = useProductStore((state) => state.deleteProduct);
-  const moveProduct = useProductStore((state) => state.moveProduct);
   const reorderLocally = useProductStore((state) => state.reorderLocally);
   const commitProductOrder = useProductStore((state) => state.commitProductOrder);
   const adjustStock = useProductStore((state) => state.adjustStock);
@@ -45,7 +44,7 @@ export function ManageProductList({ selectedCategory }: ManageProductListProps) 
   const editingProduct = products.find((p) => p._id === editingProductId) ?? null;
 
   // ✅ 순서는 카테고리 안에서만 의미가 있어서, 특정 카테고리를 골랐을
-  // 때만(=화면에 그 카테고리 상품만 보일 때만) 드래그/버튼 순서 변경을
+  // 때만(=화면에 그 카테고리 상품만 보일 때만) 드래그 순서 변경을
   // 허용합니다. "전체"를 보고 있을 땐 여러 카테고리가 섞여 있어 순서
   // 변경이 무의미하므로 숨깁니다.
   const canReorder = selectedCategory !== 'all';
@@ -96,7 +95,7 @@ export function ManageProductList({ selectedCategory }: ManageProductListProps) 
         ) : visibleProducts.length === 0 ? (
           <p className="text-gray-400">이 카테고리에는 메뉴가 없습니다.</p>
         ) : (
-          visibleProducts.map((product, index) => (
+          visibleProducts.map((product) => (
             <div
               key={product._id}
               ref={(el) => {
@@ -156,28 +155,6 @@ export function ManageProductList({ selectedCategory }: ManageProductListProps) 
                 </div>
               </div>
               <div className="flex items-center gap-4 text-base">
-                {canReorder && (
-                  <div className="flex flex-col">
-                    <button
-                      type="button"
-                      onClick={() => moveProduct(product._id, 'up')}
-                      disabled={index === 0}
-                      aria-label="위로 이동"
-                      className="leading-none text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveProduct(product._id, 'down')}
-                      disabled={index === visibleProducts.length - 1}
-                      aria-label="아래로 이동"
-                      className="leading-none text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                    >
-                      ▼
-                    </button>
-                  </div>
-                )}
                 <button
                   onClick={() => toggleSoldOut(product._id, !product.isSoldOut)}
                   className="font-semibold text-gray-500 hover:text-gray-700"
