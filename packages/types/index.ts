@@ -110,3 +110,17 @@ export interface AdminSessionResponse {
 export interface UpdateSoldOutInput {
   isSoldOut: boolean;
 }
+
+// 첫 화면(매장/포장 선택 화면)에 보여주는 광고 배너 타입. 등록된 순서
+// (`createdAt` 오름차순) 그대로 노출됩니다.
+export interface Ad {
+  _id: string;
+  imageUrl: string;
+  createdAt: Date;
+}
+
+// 광고 생성/수정 요청(POST/PUT /api/ads)의 바디 타입 — 프론트/백엔드가
+// 공유하는 계약
+export interface AdInput {
+  imageUrl: string;
+}

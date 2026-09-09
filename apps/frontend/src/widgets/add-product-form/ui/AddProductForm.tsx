@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { uploadProductImage } from '../../../entities/product';
+import { uploadImage } from '../../../shared/api';
 import { useProductStore } from '../../../features/product-management';
 import { useCategoryStore } from '../../../features/category-management';
 
@@ -44,7 +44,7 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
 
     setIsUploadingImage(true);
     try {
-      const url = await uploadProductImage(file);
+      const url = await uploadImage(file);
       setImageUrl(url);
     } catch (error) {
       console.error('이미지 업로드 중 오류가 발생했습니다:', error);

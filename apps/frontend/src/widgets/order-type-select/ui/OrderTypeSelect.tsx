@@ -2,6 +2,7 @@
 'use client';
 
 import { useOrderTypeStore } from '../../../features/order-type';
+import { AdBanner } from '../../../entities/ad';
 
 export function OrderTypeSelect() {
   const setOrderType = useOrderTypeStore((state) => state.setOrderType);
@@ -37,6 +38,8 @@ export function OrderTypeSelect() {
           포장
         </button>
       </div>
+
+      <AdBanner />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import multer from 'multer';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import type {
+  AdInput,
   AdminLoginInput,
   AdminSessionResponse,
   CategoryInput,
@@ -24,6 +25,7 @@ import type {
 import Product from './models/Product';
 import Order from './models/Order';
 import Category from './models/Category';
+import Ad from './models/Ad';
 import { r2Client, R2_BUCKET_NAME, R2_PUBLIC_URL } from './lib/r2Client';
 import { requireAdmin } from './middleware/requireAdmin';
 // './types/session'은 express-session의 SessionData를 확장하는 타입 전용
@@ -515,6 +517,87 @@ app.delete('/api/products/:id', requireAdmin, async (req: Request<{ id: string }
     res.json({ message: '상품이 성공적으로 삭제되었습니다.' });
   } catch (err) {
     res.status(500).json({ message: '상품 삭제 중 오류가 발생했습니다.' });
+  }
+});
+
+/**
+ * 첫 화면(매장/포장 선택 화면)에 보여줄 광고 배너 목록을 등록된 순서
+ * (`createdAt` 오름차순)로 조회합니다. 고객 화면에서도 쓰이므로 인증
+ * 없이 공개합니다.
+ * @route GET /api/ads
+ */
+app.get('/api/ads', async (_req: Request, res: Response) => {
+  try {
+    const ads = await Ad.find().sort({ createdAt: 1 });
+    res.json(ads);
+  } catch (err) {
+    res.status(500).json({ message: '광고 목록을 불러오는 중 오류가 발생했습니다.' });
+  }
+});
+
+/**
+ * 새 광고 배너를 등록합니다. 관리자 세션이 없으면 `requireAdmin`에서
+ * 401로 막습니다.
+ * @route POST /api/ads
+ * @param req.body - `@repo/types`의 `AdInput` (`imageUrl`)
+ */
+app.post(
+  '/api/ads',
+  requireAdmin,
+  async (req: Request<Record<string, never>, unknown, AdInput>, res: Response) => {
+    try {
+      const ad = new Ad({ imageUrl: req.body.imageUrl });
+      const newAd = await ad.save();
+      res.status(201).json(newAd);
+    } catch (err) {
+      res.status(400).json({ message: '광고 등록 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 광고 배너 이미지를 교체합니다. 관리자 세션이 없으면 `requireAdmin`에서
+ * 401로 막습니다.
+ * @route PUT /api/ads/:id
+ * @param req.body - `@repo/types`의 `AdInput` (`imageUrl`)
+ */
+app.put(
+  '/api/ads/:id',
+  requireAdmin,
+  async (req: Request<{ id: string }, unknown, AdInput>, res: Response) => {
+    try {
+      const updatedAd = await Ad.findByIdAndUpdate(
+        req.params.id,
+        { imageUrl: req.body.imageUrl },
+        { new: true, runValidators: true },
+      );
+      if (!updatedAd) {
+        res.status(404).json({ message: '광고를 찾을 수 없습니다.' });
+        return;
+      }
+      res.json(updatedAd);
+    } catch (err) {
+      res.status(400).json({ message: '광고 수정 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 광고 배너를 삭제합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로
+ * 막습니다.
+ * @route DELETE /api/ads/:id
+ */
+app.delete('/api/ads/:id', requireAdmin, async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const ad = await Ad.findById(req.params.id);
+    if (!ad) {
+      res.status(404).json({ message: '광고를 찾을 수 없습니다.' });
+      return;
+    }
+    await ad.deleteOne();
+    res.json({ message: '광고를 삭제했습니다.' });
+  } catch (err) {
+    res.status(500).json({ message: '광고 삭제 중 오류가 발생했습니다.' });
   }
 });
 

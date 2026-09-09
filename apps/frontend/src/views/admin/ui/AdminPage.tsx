@@ -6,15 +6,17 @@ import { LoginForm, useAdminAuthStore } from '../../../features/admin-auth';
 import { AddProductForm } from '../../../widgets/add-product-form';
 import { ManageProductList } from '../../../widgets/manage-product-list';
 import { ManageCategoryList } from '../../../widgets/manage-category-list';
+import { ManageAdList } from '../../../widgets/manage-ad-list';
 import { OrderList } from '../../../widgets/order-list';
 import { Modal } from '../../../shared/ui';
 
-type AdminTab = 'menu' | 'orders' | 'history';
+type AdminTab = 'menu' | 'orders' | 'history' | 'ads';
 
 const TABS: { key: AdminTab; label: string }[] = [
   { key: 'menu', label: '메뉴 관리' },
   { key: 'orders', label: '진행중 주문' },
   { key: 'history', label: '지난 주문' },
+  { key: 'ads', label: '광고 관리' },
 ];
 
 export function AdminPage() {
@@ -94,6 +96,7 @@ export function AdminPage() {
       )}
       {activeTab === 'orders' && <OrderList status="pending" />}
       {activeTab === 'history' && <OrderList status="completed" />}
+      {activeTab === 'ads' && <ManageAdList />}
     </div>
   );
 }
