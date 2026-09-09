@@ -52,6 +52,8 @@ interface ProductState {
   /** 재고 수량을 절대값으로 설정합니다. 0 이하면 자동으로 품절 처리됩니다. */
   adjustStock: (productId: string, stock: number) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
+  /** ◀▶ 버튼 등으로 같은 카테고리 안에서 앞/뒤 상품과 순서를 바꿉니다. */
+  moveProduct: (productId: string, direction: 'up' | 'down') => Promise<void>;
   /**
    * 서버 호출 없이 화면 상태만 즉시 재배치합니다(같은 카테고리 안에서만).
    * 포인터 기반 드래그 중 프레임마다 불러도 API가 매번 나가지 않도록
@@ -149,6 +151,31 @@ export const useProductStore = create<ProductState>((set, get) => ({
     } catch (error) {
       console.error('상품 삭제 중 오류가 발생했습니다:', error);
       toast.error('상품 삭제에 실패했습니다.');
+    }
+  },
+
+  moveProduct: async (productId, direction) => {
+    const { products } = get();
+    const moved = products.find((p) => p._id === productId);
+    if (!moved) return;
+    const sameCategory = products.filter((p) => p.category === moved.category);
+    const index = sameCategory.findIndex((p) => p._id === productId);
+    if (index === -1) return;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    const reordered = reorderWithinCategory(products, productId, targetIndex);
+    if (!reordered) return;
+
+    // 낙관적 업데이트: 서버 응답을 기다리지 않고 화면부터 바꿔서 버튼에
+    // 바로 반응하게 합니다. 실패하면 원래 목록을 다시 불러옵니다.
+    set({ products: reordered });
+    try {
+      const sameCategoryIds = reordered.filter((p) => p.category === moved.category).map((p) => p._id);
+      await reorderProducts(sameCategoryIds);
+    } catch (error) {
+      console.error('상품 순서 변경 중 오류가 발생했습니다:', error);
+      toast.error('상품 순서 변경에 실패했습니다.');
+      get().fetchProducts();
     }
   },
 
