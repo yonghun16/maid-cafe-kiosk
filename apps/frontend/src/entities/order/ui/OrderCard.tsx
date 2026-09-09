@@ -55,6 +55,11 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
                     샷 추가
                   </span>
                 )}
+                {item.magicSpell && (
+                  <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-700">
+                    🪄 {item.magicSpell}
+                  </span>
+                )}
               </p>
               <p className="text-base text-gray-500">
                 {item.price.toLocaleString()}원 × {item.quantity}

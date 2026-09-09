@@ -44,6 +44,7 @@ export function OrderSummary() {
                   {item.name}
                   {item.hasExtraShot && <span className="ml-1 text-xs font-normal text-pink-500">(샷 추가)</span>}
                 </p>
+                {item.magicSpell && <p className="truncate text-xs text-gray-400">🪄 {item.magicSpell}</p>}
                 <p className="whitespace-nowrap text-sm text-gray-500">{item.price.toLocaleString()}원</p>
               </div>
               <button

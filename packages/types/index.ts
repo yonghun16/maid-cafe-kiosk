@@ -71,6 +71,9 @@ export interface CartItem extends Product {
   // 샷 추가 옵션을 선택했는지 여부([[상품옵션선택]] 참고). 지금은 옵션이
   // 이거 하나뿐이라 별도 옵션 그룹 모델 없이 단순 boolean으로 둡니다.
   hasExtraShot?: boolean;
+  // "마법의 주문" 선택값(예: '모에모에뀽'). 가격에는 영향 없는 메이드
+  // 카페 컨셉의 재미 옵션이라, 값이 없으면 선택 안 한 것으로 취급합니다.
+  magicSpell?: string;
 }
 
 // 매장 내(dine-in) / 포장(takeout) 구분
@@ -88,6 +91,8 @@ export interface OrderItem {
   quantity: number;
   // 샷 추가 옵션을 골랐는지 여부([[상품옵션선택]] 참고).
   hasExtraShot?: boolean;
+  // "마법의 주문" 선택값. 가격에는 영향 없습니다.
+  magicSpell?: string;
   // MongoDB가 하위 문서에 자동으로 부여하는 id. 주문 생성 요청 바디에는
   // 없고(서버가 저장하며 채움), 저장된 주문을 조회할 때만 내려옵니다 —
   // 같은 상품이 옵션만 다르게 두 줄로 들어간 경우를 구분하는 key로 씁니다.

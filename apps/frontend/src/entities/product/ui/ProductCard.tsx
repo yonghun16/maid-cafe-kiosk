@@ -5,10 +5,11 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Product } from '@repo/types';
 import { Modal } from '../../../shared/ui';
-import { EXTRA_SHOT_PRICE } from '../model/optionConstants';
+import { EXTRA_SHOT_PRICE, MAGIC_SPELL_OPTIONS } from '../model/optionConstants';
 
 interface ProductOptions {
   hasExtraShot: boolean;
+  magicSpell?: string;
 }
 
 interface ProductCardProps {
@@ -25,6 +26,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   // 모달이 먼저 뜹니다([[상품옵션선택]] 참고).
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
   const [hasExtraShot, setHasExtraShot] = useState(false);
+  const [magicSpell, setMagicSpell] = useState('');
 
   const handleClick = () => {
     if (product.isSoldOut) {
@@ -32,11 +34,12 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
       return;
     }
     setHasExtraShot(false);
+    setMagicSpell('');
     setIsOptionModalOpen(true);
   };
 
   const handleAdd = () => {
-    onAddToCart(product, { hasExtraShot });
+    onAddToCart(product, { hasExtraShot, magicSpell: magicSpell || undefined });
     setIsOptionModalOpen(false);
   };
 
@@ -76,19 +79,47 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
 
       <Modal isOpen={isOptionModalOpen} onClose={() => setIsOptionModalOpen(false)} title={product.name}>
         <div className="space-y-4">
-          <img src={product.imageUrl} alt={product.name} className="h-40 w-full rounded-lg object-cover" />
-          <label className="flex cursor-pointer items-center justify-between rounded-lg border border-pink-100 px-4 py-3">
-            <span className="font-semibold text-gray-700">샷 추가</span>
-            <span className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">+{EXTRA_SHOT_PRICE.toLocaleString()}원</span>
-              <input
-                type="checkbox"
-                checked={hasExtraShot}
-                onChange={(e) => setHasExtraShot(e.target.checked)}
-                className="h-5 w-5 accent-pink-500"
-              />
-            </span>
-          </label>
+          <div className="flex gap-4">
+            {/* ✅ 그림을 왼쪽에, 옵션을 오른쪽에 둬서 상품 사진 비율(3:4)이
+                눌리지 않고 그대로 보이게 합니다. */}
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="aspect-[3/4] w-28 shrink-0 rounded-lg object-cover sm:w-32"
+            />
+            <div className="flex-1 space-y-3">
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-pink-100 px-3 py-2.5">
+                <span className="text-sm font-semibold text-gray-700">샷 추가</span>
+                <span className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">+{EXTRA_SHOT_PRICE.toLocaleString()}원</span>
+                  <input
+                    type="checkbox"
+                    checked={hasExtraShot}
+                    onChange={(e) => setHasExtraShot(e.target.checked)}
+                    className="h-5 w-5 accent-pink-500"
+                  />
+                </span>
+              </label>
+              <div>
+                <label htmlFor="magic-spell" className="mb-1 block text-sm font-semibold text-gray-700">
+                  🪄 마법의 주문
+                </label>
+                <select
+                  id="magic-spell"
+                  value={magicSpell}
+                  onChange={(e) => setMagicSpell(e.target.value)}
+                  className="w-full rounded-lg border border-pink-100 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
+                >
+                  <option value="">선택 안 함</option>
+                  {MAGIC_SPELL_OPTIONS.map((spell) => (
+                    <option key={spell} value={spell}>
+                      {spell}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
           <p className="text-right text-lg font-bold text-pink-600">{totalPrice.toLocaleString()}원</p>
           <button
             type="button"

@@ -8,6 +8,7 @@ export interface OrderItemDocument {
   imageUrl: string;
   quantity: number;
   hasExtraShot?: boolean;
+  magicSpell?: string;
 }
 
 export interface OrderDocument extends Document {
@@ -31,6 +32,7 @@ const orderSchema = new Schema<OrderDocument>({
       imageUrl: String,
       quantity: Number,
       hasExtraShot: Boolean,
+      magicSpell: String,
     },
   ],
   totalPrice: { type: Number, required: true },

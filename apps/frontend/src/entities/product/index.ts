@@ -9,4 +9,4 @@ export {
   updateStock,
 } from './api/productApi';
 export { default as ProductCard } from './ui/ProductCard';
-export { EXTRA_SHOT_PRICE } from './model/optionConstants';
+export { EXTRA_SHOT_PRICE, MAGIC_SPELL_OPTIONS } from './model/optionConstants';
