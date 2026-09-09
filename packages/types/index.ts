@@ -111,16 +111,23 @@ export interface UpdateSoldOutInput {
   isSoldOut: boolean;
 }
 
-// 첫 화면(매장/포장 선택 화면)에 보여주는 광고 배너 타입. 등록된 순서
-// (`createdAt` 오름차순) 그대로 노출됩니다.
+// 첫 화면(매장/포장 선택 화면)에 보여주는 광고 배너 타입.
 export interface Ad {
   _id: string;
   imageUrl: string;
+  order: number; // 노출 순서. 값이 작을수록 앞에 표시됨
   createdAt: Date;
 }
 
 // 광고 생성/수정 요청(POST/PUT /api/ads)의 바디 타입 — 프론트/백엔드가
-// 공유하는 계약
+// 공유하는 계약. `order`는 서버가 정하므로(생성 시 맨 뒤로 배정, 순서
+// 변경은 별도 API) 여기 포함하지 않습니다.
 export interface AdInput {
   imageUrl: string;
+}
+
+// 광고 순서 변경 요청(PATCH /api/ads/reorder)의 바디 타입 — 원하는
+// 순서대로 나열한 광고 id 배열을 그대로 보냅니다.
+export interface ReorderAdsInput {
+  orderedIds: string[];
 }

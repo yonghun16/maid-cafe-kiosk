@@ -1,9 +1,9 @@
 // @owner: ai
-import type { Ad, AdInput } from '@repo/types';
+import type { Ad, AdInput, ReorderAdsInput } from '@repo/types';
 import { apiClient } from '../../../shared/api';
 
 /**
- * 첫 화면에 노출할 광고 배너 목록을 등록된 순서로 조회합니다.
+ * 첫 화면에 노출할 광고 배너 목록을 지정된 순서(`order`)로 조회합니다.
  * @returns 광고 배열
  */
 export async function getAds(): Promise<Ad[]> {
@@ -40,4 +40,15 @@ export async function updateAd(adId: string, imageUrl: string): Promise<Ad> {
  */
 export async function deleteAdById(adId: string): Promise<void> {
   await apiClient.delete(`/ads/${adId}`);
+}
+
+/**
+ * 광고 노출 순서를 한 번에 재배열합니다.
+ * @param orderedIds - 원하는 순서대로 나열한 광고 id 배열
+ * @returns 갱신된 전체 광고 목록(순서 정렬)
+ */
+export async function reorderAds(orderedIds: string[]): Promise<Ad[]> {
+  const payload: ReorderAdsInput = { orderedIds };
+  const response = await apiClient.patch<Ad[]>('/ads/reorder', payload);
+  return response.data;
 }

@@ -16,6 +16,7 @@ import type {
   CreateOrderInput,
   OrderStatusFilter,
   ProductInput,
+  ReorderAdsInput,
   ReorderCategoriesInput,
   ReorderProductsInput,
   UpdateSoldOutInput,
@@ -111,6 +112,25 @@ async function ensureProductOrder(): Promise<void> {
   console.log(`✅ 순서가 없던 상품 ${unordered.length}개에 카테고리별 순서를 지정했습니다.`);
 }
 
+/**
+ * `order` 필드가 도입되기 전에 만들어진 광고(값이 없는 광고)에 순서를
+ * 부여합니다. 기존에 보이던 순서(등록순)를 그대로 이어가도록 생성
+ * 시각순으로 정렬해 0부터 번호를 매깁니다. 1회성·멱등이며, 대상이
+ * 없으면 아무 것도 하지 않습니다.
+ */
+async function ensureAdOrder(): Promise<void> {
+  const unordered = await Ad.find({ order: { $exists: false } }).sort({ createdAt: 1 });
+  if (unordered.length === 0) return;
+
+  let nextOrder = 0;
+  for (const ad of unordered) {
+    ad.order = nextOrder;
+    await ad.save();
+    nextOrder += 1;
+  }
+  console.log(`✅ 순서가 없던 광고 ${unordered.length}개에 순서를 지정했습니다.`);
+}
+
 mongoose
   .connect(MONGO_URI)
   .then(async () => {
@@ -118,6 +138,7 @@ mongoose
     await ensureDefaultCategories();
     await ensureCategoryOrder();
     await ensureProductOrder();
+    await ensureAdOrder();
   })
   .catch((err) => console.error('❌ MongoDB 연결 실패:', err));
 
@@ -521,14 +542,13 @@ app.delete('/api/products/:id', requireAdmin, async (req: Request<{ id: string }
 });
 
 /**
- * 첫 화면(매장/포장 선택 화면)에 보여줄 광고 배너 목록을 등록된 순서
- * (`createdAt` 오름차순)로 조회합니다. 고객 화면에서도 쓰이므로 인증
- * 없이 공개합니다.
+ * 첫 화면(매장/포장 선택 화면)에 보여줄 광고 배너 목록을 지정된 순서
+ * (`order`)로 조회합니다. 고객 화면에서도 쓰이므로 인증 없이 공개합니다.
  * @route GET /api/ads
  */
 app.get('/api/ads', async (_req: Request, res: Response) => {
   try {
-    const ads = await Ad.find().sort({ createdAt: 1 });
+    const ads = await Ad.find().sort({ order: 1 });
     res.json(ads);
   } catch (err) {
     res.status(500).json({ message: '광고 목록을 불러오는 중 오류가 발생했습니다.' });
@@ -536,8 +556,8 @@ app.get('/api/ads', async (_req: Request, res: Response) => {
 });
 
 /**
- * 새 광고 배너를 등록합니다. 관리자 세션이 없으면 `requireAdmin`에서
- * 401로 막습니다.
+ * 새 광고 배너를 등록합니다. 순서는 항상 맨 뒤로 배정됩니다. 관리자
+ * 세션이 없으면 `requireAdmin`에서 401로 막습니다.
  * @route POST /api/ads
  * @param req.body - `@repo/types`의 `AdInput` (`imageUrl`)
  */
@@ -546,11 +566,40 @@ app.post(
   requireAdmin,
   async (req: Request<Record<string, never>, unknown, AdInput>, res: Response) => {
     try {
-      const ad = new Ad({ imageUrl: req.body.imageUrl });
+      const order = await Ad.countDocuments();
+      const ad = new Ad({ imageUrl: req.body.imageUrl, order });
       const newAd = await ad.save();
       res.status(201).json(newAd);
     } catch (err) {
       res.status(400).json({ message: '광고 등록 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 광고 노출 순서를 한 번에 재배열합니다. 원하는 순서대로 나열한 광고 id
+ * 배열을 받아 배열 인덱스를 그대로 `order` 값으로 저장합니다. 관리자
+ * 세션이 없으면 `requireAdmin`에서 401로 막습니다.
+ * @route PATCH /api/ads/reorder
+ * @param req.body - `@repo/types`의 `ReorderAdsInput` (`orderedIds`)
+ */
+app.patch(
+  '/api/ads/reorder',
+  requireAdmin,
+  async (req: Request<Record<string, never>, unknown, ReorderAdsInput>, res: Response) => {
+    const { orderedIds } = req.body;
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
+      res.status(400).json({ message: 'orderedIds 값이 올바르지 않습니다.' });
+      return;
+    }
+    try {
+      await Promise.all(
+        orderedIds.map((id, index) => Ad.updateOne({ _id: id }, { $set: { order: index } })),
+      );
+      const ads = await Ad.find().sort({ order: 1 });
+      res.json(ads);
+    } catch (err) {
+      res.status(400).json({ message: '광고 순서 변경 중 오류가 발생했습니다.' });
     }
   },
 );
