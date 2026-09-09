@@ -2,21 +2,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { LoginForm, useAdminAuthStore } from '../../../features/admin-auth';
 import { AddProductForm } from '../../../widgets/add-product-form';
 import { ManageProductList } from '../../../widgets/manage-product-list';
 import { ManageCategoryList } from '../../../widgets/manage-category-list';
 import { ManageAdList } from '../../../widgets/manage-ad-list';
-import { OrderList } from '../../../widgets/order-list';
 import { SalesDashboard } from '../../../widgets/sales-dashboard';
 import { Modal } from '../../../shared/ui';
 
-type AdminTab = 'menu' | 'orders' | 'history' | 'ads' | 'sales';
+type AdminTab = 'menu' | 'ads' | 'sales';
 
 const TABS: { key: AdminTab; label: string }[] = [
   { key: 'menu', label: '메뉴 관리' },
-  { key: 'orders', label: '진행중 주문' },
-  { key: 'history', label: '지난 주문' },
   { key: 'ads', label: '광고 관리' },
   { key: 'sales', label: '판매 통계' },
 ];
@@ -52,13 +50,21 @@ export function AdminPage() {
     <div className="mx-auto w-full max-w-[1800px] p-8 font-sans">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-4xl font-bold text-pink-500">🛠️ 관리자 페이지</h1>
-        <button
-          type="button"
-          onClick={logout}
-          className="rounded-md border border-pink-300 px-4 py-2 text-sm font-semibold text-pink-500 hover:bg-pink-50"
-        >
-          로그아웃
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/kitchen"
+            className="rounded-md border border-pink-300 px-4 py-2 text-sm font-semibold text-pink-500 hover:bg-pink-50"
+          >
+            주방 화면
+          </Link>
+          <button
+            type="button"
+            onClick={logout}
+            className="rounded-md border border-pink-300 px-4 py-2 text-sm font-semibold text-pink-500 hover:bg-pink-50"
+          >
+            로그아웃
+          </button>
+        </div>
       </div>
 
       <div className="mb-6 flex gap-2">
@@ -96,8 +102,6 @@ export function AdminPage() {
           </Modal>
         </>
       )}
-      {activeTab === 'orders' && <OrderList status="pending" />}
-      {activeTab === 'history' && <OrderList status="completed" />}
       {activeTab === 'ads' && <ManageAdList />}
       {activeTab === 'sales' && <SalesDashboard />}
     </div>
