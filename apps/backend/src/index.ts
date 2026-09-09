@@ -14,9 +14,11 @@ import type {
   AdminSessionResponse,
   CategoryInput,
   CreateOrderInput,
+  MonthlySalesSummary,
   OrderItem,
   OrderStatusFilter,
   ProductInput,
+  ProductSalesRanking,
   ReorderAdsInput,
   ReorderCategoriesInput,
   ReorderProductsInput,
@@ -747,6 +749,30 @@ function getKstStartOfToday(): Date {
 }
 
 /**
+ * KST 기준 최근 `count`개월의 'YYYY-MM' 라벨을 오래된 달 → 최신 달
+ * 순서로 반환합니다(예: count=3, 오늘이 KST 9월이면 ['2026-07',
+ * '2026-08', '2026-09']). [[매출통계대시보드]]의 월별 추이 x축으로
+ * 씁니다.
+ */
+function getLastNMonthLabels(count: number): string[] {
+  const kstNow = new Date(Date.now() + KST_OFFSET_MS);
+  const labels: string[] = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const d = new Date(Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth() - i, 1));
+    labels.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`);
+  }
+  return labels;
+}
+
+/** 'YYYY-MM' 라벨이 가리키는 KST 기준 월의 시작/끝(다음 달 시작, exclusive)을 UTC Date로 반환합니다. */
+function getKstMonthRange(month: string): { start: Date; end: Date } {
+  const [year, monthNum] = month.split('-').map(Number) as [number, number];
+  const start = new Date(Date.UTC(year, monthNum - 1, 1, 0, 0, 0) - KST_OFFSET_MS);
+  const end = new Date(Date.UTC(year, monthNum, 1, 0, 0, 0) - KST_OFFSET_MS);
+  return { start, end };
+}
+
+/**
  * 주문에 담긴 아이템만큼 상품 재고를 줄입니다. 재고를 추적하지 않는
  * 상품(`stock`이 없음)은 건너뜁니다. 재고가 0 이하로 떨어지면 자동으로
  * `isSoldOut: true`가 됩니다. 재고 갱신은 주문 성공 여부에 영향을 주지
@@ -796,6 +822,107 @@ app.post(
       }
     } catch (err) {
       res.status(400).json({ message: '주문을 처리하는 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 최근 N개월(기본 6, 최대 24)의 월별 매출/판매량 추이를 KST 기준으로
+ * 집계해 조회합니다. 주문이 없는 달도 0으로 채워 넣어 차트 x축이
+ * 끊기지 않게 합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로
+ * 막습니다.
+ * @route GET /api/orders/stats/monthly
+ * @param req.query.months - 조회할 개월 수(선택, 기본 6)
+ */
+app.get(
+  '/api/orders/stats/monthly',
+  requireAdmin,
+  async (req: Request<Record<string, never>, unknown, unknown, { months?: string }>, res: Response) => {
+    try {
+      const months = Math.min(Math.max(Number(req.query.months) || 6, 1), 24);
+      const labels = getLastNMonthLabels(months);
+      const rangeStart = getKstMonthRange(labels[0]!).start;
+
+      const rows: { _id: string; totalRevenue: number; totalQuantity: number; orderCount: number }[] =
+        await Order.aggregate([
+          { $match: { createdAt: { $gte: rangeStart } } },
+          {
+            $project: {
+              month: { $dateToString: { format: '%Y-%m', date: '$createdAt', timezone: '+09:00' } },
+              totalPrice: 1,
+              totalQuantity: { $sum: '$items.quantity' },
+            },
+          },
+          {
+            $group: {
+              _id: '$month',
+              totalRevenue: { $sum: '$totalPrice' },
+              totalQuantity: { $sum: '$totalQuantity' },
+              orderCount: { $sum: 1 },
+            },
+          },
+        ]);
+
+      const byMonth = new Map(rows.map((r) => [r._id, r]));
+      const summary: MonthlySalesSummary[] = labels.map((month) => {
+        const row = byMonth.get(month);
+        return {
+          month,
+          totalRevenue: row?.totalRevenue ?? 0,
+          totalQuantity: row?.totalQuantity ?? 0,
+          orderCount: row?.orderCount ?? 0,
+        };
+      });
+      res.json(summary);
+    } catch (err) {
+      res.status(500).json({ message: '월별 매출 통계를 불러오는 중 오류가 발생했습니다.' });
+    }
+  },
+);
+
+/**
+ * 특정 월(KST 기준)의 메뉴별 판매량/매출 순위를 조회합니다.
+ * 판매량(`quantitySold`)이 많은 순으로 정렬됩니다. 관리자 세션이 없으면
+ * `requireAdmin`에서 401로 막습니다.
+ * @route GET /api/orders/stats/monthly/:month
+ * @param req.params.month - 'YYYY-MM' 형식(KST 기준)
+ */
+app.get(
+  '/api/orders/stats/monthly/:month',
+  requireAdmin,
+  async (req: Request<{ month: string }>, res: Response) => {
+    if (!/^\d{4}-\d{2}$/.test(req.params.month)) {
+      res.status(400).json({ message: 'month 형식이 올바르지 않습니다(YYYY-MM).' });
+      return;
+    }
+    try {
+      const { start, end } = getKstMonthRange(req.params.month);
+      const rows: { _id: string; name: string; imageUrl: string; quantitySold: number; revenue: number }[] =
+        await Order.aggregate([
+          { $match: { createdAt: { $gte: start, $lt: end } } },
+          { $unwind: '$items' },
+          {
+            $group: {
+              _id: '$items.productId',
+              name: { $first: '$items.name' },
+              imageUrl: { $first: '$items.imageUrl' },
+              quantitySold: { $sum: '$items.quantity' },
+              revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+            },
+          },
+          { $sort: { quantitySold: -1 } },
+        ]);
+
+      const ranking: ProductSalesRanking[] = rows.map((r) => ({
+        productId: r._id,
+        name: r.name,
+        imageUrl: r.imageUrl,
+        quantitySold: r.quantitySold,
+        revenue: r.revenue,
+      }));
+      res.json(ranking);
+    } catch (err) {
+      res.status(500).json({ message: '메뉴별 판매 순위를 불러오는 중 오류가 발생했습니다.' });
     }
   },
 );

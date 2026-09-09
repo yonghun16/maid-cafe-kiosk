@@ -1,3 +1,3 @@
 // @owner: ai
-export { getOrders, completeOrder } from './api/orderApi';
+export { getOrders, completeOrder, getMonthlySalesSummary, getProductSalesRanking } from './api/orderApi';
 export { OrderCard } from './ui/OrderCard';

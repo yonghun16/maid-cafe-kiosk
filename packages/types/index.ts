@@ -102,6 +102,27 @@ export interface CreateOrderInput {
   orderType: OrderType;
 }
 
+// 월별 매출/판매량 추이 조회(GET /api/orders/stats/monthly)의 응답
+// 배열 원소 타입. `month`는 KST 기준 'YYYY-MM'. 주문이 없는 달도 0으로
+// 채워서 내려주므로, 배열 길이는 항상 요청한 개월 수와 같습니다
+// ([[매출통계대시보드]] 참고).
+export interface MonthlySalesSummary {
+  month: string;
+  totalRevenue: number;
+  totalQuantity: number;
+  orderCount: number;
+}
+
+// 특정 월의 메뉴별 판매 순위 조회(GET /api/orders/stats/monthly/:month)의
+// 응답 배열 원소 타입. `quantitySold` 내림차순으로 정렬돼서 내려옵니다.
+export interface ProductSalesRanking {
+  productId: string;
+  name: string;
+  imageUrl: string;
+  quantitySold: number;
+  revenue: number;
+}
+
 // 이미지 업로드 응답(POST /api/uploads)의 바디 타입 — 프론트/백엔드가 공유하는 계약
 export interface UploadImageResponse {
   url: string;
