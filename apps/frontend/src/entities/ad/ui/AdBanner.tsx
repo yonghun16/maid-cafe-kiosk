@@ -65,10 +65,12 @@ export function AdBanner() {
         onPointerCancel={() => {
           dragStartX.current = null;
         }}
-        // ✅ 키오스크 화면은 세로로 길어서, 배너 높이가 너무 낮으면
-        // object-cover가 이미지 상하단을 크게 잘라냅니다. 세로로 긴
-        // 화면에 맞춰 높이를 넉넉히 키워 잘림을 줄였습니다.
-        className="h-72 w-full cursor-grab object-cover active:cursor-grabbing sm:h-96 md:h-[28rem] lg:h-[34rem]"
+        // ✅ 화면 너비별로 높이를 따로 지정하면 실제 업로드하는 광고
+        // 이미지 비율과 어긋나 object-cover가 상하단을 잘라냅니다.
+        // 관리자가 올리는 광고 이미지가 1448×1086(4:3)이라, 박스 자체를
+        // aspect-[4/3]으로 고정해 화면 너비가 바뀌어도 항상 이미지
+        // 원본 비율과 정확히 맞도록 했습니다.
+        className="aspect-[4/3] w-full cursor-grab object-cover active:cursor-grabbing"
       />
       {ads.length > 1 && (
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
