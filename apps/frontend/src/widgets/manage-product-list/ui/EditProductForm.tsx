@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
-import type { Product, ProductOption } from '@repo/types';
+import type { Product, ProductOption, TemperatureOption } from '@repo/types';
 import { uploadImage } from '../../../shared/api';
 import { useProductStore } from '../../../features/product-management';
 import { useCategoryStore } from '../../../features/category-management';
@@ -23,7 +23,9 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
   // ✅ 비워두면 이 메뉴는 재고를 추적하지 않는 상품이 됩니다([[재고관리]] 참고).
   const [stock, setStock] = useState(product.stock != null ? String(product.stock) : '');
   const [options, setOptions] = useState<ProductOption[]>(product.options ?? []);
-  const [hasTemperatureOption, setHasTemperatureOption] = useState(product.hasTemperatureOption ?? false);
+  const [temperatureOption, setTemperatureOption] = useState<TemperatureOption | ''>(
+    product.temperatureOption ?? '',
+  );
   const [hasMagicSpellOption, setHasMagicSpellOption] = useState(product.hasMagicSpellOption ?? false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -72,7 +74,7 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
       category,
       ...(stock.trim() ? { stock: Number(stock) } : {}),
       options: cleanedOptions,
-      hasTemperatureOption,
+      ...(temperatureOption ? { temperatureOption } : {}),
       hasMagicSpellOption,
     });
     setIsSaving(false);
@@ -165,8 +167,8 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
       <ProductOptionsEditor
         options={options}
         onChange={setOptions}
-        hasTemperatureOption={hasTemperatureOption}
-        onTemperatureOptionChange={setHasTemperatureOption}
+        temperatureOption={temperatureOption}
+        onTemperatureOptionChange={setTemperatureOption}
         hasMagicSpellOption={hasMagicSpellOption}
         onMagicSpellOptionChange={setHasMagicSpellOption}
         idPrefix={`edit-option-${product._id}`}

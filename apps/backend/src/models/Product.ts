@@ -24,9 +24,12 @@ const productSchema = new Schema<ProductDocument>({
       price: { type: Number, required: true },
     },
   ],
-  // 온도(HOT/ICE)/마법의 주문 옵션 노출 여부. 여러 항목 중 하나만
-  // 고르는 콤보박스 형태라 `options` 배열과 별도로 boolean 토글로 관리.
-  hasTemperatureOption: { type: Boolean, default: false },
+  // 온도(HOT/ICE) 옵션. 'BOTH'면 고객이 고르고, 'HOT'/'ICE'면 그
+  // 온도로 고정(카레는 HOT만, 에이드는 ICE만 같은 메뉴용). 값이
+  // 없으면 온도 옵션 자체가 없는 메뉴.
+  temperatureOption: { type: String, enum: ['BOTH', 'HOT', 'ICE'], required: false },
+  // "마법의 주문" 옵션 노출 여부. 여러 항목 중 하나만 고르는 드롭다운
+  // 형태라 `options` 배열과 별도로 boolean 토글로 관리.
   hasMagicSpellOption: { type: Boolean, default: false },
 });
 

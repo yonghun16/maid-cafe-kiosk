@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
-import type { ProductOption } from '@repo/types';
+import type { ProductOption, TemperatureOption } from '@repo/types';
 import { uploadImage } from '../../../shared/api';
 import { useProductStore } from '../../../features/product-management';
 import { useCategoryStore } from '../../../features/category-management';
@@ -24,7 +24,7 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
   // ✅ 비워두면 이 메뉴는 재고를 추적하지 않는 상품이 됩니다([[재고관리]] 참고).
   const [stock, setStock] = useState('');
   const [options, setOptions] = useState<ProductOption[]>([]);
-  const [hasTemperatureOption, setHasTemperatureOption] = useState(false);
+  const [temperatureOption, setTemperatureOption] = useState<TemperatureOption | ''>('');
   const [hasMagicSpellOption, setHasMagicSpellOption] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
@@ -79,7 +79,7 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
       category,
       ...(stock.trim() ? { stock: Number(stock) } : {}),
       ...(cleanedOptions.length > 0 ? { options: cleanedOptions } : {}),
-      hasTemperatureOption,
+      ...(temperatureOption ? { temperatureOption } : {}),
       hasMagicSpellOption,
     });
 
@@ -90,7 +90,7 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
       setImageUrl('');
       setStock('');
       setOptions([]);
-      setHasTemperatureOption(false);
+      setTemperatureOption('');
       setHasMagicSpellOption(false);
       onSuccess?.();
     }
@@ -161,8 +161,8 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
       <ProductOptionsEditor
         options={options}
         onChange={setOptions}
-        hasTemperatureOption={hasTemperatureOption}
-        onTemperatureOptionChange={setHasTemperatureOption}
+        temperatureOption={temperatureOption}
+        onTemperatureOptionChange={setTemperatureOption}
         hasMagicSpellOption={hasMagicSpellOption}
         onMagicSpellOptionChange={setHasMagicSpellOption}
         idPrefix="add-option"

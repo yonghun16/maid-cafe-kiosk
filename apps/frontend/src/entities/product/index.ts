@@ -10,5 +10,10 @@ export {
 } from './api/productApi';
 export { default as ProductCard } from './ui/ProductCard';
 export { ProductOptionsEditor } from './ui/ProductOptionsEditor';
-export { TEMPERATURE_OPTIONS, MAGIC_SPELL_OPTIONS, ICE_AMOUNT_OPTIONS } from './model/optionConstants';
+export {
+  TEMPERATURE_OPTIONS,
+  TEMPERATURE_OPTION_CHOICES,
+  MAGIC_SPELL_OPTIONS,
+  ICE_AMOUNT_OPTIONS,
+} from './model/optionConstants';
 export type { Temperature, IceAmount } from './model/optionConstants';

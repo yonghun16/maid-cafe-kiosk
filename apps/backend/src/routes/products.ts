@@ -29,7 +29,7 @@ productsRouter.post(
   '/',
   requireAdmin,
   async (req: Request<Record<string, never>, unknown, ProductInput>, res: Response) => {
-    const { name, price, imageUrl, category, stock, options, hasTemperatureOption, hasMagicSpellOption } = req.body;
+    const { name, price, imageUrl, category, stock, options, temperatureOption, hasMagicSpellOption } = req.body;
     try {
       const order = await Product.countDocuments({ category });
       const product = new Product({
@@ -40,7 +40,7 @@ productsRouter.post(
         order,
         stock,
         options,
-        hasTemperatureOption,
+        ...(temperatureOption ? { temperatureOption } : {}),
         hasMagicSpellOption,
       });
       const newProduct = await product.save();
@@ -89,25 +89,32 @@ productsRouter.put(
   '/:id',
   requireAdmin,
   async (req: Request<{ id: string }, unknown, ProductInput>, res: Response) => {
-    const { name, price, imageUrl, category, stock, options, hasTemperatureOption, hasMagicSpellOption } = req.body;
+    const { name, price, imageUrl, category, stock, options, temperatureOption, hasMagicSpellOption } = req.body;
     try {
-      const updatedProduct = await Product.findByIdAndUpdate(
-        req.params.id,
-        {
+      // 온도 옵션은 "없음"도 유효한 선택이라, 값이 없으면 `$unset`으로
+      // 필드 자체를 지웁니다(enum 필드라 빈 문자열/null을 그냥 저장할
+      // 수 없음). 나머지 필드는 폼에서 항상 전체를 다시 보내므로 그대로
+      // 덮어씁니다(재고와 달리 "생략하면 유지"가 아님).
+      const update: { $set: Record<string, unknown>; $unset?: Record<string, ''> } = {
+        $set: {
           name,
           price,
           imageUrl,
           category,
           ...(stock !== undefined ? { stock } : {}),
-          // 옵션 목록은 폼에서 항상 전체를 다시 보내므로, 비어있으면
-          // 기존 옵션을 전부 지우는 것으로 취급합니다(재고와 달리 "생략하면
-          // 유지"가 아님).
           options: options ?? [],
-          hasTemperatureOption: hasTemperatureOption ?? false,
           hasMagicSpellOption: hasMagicSpellOption ?? false,
         },
-        { new: true, runValidators: true },
-      );
+      };
+      if (temperatureOption) {
+        update.$set.temperatureOption = temperatureOption;
+      } else {
+        update.$unset = { temperatureOption: '' };
+      }
+      const updatedProduct = await Product.findByIdAndUpdate(req.params.id, update, {
+        new: true,
+        runValidators: true,
+      });
       if (!updatedProduct) {
         res.status(404).json({ message: '상품을 찾을 수 없습니다.' });
         return;

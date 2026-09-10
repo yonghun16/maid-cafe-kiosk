@@ -1,13 +1,14 @@
 // @owner: ai
 'use client';
 
-import type { ProductOption } from '@repo/types';
+import type { ProductOption, TemperatureOption } from '@repo/types';
+import { TEMPERATURE_OPTION_CHOICES } from '../model/optionConstants';
 
 interface ProductOptionsEditorProps {
   options: ProductOption[];
   onChange: (options: ProductOption[]) => void;
-  hasTemperatureOption: boolean;
-  onTemperatureOptionChange: (value: boolean) => void;
+  temperatureOption: TemperatureOption | '';
+  onTemperatureOptionChange: (value: TemperatureOption | '') => void;
   hasMagicSpellOption: boolean;
   onMagicSpellOptionChange: (value: boolean) => void;
   idPrefix?: string;
@@ -26,9 +27,12 @@ const PRESET_OPTIONS: ProductOption[] = [{ name: '샷 추가', price: 700 }];
 /**
  * 메뉴 추가/수정 폼에서 이 메뉴의 옵션을 설정하는 UI
  * ([[옵션조합관리]] 참고). 두 종류로 나뉩니다:
- * - **온도(HOT/ICE)·마법의 주문**: 여러 항목 중 하나만 고르는
- *   콤보박스/드롭다운이라, 체크박스 하나로 이 메뉴에 노출할지만
- *   정합니다(`Product.hasTemperatureOption`/`hasMagicSpellOption`).
+ * - **온도(HOT/ICE)**: 여러 항목 중 하나만 고르는 콤보박스라, "없음/
+ *   HOT+ICE/HOT만/ICE만" 4가지 중 하나로 고릅니다(`Product.temperatureOption`)
+ *   — 카레처럼 HOT만 있거나 에이드처럼 ICE만 있는 메뉴는 고객에게
+ *   고르게 하지 않고 고정할 수 있습니다.
+ * - **마법의 주문**: 마찬가지로 하나만 고르는 드롭다운이라, 체크박스
+ *   하나로 이 메뉴에 노출할지만 정합니다(`Product.hasMagicSpellOption`).
  * - **메뉴 옵션**: 이름 + 추가금을 자유롭게 여러 개 추가·삭제하는
  *   목록(`Product.options`). 여러 개를 동시에 고를 수 있는 옵션에
  *   씁니다.
@@ -36,7 +40,7 @@ const PRESET_OPTIONS: ProductOption[] = [{ name: '샷 추가', price: 700 }];
 export function ProductOptionsEditor({
   options,
   onChange,
-  hasTemperatureOption,
+  temperatureOption,
   onTemperatureOptionChange,
   hasMagicSpellOption,
   onMagicSpellOptionChange,
@@ -66,30 +70,41 @@ export function ProductOptionsEditor({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-600">콤보박스 옵션 (선택)</label>
+        <label className="block text-sm font-medium text-gray-600">🌡️ 온도 옵션 (선택)</label>
         <p className="mt-0.5 text-xs text-gray-400">
+          HOT/ICE 둘 다 고를 수 있게 할지, 카레처럼 HOT만 있거나
+          에이드처럼 ICE만 있는지 고르세요.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {TEMPERATURE_OPTION_CHOICES.map((choice) => (
+            <button
+              key={choice.value || 'none'}
+              type="button"
+              onClick={() => onTemperatureOptionChange(choice.value)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                temperatureOption === choice.value
+                  ? 'border-pink-500 bg-pink-500 text-white'
+                  : 'border-gray-200 text-gray-600 hover:bg-pink-50'
+              }`}
+            >
+              {choice.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <label className="flex cursor-pointer items-center gap-2">
+          <input
+            type="checkbox"
+            checked={hasMagicSpellOption}
+            onChange={(e) => onMagicSpellOptionChange(e.target.checked)}
+            className="h-4 w-4 accent-pink-500"
+          />
+          <span className="text-sm text-gray-700">마법의 주문 옵션</span>
+        </label>
+        <p className="mt-0.5 pl-6 text-xs text-gray-400">
           체크하면 고객 화면에 하나만 고르는 드롭다운이 뜹니다.
         </p>
-        <div className="mt-2 space-y-1">
-          <label className="flex cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
-              checked={hasTemperatureOption}
-              onChange={(e) => onTemperatureOptionChange(e.target.checked)}
-              className="h-4 w-4 accent-pink-500"
-            />
-            <span className="text-sm text-gray-700">🌡️ 온도 옵션 (HOT/ICE)</span>
-          </label>
-          <label className="flex cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
-              checked={hasMagicSpellOption}
-              onChange={(e) => onMagicSpellOptionChange(e.target.checked)}
-              className="h-4 w-4 accent-pink-500"
-            />
-            <span className="text-sm text-gray-700">마법의 주문 옵션</span>
-          </label>
-        </div>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-600">메뉴 옵션 (선택)</label>

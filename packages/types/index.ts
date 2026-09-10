@@ -3,13 +3,20 @@
 // 메뉴별로 관리자가 자유롭게 추가하는, 여러 개를 동시에 고를 수 있는
 // 옵션 하나(예: "샷 추가" +700원, "펄 추가" +500원). 온도(HOT/ICE)나
 // 마법의 주문처럼 여러 항목 중 딱 하나만 고르는 옵션은 이 배열이 아니라
-// `Product.hasTemperatureOption`/`hasMagicSpellOption` 토글로 별도
+// `Product.temperatureOption`/`hasMagicSpellOption`로 별도
 // 관리합니다([[옵션조합관리]] 참고). `price`는 0원도 허용합니다(가격
 // 영향 없는 옵션도 만들 수 있게).
 export interface ProductOption {
   name: string;
   price: number;
 }
+
+// 메뉴의 온도(HOT/ICE) 옵션 노출 방식. 'BOTH'면 고객이 HOT/ICE 중 고르고,
+// 'HOT'/'ICE'면 그 온도로 고정됩니다(카레처럼 HOT만 있거나 에이드처럼
+// ICE만 있는 메뉴에 씀 — 고를 게 하나뿐이면 고객에게 선택을 강요하지
+// 않고 그 값으로 자동 기록됩니다). 값이 없으면 온도 옵션 자체가 없는
+// 메뉴입니다([[옵션조합관리]] 참고).
+export type TemperatureOption = 'BOTH' | 'HOT' | 'ICE';
 
 // 상품 정보 타입
 export interface Product {
@@ -28,10 +35,9 @@ export interface Product {
   // 이 메뉴에서 고객이 추가로 고를 수 있는 옵션 목록. 없거나 빈 배열이면
   // 이 메뉴엔 커스텀 옵션이 없다는 뜻입니다.
   options?: ProductOption[];
-  // 이 메뉴에 온도(HOT/ICE) 옵션을 노출할지 여부. 켜져 있으면 고객
-  // 화면에 HOT/ICE 중 하나를 고르는 콤보박스가 뜹니다([[옵션조합관리]]
-  // 참고). 값이 없으면 꺼진 것으로 취급합니다.
-  hasTemperatureOption?: boolean;
+  // 이 메뉴의 온도 옵션. `TemperatureOption` 참고. 값이 없으면 온도
+  // 옵션 자체가 없는 메뉴입니다.
+  temperatureOption?: TemperatureOption;
   // 이 메뉴에 "마법의 주문" 옵션을 노출할지 여부. 켜져 있으면 고객
   // 화면에 네 항목 중 하나를 고르는 드롭다운이 뜹니다([[옵션조합관리]]
   // 참고). 값이 없으면 꺼진 것으로 취급합니다.
@@ -49,7 +55,7 @@ export interface ProductInput {
   category: string;
   stock?: number;
   options?: ProductOption[];
-  hasTemperatureOption?: boolean;
+  temperatureOption?: TemperatureOption;
   hasMagicSpellOption?: boolean;
 }
 
@@ -96,8 +102,9 @@ export interface CartItem extends Product {
   // "마법의 주문" 선택값(예: '모에모에뀽'). `product.hasMagicSpellOption`
   // 이 켜진 메뉴에서만 고를 수 있고, 가격에는 영향 없습니다.
   magicSpell?: string;
-  // HOT/ICE 온도 선택. `product.hasTemperatureOption`이 켜진 메뉴에서만
-  // 고를 수 있고, 가격에는 영향 없습니다.
+  // HOT/ICE 온도 선택. `product.temperatureOption`이 `'BOTH'`인
+  // 메뉴에서만 고객이 직접 고르고, `'HOT'`/`'ICE'`로 고정된 메뉴는
+  // 고르지 않아도 그 값이 자동으로 채워집니다. 가격에는 영향 없습니다.
   temperature?: 'HOT' | 'ICE';
   // 얼음양 선택. `temperature`가 'ICE'일 때만 고를 수 있는 하위 옵션이라,
   // HOT을 고르거나 온도를 아예 선택하지 않으면 값이 없습니다. 가격에는
@@ -136,9 +143,9 @@ export interface OrderItem {
   // 메뉴에서 고른 값이 그대로 저장됩니다. 가격에는 영향 없습니다
   // ([[옵션조합관리]] 참고).
   magicSpell?: string;
-  // HOT/ICE 온도 선택. `product.hasTemperatureOption`이 켜진 메뉴에서
-  // 고른 값이 그대로 저장됩니다. 가격에는 영향 없습니다
-  // ([[옵션조합관리]] 참고).
+  // HOT/ICE 온도 선택. `product.temperatureOption`이 `'BOTH'`면 고객이
+  // 고른 값, `'HOT'`/`'ICE'`로 고정된 메뉴면 그 값이 자동으로 저장됩니다.
+  // 가격에는 영향 없습니다([[옵션조합관리]] 참고).
   temperature?: 'HOT' | 'ICE';
   // 얼음양 선택. `temperature`가 'ICE'일 때만 값이 있습니다. 가격에는
   // 영향 없습니다.

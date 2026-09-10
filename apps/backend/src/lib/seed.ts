@@ -84,6 +84,32 @@ async function ensureAdOrder(): Promise<void> {
 }
 
 /**
+ * 온도 옵션이 `hasTemperatureOption`(boolean) 하나였던 옛 스키마의
+ * 상품을 `temperatureOption`(`'BOTH' | 'HOT' | 'ICE'`) 필드로 옮깁니다.
+ * `hasTemperatureOption: true`는 "HOT/ICE 둘 다 고를 수 있음"을
+ * 뜻했으므로 그대로 `'BOTH'`로 매핑합니다([[옵션조합관리]] 참고).
+ * 스키마에서 이미 빠진 필드를 다루므로 Mongoose 문서가 아니라
+ * 드라이버 컬렉션에 직접 접근합니다. 1회성·멱등이며, 옮길 대상이
+ * 없으면 아무 것도 하지 않습니다.
+ */
+async function migrateTemperatureOption(): Promise<void> {
+  const migrated = await Product.collection.updateMany(
+    { hasTemperatureOption: true, temperatureOption: { $exists: false } },
+    { $set: { temperatureOption: 'BOTH' } },
+  );
+  if (migrated.modifiedCount > 0) {
+    console.log(
+      `✅ hasTemperatureOption(boolean)을 쓰던 상품 ${migrated.modifiedCount}개를 temperatureOption('BOTH')로 이전했습니다.`,
+    );
+  }
+  // 옛 boolean 필드는 이전 여부와 무관하게 더 이상 쓰이지 않으니 정리합니다.
+  await Product.collection.updateMany(
+    { hasTemperatureOption: { $exists: true } },
+    { $unset: { hasTemperatureOption: '' } },
+  );
+}
+
+/**
  * 서버 시작 시 한 번 돌아가는 1회성·멱등 마이그레이션/시딩을 전부
  * 실행합니다. MongoDB 연결이 완료된 직후 호출합니다.
  */
@@ -92,4 +118,5 @@ export async function runStartupSeed(): Promise<void> {
   await ensureCategoryOrder();
   await ensureProductOrder();
   await ensureAdOrder();
+  await migrateTemperatureOption();
 }

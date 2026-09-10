@@ -50,7 +50,14 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
       toast.error('품절된 메뉴입니다.');
       return;
     }
-    setTemperature('');
+    // ✅ 온도가 HOT/ICE 중 하나로 고정된 메뉴(카레는 HOT만, 에이드는
+    // ICE만 같은 경우)는 고를 게 없으니 미리 그 값으로 채워둡니다 —
+    // 고객이 따로 클릭하지 않아도 장바구니에 온도가 기록됩니다.
+    setTemperature(
+      product.temperatureOption === 'HOT' || product.temperatureOption === 'ICE'
+        ? product.temperatureOption
+        : '',
+    );
     setIceAmount('');
     setMagicSpell('');
     setSelectedOptionNames([]);
@@ -140,25 +147,33 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
               />
             </div>
             <div className="flex-1 space-y-3">
-              {product.hasTemperatureOption && (
+              {product.temperatureOption && (
                 <div>
                   <span className="mb-1 block text-sm font-semibold text-gray-700">🌡️ 온도</span>
-                  <div className="flex gap-2">
-                    {TEMPERATURE_OPTIONS.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => handleTemperatureClick(option)}
-                        className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
-                          temperature === option
-                            ? 'border-pink-500 bg-pink-500 text-white'
-                            : 'border-pink-100 text-gray-600 hover:bg-pink-50'
-                        }`}
-                      >
-                        {TEMPERATURE_LABEL[option]}
-                      </button>
-                    ))}
-                  </div>
+                  {product.temperatureOption === 'BOTH' ? (
+                    <div className="flex gap-2">
+                      {TEMPERATURE_OPTIONS.map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => handleTemperatureClick(option)}
+                          className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                            temperature === option
+                              ? 'border-pink-500 bg-pink-500 text-white'
+                              : 'border-pink-100 text-gray-600 hover:bg-pink-50'
+                          }`}
+                        >
+                          {TEMPERATURE_LABEL[option]}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    // ✅ 이 메뉴는 온도가 하나로 고정돼 있어(예: 카레는
+                    // HOT만) 고를 필요가 없습니다 — 안내용 배지만 보여줍니다.
+                    <span className="inline-block rounded-lg border border-pink-100 bg-pink-50 px-3 py-2 text-sm font-semibold text-gray-600">
+                      {TEMPERATURE_LABEL[product.temperatureOption]} 고정
+                    </span>
+                  )}
                   {temperature === 'ICE' && (
                     <div className="mt-2">
                       <span className="mb-1 block text-xs font-semibold text-gray-500">얼음양</span>
