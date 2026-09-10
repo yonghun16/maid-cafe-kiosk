@@ -17,6 +17,13 @@ const productSchema = new Schema<ProductDocument>({
   // 재고 수량. 선택 필드라 값이 없으면(undefined) 재고를 추적하지
   // 않는 상품으로 취급합니다.
   stock: { type: Number, required: false },
+  // 메뉴별로 관리자가 자유롭게 추가하는 옵션(이름 + 추가금).
+  options: [
+    {
+      name: { type: String, required: true },
+      price: { type: Number, required: true },
+    },
+  ],
 });
 
 export default mongoose.model<ProductDocument>('Product', productSchema);

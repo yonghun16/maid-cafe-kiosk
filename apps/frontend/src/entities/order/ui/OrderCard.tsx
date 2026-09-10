@@ -69,6 +69,14 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
                     🪄 {item.magicSpell}
                   </span>
                 )}
+                {item.selectedOptions?.map((option) => (
+                  <span
+                    key={option.name}
+                    className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-sm font-semibold text-purple-600"
+                  >
+                    {option.name}
+                  </span>
+                ))}
               </p>
               <p className="text-base text-gray-500">
                 {item.price.toLocaleString()}원 × {item.quantity}

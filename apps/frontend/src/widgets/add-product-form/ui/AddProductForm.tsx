@@ -3,9 +3,11 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import type { ProductOption } from '@repo/types';
 import { uploadImage } from '../../../shared/api';
 import { useProductStore } from '../../../features/product-management';
 import { useCategoryStore } from '../../../features/category-management';
+import { ProductOptionsEditor } from '../../../entities/product';
 
 interface AddProductFormProps {
   /** 메뉴 추가에 성공하면 호출됩니다 (모달을 닫는 용도 등). */
@@ -20,6 +22,7 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
   const [category, setCategory] = useState('');
   // ✅ 비워두면 이 메뉴는 재고를 추적하지 않는 상품이 됩니다([[재고관리]] 참고).
   const [stock, setStock] = useState('');
+  const [options, setOptions] = useState<ProductOption[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // ✅ 실제 상품을 추가하는 '기능'은 스토어에서 가져옵니다.
@@ -63,12 +66,16 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
       return;
     }
 
+    // 이름을 안 채운 옵션 줄은 저장하지 않습니다.
+    const cleanedOptions = options.filter((option) => option.name.trim());
+
     const success = await addProduct({
       name,
       price: Number(price),
       imageUrl,
       category,
       ...(stock.trim() ? { stock: Number(stock) } : {}),
+      ...(cleanedOptions.length > 0 ? { options: cleanedOptions } : {}),
     });
 
     // 성공적으로 추가되면 폼을 초기화합니다.
@@ -77,6 +84,7 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
       setPrice('');
       setImageUrl('');
       setStock('');
+      setOptions([]);
       onSuccess?.();
     }
   };
@@ -141,6 +149,7 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
           className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
         />
       </div>
+      <ProductOptionsEditor options={options} onChange={setOptions} idPrefix="add-option" />
       <button
         type="submit"
         disabled={isUploadingImage || categories.length === 0}

@@ -1,5 +1,6 @@
 // @owner: ai
 import mongoose, { Schema, type Document } from 'mongoose';
+import type { ProductOption } from '@repo/types';
 
 export interface OrderItemDocument {
   productId: mongoose.Types.ObjectId;
@@ -10,6 +11,7 @@ export interface OrderItemDocument {
   hasExtraShot?: boolean;
   magicSpell?: string;
   temperature?: 'HOT' | 'ICE';
+  selectedOptions?: ProductOption[];
 }
 
 export interface OrderDocument extends Document {
@@ -35,6 +37,12 @@ const orderSchema = new Schema<OrderDocument>({
       hasExtraShot: Boolean,
       magicSpell: String,
       temperature: { type: String, enum: ['HOT', 'ICE'] },
+      selectedOptions: [
+        {
+          name: String,
+          price: Number,
+        },
+      ],
     },
   ],
   totalPrice: { type: Number, required: true },

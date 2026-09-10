@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import type { Product } from '@repo/types';
+import type { Product, ProductOption } from '@repo/types';
 import { Modal } from '../../../shared/ui';
 import { EXTRA_SHOT_PRICE, MAGIC_SPELL_OPTIONS, TEMPERATURE_OPTIONS, type Temperature } from '../model/optionConstants';
 
@@ -11,6 +11,7 @@ interface ProductOptions {
   hasExtraShot: boolean;
   magicSpell?: string;
   temperature?: Temperature;
+  selectedOptions?: ProductOption[];
 }
 
 const TEMPERATURE_LABEL: Record<Temperature, string> = { HOT: '🔥 HOT', ICE: '🧊 ICE' };
@@ -31,6 +32,9 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   const [hasExtraShot, setHasExtraShot] = useState(false);
   const [magicSpell, setMagicSpell] = useState('');
   const [temperature, setTemperature] = useState<Temperature | ''>('');
+  const [selectedOptionNames, setSelectedOptionNames] = useState<string[]>([]);
+
+  const productOptions = product.options ?? [];
 
   const handleClick = () => {
     if (product.isSoldOut) {
@@ -40,15 +44,31 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
     setHasExtraShot(false);
     setMagicSpell('');
     setTemperature('');
+    setSelectedOptionNames([]);
     setIsOptionModalOpen(true);
   };
 
+  const toggleOption = (name: string) => {
+    setSelectedOptionNames((prev) =>
+      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name],
+    );
+  };
+
   const handleAdd = () => {
-    onAddToCart(product, { hasExtraShot, magicSpell: magicSpell || undefined, temperature: temperature || undefined });
+    const selectedOptions = productOptions.filter((option) => selectedOptionNames.includes(option.name));
+    onAddToCart(product, {
+      hasExtraShot,
+      magicSpell: magicSpell || undefined,
+      temperature: temperature || undefined,
+      selectedOptions: selectedOptions.length > 0 ? selectedOptions : undefined,
+    });
     setIsOptionModalOpen(false);
   };
 
-  const totalPrice = product.price + (hasExtraShot ? EXTRA_SHOT_PRICE : 0);
+  const selectedOptionsPrice = productOptions
+    .filter((option) => selectedOptionNames.includes(option.name))
+    .reduce((sum, option) => sum + option.price, 0);
+  const totalPrice = product.price + (hasExtraShot ? EXTRA_SHOT_PRICE : 0) + selectedOptionsPrice;
 
   return (
     <>
@@ -124,6 +144,29 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
                   />
                 </span>
               </label>
+              {productOptions.length > 0 && (
+                <div className="space-y-2">
+                  {productOptions.map((option) => (
+                    <label
+                      key={option.name}
+                      className="flex cursor-pointer items-center justify-between rounded-lg border border-pink-100 px-3 py-2.5"
+                    >
+                      <span className="text-sm font-semibold text-gray-700">{option.name}</span>
+                      <span className="flex items-center gap-2">
+                        {option.price > 0 && (
+                          <span className="text-xs text-gray-500">+{option.price.toLocaleString()}원</span>
+                        )}
+                        <input
+                          type="checkbox"
+                          checked={selectedOptionNames.includes(option.name)}
+                          onChange={() => toggleOption(option.name)}
+                          className="h-5 w-5 accent-pink-500"
+                        />
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
               <div>
                 <label htmlFor="magic-spell" className="mb-1 block text-sm font-semibold text-gray-700">
                   🪄 마법의 주문

@@ -1,5 +1,14 @@
 // @owner: ai
 
+// 메뉴별로 관리자가 자유롭게 추가하는 옵션 하나(예: "펄 추가" +500원).
+// 온도/샷 추가/마법의 주문처럼 매장 전체에 고정된 옵션과는 별개로, 메뉴마다
+// 다르게 설정할 수 있는 옵션입니다([[상품옵션선택]] 참고). `price`는 0원도
+// 허용합니다(가격 영향 없는 옵션도 만들 수 있게).
+export interface ProductOption {
+  name: string;
+  price: number;
+}
+
 // 상품 정보 타입
 export interface Product {
   _id: string;
@@ -14,6 +23,9 @@ export interface Product {
   // 수동 토글로만 이뤄집니다. 값이 있으면 주문 시마다 자동으로 줄고,
   // 0이 되면 자동으로 `isSoldOut: true`가 됩니다([[재고관리]] 참고).
   stock?: number;
+  // 이 메뉴에서 고객이 추가로 고를 수 있는 옵션 목록. 없거나 빈 배열이면
+  // 이 메뉴엔 커스텀 옵션이 없다는 뜻입니다.
+  options?: ProductOption[];
 }
 
 // 상품 생성/수정 요청(POST/PUT /api/products)의 바디 타입 — 프론트/백엔드가
@@ -26,6 +38,7 @@ export interface ProductInput {
   imageUrl: string;
   category: string;
   stock?: number;
+  options?: ProductOption[];
 }
 
 // 상품 순서 변경 요청(PATCH /api/products/reorder)의 바디 타입 — 같은
@@ -77,6 +90,10 @@ export interface CartItem extends Product {
   // HOT/ICE 온도 선택. 가격에는 영향 없고, 값이 없으면 선택 안 한
   // 것으로 취급합니다.
   temperature?: 'HOT' | 'ICE';
+  // 이 메뉴에 등록된 커스텀 옵션(`Product.options`) 중 고객이 고른 것들.
+  // 이름/가격을 선택 시점 스냅샷으로 담아, 이후 관리자가 메뉴 옵션을
+  // 바꿔도 이미 담긴 장바구니/주문 내역은 그대로 유지됩니다.
+  selectedOptions?: ProductOption[];
 }
 
 // 매장 내(dine-in) / 포장(takeout) 구분
@@ -98,6 +115,9 @@ export interface OrderItem {
   magicSpell?: string;
   // HOT/ICE 온도 선택. 가격에는 영향 없습니다.
   temperature?: 'HOT' | 'ICE';
+  // 이 아이템에 고른 커스텀 옵션들(이름/가격 스냅샷). `price`에는 이미
+  // 이 옵션들의 가격이 더해져 있습니다.
+  selectedOptions?: ProductOption[];
   // MongoDB가 하위 문서에 자동으로 부여하는 id. 주문 생성 요청 바디에는
   // 없고(서버가 저장하며 채움), 저장된 주문을 조회할 때만 내려옵니다 —
   // 같은 상품이 옵션만 다르게 두 줄로 들어간 경우를 구분하는 key로 씁니다.

@@ -48,6 +48,11 @@ export function OrderSummary() {
                     </span>
                   )}
                   {item.hasExtraShot && <span className="ml-1 text-xs font-normal text-pink-500">(샷 추가)</span>}
+                  {item.selectedOptions?.map((option) => (
+                    <span key={option.name} className="ml-1 text-xs font-normal text-pink-500">
+                      ({option.name})
+                    </span>
+                  ))}
                 </p>
                 {item.magicSpell && <p className="truncate text-xs text-gray-400">🪄 {item.magicSpell}</p>}
                 <p className="whitespace-nowrap text-sm text-gray-500">{item.price.toLocaleString()}원</p>

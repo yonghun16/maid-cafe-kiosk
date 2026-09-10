@@ -3,10 +3,11 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import type { Product } from '@repo/types';
+import type { Product, ProductOption } from '@repo/types';
 import { uploadImage } from '../../../shared/api';
 import { useProductStore } from '../../../features/product-management';
 import { useCategoryStore } from '../../../features/category-management';
+import { ProductOptionsEditor } from '../../../entities/product';
 
 interface EditProductFormProps {
   product: Product;
@@ -20,6 +21,7 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
   const [category, setCategory] = useState(product.category);
   // ✅ 비워두면 이 메뉴는 재고를 추적하지 않는 상품이 됩니다([[재고관리]] 참고).
   const [stock, setStock] = useState(product.stock != null ? String(product.stock) : '');
+  const [options, setOptions] = useState<ProductOption[]>(product.options ?? []);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -56,6 +58,9 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
       return;
     }
 
+    // 이름을 안 채운 옵션 줄은 저장하지 않습니다.
+    const cleanedOptions = options.filter((option) => option.name.trim());
+
     setIsSaving(true);
     const success = await editProduct(product._id, {
       name,
@@ -63,6 +68,7 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
       imageUrl,
       category,
       ...(stock.trim() ? { stock: Number(stock) } : {}),
+      options: cleanedOptions,
     });
     setIsSaving(false);
 
@@ -149,6 +155,7 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
         />
       </div>
+      <ProductOptionsEditor options={options} onChange={setOptions} idPrefix={`edit-option-${product._id}`} />
       <div className="flex gap-2">
         <button
           type="submit"
