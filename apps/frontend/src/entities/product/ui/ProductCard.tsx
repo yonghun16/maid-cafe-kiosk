@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 import type { Product, ProductOption } from '@repo/types';
 import { Dropdown, Modal } from '../../../shared/ui';
@@ -101,11 +102,13 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
             품절
           </span>
         )}
-        <div className={`${CARD_STYLE.bg} p-3`}>
-          <img
+        <div className={`relative aspect-[3/4] w-full ${CARD_STYLE.bg} p-3`}>
+          <Image
             src={product.imageUrl}
             alt={product.name}
-            className={`aspect-[3/4] w-full rounded-lg object-cover transition-transform duration-300 ${
+            fill
+            sizes="(min-width: 1280px) 20vw, (min-width: 768px) 30vw, 50vw"
+            className={`rounded-lg object-cover transition-transform duration-300 ${
               product.isSoldOut ? 'grayscale' : 'group-hover:scale-105' // ✅ 마우스 올렸을 때 이미지 확대 효과(품절 시에는 비활성)
             }`}
           />
@@ -127,11 +130,15 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
                 눌리지 않고 그대로 보이게 합니다. items-start로 옵션이
                 늘어나도(예: ICE 얼음양 선택지) flex가 사진 높이를 늘리지
                 않게 합니다. */}
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              className="aspect-[3/4] w-28 shrink-0 rounded-lg object-cover sm:w-32"
-            />
+            <div className="relative aspect-[3/4] w-28 shrink-0 sm:w-32">
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                fill
+                sizes="128px"
+                className="rounded-lg object-cover"
+              />
+            </div>
             <div className="flex-1 space-y-3">
               {product.hasTemperatureOption && (
                 <div>

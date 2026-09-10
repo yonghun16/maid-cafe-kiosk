@@ -4,6 +4,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import type { Ad } from '@repo/types';
 import { useAdStore } from '../../../features/ad-management';
 import { Modal } from '../../../shared/ui';
@@ -130,7 +131,15 @@ export function ManageAdList() {
                   </button>
                 </div>
               </div>
-              <img src={ad.imageUrl} alt="광고" className="h-32 w-full object-cover" />
+              <div className="relative h-32 w-full">
+                <Image
+                  src={ad.imageUrl}
+                  alt="광고"
+                  fill
+                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                  className="object-cover"
+                />
+              </div>
               <div className="flex gap-3 p-2 text-sm">
                 <button
                   type="button"

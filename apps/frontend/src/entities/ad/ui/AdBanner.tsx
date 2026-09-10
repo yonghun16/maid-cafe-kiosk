@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import type { Ad } from '@repo/types';
 import { getAds } from '../api/adApi';
 
@@ -55,22 +56,28 @@ export function AdBanner() {
   if (!activeAd) return null;
 
   return (
-    <div className="relative w-full max-w-sm touch-pan-y select-none overflow-hidden rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl">
-      <img
+    <div
+      // ✅ 화면 너비별로 높이를 따로 지정하면 실제 업로드하는 광고
+      // 이미지 비율과 어긋나 object-cover가 상하단을 잘라냅니다.
+      // 관리자가 올리는 광고 이미지가 1448×1086(4:3)이라, 박스 자체를
+      // aspect-[4/3]으로 고정해 화면 너비가 바뀌어도 항상 이미지
+      // 원본 비율과 정확히 맞도록 했습니다. next/image의 fill은 이렇게
+      // 크기가 미리 정해진 relative 부모가 있어야 합니다.
+      className="relative aspect-[4/3] w-full max-w-sm touch-pan-y select-none overflow-hidden rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl"
+    >
+      <Image
         src={activeAd.imageUrl}
         alt="광고"
+        fill
+        sizes="(min-width: 1024px) 896px, (min-width: 768px) 672px, (min-width: 640px) 576px, 384px"
+        priority
         draggable={false}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={() => {
           dragStartX.current = null;
         }}
-        // ✅ 화면 너비별로 높이를 따로 지정하면 실제 업로드하는 광고
-        // 이미지 비율과 어긋나 object-cover가 상하단을 잘라냅니다.
-        // 관리자가 올리는 광고 이미지가 1448×1086(4:3)이라, 박스 자체를
-        // aspect-[4/3]으로 고정해 화면 너비가 바뀌어도 항상 이미지
-        // 원본 비율과 정확히 맞도록 했습니다.
-        className="aspect-[4/3] w-full cursor-grab object-cover active:cursor-grabbing"
+        className="cursor-grab object-cover active:cursor-grabbing"
       />
       {ads.length > 1 && (
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-1.5">

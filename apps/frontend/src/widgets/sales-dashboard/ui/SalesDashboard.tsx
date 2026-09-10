@@ -6,6 +6,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import type { MonthlySalesSummary, ProductSalesRanking } from '@repo/types';
 import { getMonthlySalesSummary, getProductSalesRanking } from '../../../entities/order';
 
@@ -178,9 +179,11 @@ export function SalesDashboard() {
               <div key={item.productId} className="flex items-center gap-4 rounded-lg bg-gray-50 p-3">
                 <span className="w-6 text-center text-lg font-bold text-pink-500">{index + 1}</span>
                 {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.name} className="h-14 w-14 rounded-md object-cover" />
+                  <div className="relative h-14 w-14 shrink-0">
+                    <Image src={item.imageUrl} alt={item.name} fill sizes="56px" className="rounded-md object-cover" />
+                  </div>
                 ) : (
-                  <div className="h-14 w-14 rounded-md bg-gray-200" aria-hidden="true" />
+                  <div className="h-14 w-14 shrink-0 rounded-md bg-gray-200" aria-hidden="true" />
                 )}
                 <div className="flex-1">
                   <p className="font-semibold text-gray-700">{item.name}</p>

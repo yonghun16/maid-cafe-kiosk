@@ -1,4 +1,5 @@
 // @owner: ai
+import Image from 'next/image';
 import type { Order } from '@repo/types';
 
 interface OrderCardProps {
@@ -46,11 +47,15 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
         {order.items.map((item, index) => (
           <li key={item._id ?? `${item.productId}-${index}`} className="flex items-center gap-3">
             {item.imageUrl && (
-              <img
-                src={item.imageUrl}
-                alt={item.name}
-                className="h-16 w-16 shrink-0 rounded-lg object-cover"
-              />
+              <div className="relative h-16 w-16 shrink-0">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  fill
+                  sizes="64px"
+                  className="rounded-lg object-cover"
+                />
+              </div>
             )}
             <div className="min-w-0 flex-1">
               {/* ✅ 이름+옵션 배지를 하나의 truncate 문단에 같이 넣으면

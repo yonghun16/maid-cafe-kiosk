@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 import type { Ad } from '@repo/types';
 import { uploadImage } from '../../../shared/api';
@@ -69,7 +70,9 @@ export function AdForm({ ad, onSuccess }: AdFormProps) {
         />
         {isUploadingImage && <p className="mt-1 text-sm text-gray-500">업로드 중...</p>}
         {!isUploadingImage && imageUrl && (
-          <img src={imageUrl} alt="미리보기" className="mt-2 h-32 w-full rounded-md object-cover" />
+          <div className="relative mt-2 h-32 w-full">
+            <Image src={imageUrl} alt="미리보기" fill sizes="400px" className="rounded-md object-cover" />
+          </div>
         )}
       </div>
       <button

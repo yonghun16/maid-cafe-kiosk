@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 import type { Product, ProductOption } from '@repo/types';
 import { uploadImage } from '../../../shared/api';
@@ -121,7 +122,9 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
         />
         {isUploadingImage && <p className="mt-1 text-sm text-gray-500">업로드 중...</p>}
         {!isUploadingImage && imageUrl && (
-          <img src={imageUrl} alt="미리보기" className="mt-2 h-16 w-16 rounded-md object-cover" />
+          <div className="relative mt-2 h-16 w-16">
+            <Image src={imageUrl} alt="미리보기" fill sizes="64px" className="rounded-md object-cover" />
+          </div>
         )}
       </div>
       <div>

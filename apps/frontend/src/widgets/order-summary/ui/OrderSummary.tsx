@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import type { PaymentMethod } from '@repo/types';
 import { useCartStore } from '../../../features/cart';
 import { useOrderTypeStore } from '../../../features/order-type';
@@ -61,7 +62,9 @@ export function OrderSummary() {
         items.map((item) => (
           <div key={item.cartItemId} className="rounded-md bg-white p-3 shadow-sm">
             <div className="flex items-center gap-3">
-              <img src={item.imageUrl} alt={item.name} className="h-12 w-12 shrink-0 rounded-md object-cover" />
+              <div className="relative h-12 w-12 shrink-0">
+                <Image src={item.imageUrl} alt={item.name} fill sizes="48px" className="rounded-md object-cover" />
+              </div>
               <div className="min-w-0 flex-1">
                 {/* ✅ 이름+옵션을 하나의 truncate 문단에 넣으면 옵션이
                     화면 밖으로 밀려 통째로 가려질 수 있어서, 옵션은

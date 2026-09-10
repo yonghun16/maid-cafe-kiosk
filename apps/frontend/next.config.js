@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 상품/광고 이미지는 Cloudflare R2 공개 버킷(`pub-<해시>.r2.dev`)에
+  // 저장됩니다. next/image가 외부 도메인 이미지를 최적화하려면 허용
+  // 목록에 등록해야 하고, 버킷을 새로 만들면 해시가 바뀔 수 있어
+  // 서브도메인은 와일드카드로 둡니다.
+  images: {
+    remotePatterns: [{ protocol: 'https', hostname: '*.r2.dev' }],
+  },
   // 프론트엔드(Vercel)와 백엔드(Render)가 서로 다른 사이트라서, 브라우저가
   // 로그인 세션 쿠키를 "서드파티 쿠키"로 취급해 저장을 막거나(Safari ITP,
   // 크롬의 서드파티 쿠키 단계적 폐지 등) 새로고침 후 날려버리는 문제가

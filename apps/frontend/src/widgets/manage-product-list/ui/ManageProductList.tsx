@@ -3,6 +3,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useProductStore } from '../../../features/product-management';
 import { Modal } from '../../../shared/ui';
 import { EditProductForm } from './EditProductForm';
@@ -117,11 +118,15 @@ export function ManageProductList({ selectedCategory }: ManageProductListProps) 
                     ⠿
                   </span>
                 )}
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className={`h-20 w-20 rounded-md object-cover ${product.isSoldOut ? 'opacity-40 grayscale' : ''}`}
-                />
+                <div className="relative h-20 w-20 shrink-0">
+                  <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    fill
+                    sizes="80px"
+                    className={`rounded-md object-cover ${product.isSoldOut ? 'opacity-40 grayscale' : ''}`}
+                  />
+                </div>
                 <div>
                   <p className="flex items-center gap-2 text-lg font-semibold">
                     {product.name}
