@@ -113,7 +113,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
             <div className="flex-1 space-y-3">
               {product.hasTemperatureOption && (
                 <div>
-                  <span className="mb-1 block text-sm font-semibold text-gray-700">온도</span>
+                  <span className="mb-1 block text-sm font-semibold text-gray-700">🌡️ 온도</span>
                   <div className="flex gap-2">
                     {TEMPERATURE_OPTIONS.map((option) => (
                       <button
@@ -135,7 +135,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
               {product.hasMagicSpellOption && (
                 <div>
                   <label htmlFor="magic-spell" className="mb-1 block text-sm font-semibold text-gray-700">
-                    마법의 주문
+                    🪄 마법의 주문
                   </label>
                   <select
                     id="magic-spell"
