@@ -171,7 +171,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
                     // ✅ 이 메뉴는 온도가 하나로 고정돼 있어(예: 카레는
                     // HOT만) 고를 필요가 없습니다 — 안내용 배지만 보여줍니다.
                     <span className="inline-block rounded-lg border border-pink-100 bg-pink-50 px-3 py-2 text-sm font-semibold text-gray-600">
-                      {TEMPERATURE_LABEL[product.temperatureOption]} 고정
+                      {TEMPERATURE_LABEL[product.temperatureOption]}
                     </span>
                   )}
                   {temperature === 'ICE' && (
