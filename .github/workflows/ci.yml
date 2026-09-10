@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 루트 package.json의 "packageManager": "pnpm@9.0.0"에서 버전을
+      # 자동으로 읽어옵니다 — 로컬 개발 환경과 버전이 어긋나지 않게
+      # version을 여기서 따로 고정하지 않습니다.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # tests/setupEnv.ts가 필요한 환경변수(ADMIN_PASSWORD, R2_* 등)에
+      # 전부 더미 기본값을 넣어두고, 백엔드 테스트는 mongodb-memory-server로
+      # 인메모리 MongoDB를 직접 띄우므로 이 워크플로에는 별도 시크릿이
+      # 필요 없습니다. mongodb-memory-server가 받는 MongoDB 바이너리만
+      # 캐시해서 매번 다시 받지 않게 합니다.
+      - name: Cache MongoDB binary (mongodb-memory-server)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check types
+        run: pnpm turbo run check-types
+
+      - name: Build
+        run: pnpm turbo run build
+
+      - name: Test
+        run: pnpm turbo run test
