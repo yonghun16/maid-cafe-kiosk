@@ -78,7 +78,7 @@ export function ProductOptionsEditor({
               onChange={(e) => onTemperatureOptionChange(e.target.checked)}
               className="h-4 w-4 accent-pink-500"
             />
-            <span className="text-sm text-gray-700">온도 옵션 (HOT/ICE)</span>
+            <span className="text-sm text-gray-700">🌡️ 온도 옵션 (HOT/ICE)</span>
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <input
