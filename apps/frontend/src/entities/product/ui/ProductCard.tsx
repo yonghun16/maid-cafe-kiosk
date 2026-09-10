@@ -13,6 +13,8 @@ interface ProductOptions {
   selectedOptions?: ProductOption[];
 }
 
+const TEMPERATURE_LABEL: Record<Temperature, string> = { HOT: '🔥 HOT', ICE: '🧊 ICE' };
+
 interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product, options: ProductOptions) => void;
@@ -111,22 +113,23 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
             <div className="flex-1 space-y-3">
               {product.hasTemperatureOption && (
                 <div>
-                  <label htmlFor="temperature" className="mb-1 block text-sm font-semibold text-gray-700">
-                    온도
-                  </label>
-                  <select
-                    id="temperature"
-                    value={temperature}
-                    onChange={(e) => setTemperature(e.target.value as Temperature | '')}
-                    className="w-full rounded-lg border border-pink-100 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
-                  >
-                    <option value="">선택 안 함</option>
+                  <span className="mb-1 block text-sm font-semibold text-gray-700">온도</span>
+                  <div className="flex gap-2">
                     {TEMPERATURE_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => setTemperature((prev) => (prev === option ? '' : option))}
+                        className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                          temperature === option
+                            ? 'border-pink-500 bg-pink-500 text-white'
+                            : 'border-pink-100 text-gray-600 hover:bg-pink-50'
+                        }`}
+                      >
+                        {TEMPERATURE_LABEL[option]}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
               )}
               {product.hasMagicSpellOption && (
