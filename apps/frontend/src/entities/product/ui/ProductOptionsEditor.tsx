@@ -10,6 +10,21 @@ interface ProductOptionsEditorProps {
 }
 
 /**
+ * 예전에 매장 전체 고정 옵션이었다가 메뉴별 자유 옵션으로 옮겨온
+ * 항목들([[옵션조합관리]] 참고). 매번 이름/가격을 새로 입력하지 않고
+ * 클릭 한 번으로 추가할 수 있게 자주 쓰는 옵션 모음으로 제공합니다.
+ */
+const PRESET_OPTIONS: ProductOption[] = [
+  { name: '샷 추가', price: 700 },
+  { name: 'HOT', price: 0 },
+  { name: 'ICE', price: 0 },
+  { name: '모에모에뀽', price: 0 },
+  { name: '오이시쿠나레', price: 0 },
+  { name: '냥냥쿵', price: 0 },
+  { name: '하피네스차지!', price: 0 },
+];
+
+/**
  * 메뉴 추가/수정 폼에서 이 메뉴만의 옵션(이름 + 추가금, 예: "샷 추가"
  * +700원)을 자유롭게 추가/삭제하는 UI. 온도/마법의 주문처럼 매장
  * 전체에 고정된 옵션과 별개로, 메뉴마다 다르게 설정하는 옵션입니다
@@ -18,6 +33,11 @@ interface ProductOptionsEditorProps {
 export function ProductOptionsEditor({ options, onChange, idPrefix = 'option' }: ProductOptionsEditorProps) {
   const handleAdd = () => {
     onChange([...options, { name: '', price: 0 }]);
+  };
+
+  const handleAddPreset = (preset: ProductOption) => {
+    if (options.some((option) => option.name === preset.name)) return;
+    onChange([...options, preset]);
   };
 
   const handleRemove = (index: number) => {
@@ -64,6 +84,21 @@ export function ProductOptionsEditor({ options, onChange, idPrefix = 'option' }:
             </button>
           </div>
         ))}
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {PRESET_OPTIONS.filter((preset) => !options.some((option) => option.name === preset.name)).map(
+          (preset) => (
+            <button
+              key={preset.name}
+              type="button"
+              onClick={() => handleAddPreset(preset)}
+              className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 hover:border-pink-300 hover:bg-pink-50 hover:text-pink-500"
+            >
+              + {preset.name}
+              {preset.price > 0 && ` (+${preset.price.toLocaleString()}원)`}
+            </button>
+          ),
+        )}
       </div>
       <button
         type="button"
