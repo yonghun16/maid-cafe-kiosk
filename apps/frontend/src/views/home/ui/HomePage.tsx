@@ -117,7 +117,7 @@ export function HomePage() {
         <button
           type="button"
           onClick={handleRestartClick}
-          className="mt-4 w-full text-center text-xs text-gray-400 underline hover:text-pink-500"
+          className="mt-4 w-full rounded-md border border-gray-200 py-2.5 text-sm font-semibold text-gray-500 transition-colors hover:border-pink-300 hover:bg-pink-50 hover:text-pink-500"
         >
           ↩ 처음부터 다시 시작
         </button>
