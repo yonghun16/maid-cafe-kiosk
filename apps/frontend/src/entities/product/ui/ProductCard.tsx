@@ -122,9 +122,11 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
 
       <Modal isOpen={isOptionModalOpen} onClose={() => setIsOptionModalOpen(false)} title={product.name}>
         <div className="space-y-4">
-          <div className="flex gap-4">
+          <div className="flex items-start gap-4">
             {/* ✅ 그림을 왼쪽에, 옵션을 오른쪽에 둬서 상품 사진 비율(3:4)이
-                눌리지 않고 그대로 보이게 합니다. */}
+                눌리지 않고 그대로 보이게 합니다. items-start로 옵션이
+                늘어나도(예: ICE 얼음양 선택지) flex가 사진 높이를 늘리지
+                않게 합니다. */}
             <img
               src={product.imageUrl}
               alt={product.name}
