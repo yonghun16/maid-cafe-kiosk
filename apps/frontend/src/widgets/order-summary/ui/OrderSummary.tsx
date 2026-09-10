@@ -49,7 +49,6 @@ export function OrderSummary() {
                     {item.selectedOptions?.map((option) => <span key={option.name}>({option.name})</span>)}
                   </p>
                 )}
-                {item.magicSpell && <p className="truncate text-xs text-gray-400">🪄 {item.magicSpell}</p>}
                 <p className="whitespace-nowrap text-sm text-gray-500">{item.price.toLocaleString()}원</p>
               </div>
               <button

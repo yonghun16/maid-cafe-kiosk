@@ -5,10 +5,8 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Product, ProductOption } from '@repo/types';
 import { Modal } from '../../../shared/ui';
-import { MAGIC_SPELL_OPTIONS } from '../model/optionConstants';
 
 interface ProductOptions {
-  magicSpell?: string;
   selectedOptions?: ProductOption[];
 }
 
@@ -23,11 +21,11 @@ const CARD_STYLE = { bg: 'bg-pink-50', paw: 'text-pink-400' };
 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
   // ✅ 카드를 클릭하면 바로 담기지 않고, 옵션을 고를 수 있는 모달이
-  // 먼저 뜹니다([[상품옵션선택]] 참고). "샷 추가"/"온도(HOT·ICE)"는
-  // 매장 전체 고정 옵션이 아니라, 필요한 메뉴에만 관리자가 등록하는
-  // 자유 옵션(`product.options`)입니다([[옵션조합관리]] 참고).
+  // 먼저 뜹니다([[상품옵션선택]] 참고). "샷 추가"/"온도(HOT·ICE)"/
+  // "마법의 주문"은 매장 전체 고정 옵션이 아니라, 필요한 메뉴에만
+  // 관리자가 등록하는 자유 옵션(`product.options`)입니다
+  // ([[옵션조합관리]] 참고).
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
-  const [magicSpell, setMagicSpell] = useState('');
   const [selectedOptionNames, setSelectedOptionNames] = useState<string[]>([]);
 
   const productOptions = product.options ?? [];
@@ -37,7 +35,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
       toast.error('품절된 메뉴입니다.');
       return;
     }
-    setMagicSpell('');
     setSelectedOptionNames([]);
     setIsOptionModalOpen(true);
   };
@@ -51,7 +48,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   const handleAdd = () => {
     const selectedOptions = productOptions.filter((option) => selectedOptionNames.includes(option.name));
     onAddToCart(product, {
-      magicSpell: magicSpell || undefined,
       selectedOptions: selectedOptions.length > 0 ? selectedOptions : undefined,
     });
     setIsOptionModalOpen(false);
@@ -128,24 +124,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
                   ))}
                 </div>
               )}
-              <div>
-                <label htmlFor="magic-spell" className="mb-1 block text-sm font-semibold text-gray-700">
-                  🪄 마법의 주문
-                </label>
-                <select
-                  id="magic-spell"
-                  value={magicSpell}
-                  onChange={(e) => setMagicSpell(e.target.value)}
-                  className="w-full rounded-lg border border-pink-100 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
-                >
-                  <option value="">선택 안 함</option>
-                  {MAGIC_SPELL_OPTIONS.map((spell) => (
-                    <option key={spell} value={spell}>
-                      {spell}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
           </div>
           <p className="text-right text-lg font-bold text-pink-600">{totalPrice.toLocaleString()}원</p>
