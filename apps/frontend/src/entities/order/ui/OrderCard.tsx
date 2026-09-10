@@ -32,6 +32,11 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
           {order.orderNumber != null && (
             <span className="text-xl font-extrabold text-gray-700">No. {order.orderNumber}</span>
           )}
+          {order.paymentMethod && (
+            <span className="rounded-full bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-600">
+              {order.paymentMethod}
+            </span>
+          )}
         </div>
         <span className="text-lg font-semibold text-gray-400">
           {date} {time}

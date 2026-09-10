@@ -22,6 +22,7 @@ export interface OrderDocument extends Document {
   orderType: 'dine-in' | 'takeout';
   isCompleted: boolean;
   createdAt: Date;
+  paymentMethod?: '신용카드' | 'NPay' | 'Kakao Pay' | '토스페이';
 }
 
 const orderSchema = new Schema<OrderDocument>({
@@ -53,6 +54,8 @@ const orderSchema = new Schema<OrderDocument>({
   // 빠지고 지난 주문 목록으로 이동합니다.
   isCompleted: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
+  // 실제 결제 게이트웨이 연동 전이라 선택값만 기록합니다.
+  paymentMethod: { type: String, enum: ['신용카드', 'NPay', 'Kakao Pay', '토스페이'] },
 });
 
 export default mongoose.model<OrderDocument>('Order', orderSchema);

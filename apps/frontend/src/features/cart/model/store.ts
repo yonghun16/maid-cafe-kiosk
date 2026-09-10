@@ -1,7 +1,7 @@
 // @owner: ai
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
-import type { OrderType, Product, CartItem, ProductOption } from '@repo/types';
+import type { OrderType, PaymentMethod, Product, CartItem, ProductOption } from '@repo/types';
 import { submitOrder as submitOrderRequest } from '../api/orderApi';
 
 interface AddToCartOptions {
@@ -19,7 +19,7 @@ interface CartState {
   increaseQuantity: (cartItemId: string) => void;
   decreaseQuantity: (cartItemId: string) => void;
   removeFromCart: (cartItemId: string) => void;
-  submitOrder: (orderType: OrderType) => Promise<boolean>;
+  submitOrder: (orderType: OrderType, paymentMethod: PaymentMethod) => Promise<boolean>;
 }
 
 function calculateTotalPrice(items: CartItem[]): number {
@@ -120,7 +120,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
   },
 
-  submitOrder: async (orderType) => {
+  submitOrder: async (orderType, paymentMethod) => {
     const { items, totalPrice } = get();
     if (items.length === 0) {
       toast.error('장바구니가 비어있습니다.');
@@ -143,6 +143,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         })),
         totalPrice,
         orderType,
+        paymentMethod,
       });
 
       toast.dismiss(loadingToast);

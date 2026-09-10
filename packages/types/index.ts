@@ -112,6 +112,11 @@ export interface CartItem extends Product {
 // 매장 내(dine-in) / 포장(takeout) 구분
 export type OrderType = 'dine-in' | 'takeout';
 
+// 결제 수단. 실제 결제 게이트웨이 연동은 아직 없고([[결제게이트웨이연동]]
+// 참고), "주문하기" 시 고르는 화면만 우선 만들어져 있어 고른 값을
+// 기록만 합니다.
+export type PaymentMethod = '신용카드' | 'NPay' | 'Kakao Pay' | '토스페이';
+
 // 주문에 담긴 아이템 하나의 타입. 이름/가격/이미지를 주문 시점 스냅샷으로
 // 남기고 상품 자체(카테고리 등)는 참조하지 않습니다 — 나중에 상품이
 // 수정/삭제돼도 과거 주문 내역은 그대로 남아야 하기 때문입니다. 이미지는
@@ -156,6 +161,8 @@ export interface Order {
   orderType: OrderType;
   isCompleted: boolean; // true면 지난 주문(완료)으로 취급
   createdAt: Date;
+  // 주문 시 고른 결제 수단. 이 필드가 생기기 전 주문에는 값이 없습니다.
+  paymentMethod?: PaymentMethod;
 }
 
 // 주문 목록 조회(GET /api/orders) 시 진행중/지난 주문을 나누는 필터 값
@@ -166,6 +173,7 @@ export interface CreateOrderInput {
   items: OrderItem[];
   totalPrice: number;
   orderType: OrderType;
+  paymentMethod: PaymentMethod;
 }
 
 // 월별 매출/판매량 추이 조회(GET /api/orders/stats/monthly)의 응답

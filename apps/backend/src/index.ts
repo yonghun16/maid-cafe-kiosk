@@ -829,6 +829,7 @@ app.post(
         items: req.body.items,
         totalPrice: req.body.totalPrice,
         orderType: req.body.orderType,
+        paymentMethod: req.body.paymentMethod,
       });
       await newOrder.save();
       res.status(201).json(newOrder);

@@ -2,8 +2,20 @@
 'use client';
 
 import { useState } from 'react';
+import type { PaymentMethod } from '@repo/types';
 import { useCartStore } from '../../../features/cart';
 import { useOrderTypeStore } from '../../../features/order-type';
+import { Modal } from '../../../shared/ui';
+
+// ✅ 실제 결제 게이트웨이 연동은 아직 없어서([[결제게이트웨이연동]] 참고),
+// "주문하기"를 누르면 결제 수단을 고르는 화면만 먼저 보여주고, 고른
+// 수단을 기록만 한 뒤 바로 주문을 진행합니다.
+const PAYMENT_METHODS: { value: PaymentMethod; icon: string; className: string }[] = [
+  { value: '신용카드', icon: '💳', className: 'bg-gray-800 text-white hover:bg-gray-900' },
+  { value: 'NPay', icon: 'N', className: 'bg-[#03C75A] text-white hover:brightness-95' },
+  { value: 'Kakao Pay', icon: '💬', className: 'bg-[#FEE500] text-gray-900 hover:brightness-95' },
+  { value: '토스페이', icon: '🅣', className: 'bg-[#1B64DA] text-white hover:brightness-95' },
+];
 
 export function OrderSummary() {
   const items = useCartStore((state) => state.items);
@@ -15,12 +27,23 @@ export function OrderSummary() {
   const orderType = useOrderTypeStore((state) => state.orderType);
   const resetOrderType = useOrderTypeStore((state) => state.resetOrderType);
   const [isMobileListOpen, setIsMobileListOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ 주문이 성공하면 다음 손님을 위해 매장/포장 선택 화면으로 되돌립니다.
-  const handleOrderSubmit = async () => {
-    if (!orderType) return;
-    const success = await submitOrder(orderType);
+  const handleOpenPaymentModal = () => {
+    if (items.length === 0) return;
+    setIsPaymentModalOpen(true);
+  };
+
+  // ✅ 결제 수단을 고르면 바로 주문을 진행합니다. 주문이 성공하면 다음
+  // 손님을 위해 매장/포장 선택 화면으로 되돌립니다.
+  const handleSelectPayment = async (paymentMethod: PaymentMethod) => {
+    if (!orderType || isSubmitting) return;
+    setIsSubmitting(true);
+    const success = await submitOrder(orderType, paymentMethod);
+    setIsSubmitting(false);
     if (success) {
+      setIsPaymentModalOpen(false);
       resetOrderType();
     }
   };
@@ -99,7 +122,7 @@ export function OrderSummary() {
   const orderButton = (
     <button
       type="button"
-      onClick={handleOrderSubmit}
+      onClick={handleOpenPaymentModal}
       disabled={items.length === 0}
       className="w-full rounded-full bg-pink-500 py-3 text-lg font-bold text-white shadow-md transition-all hover:bg-pink-600 disabled:bg-gray-300 disabled:shadow-none"
     >
@@ -155,6 +178,28 @@ export function OrderSummary() {
 
         <div className="mt-4">{orderButton}</div>
       </div>
+
+      <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} title="결제 수단 선택">
+        <p className="mb-4 text-center text-sm text-gray-500">
+          총 <span className="font-bold text-pink-600">{totalPrice.toLocaleString()}원</span>을 어떻게
+          결제하시겠어요?
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {PAYMENT_METHODS.map((method) => (
+            <button
+              key={method.value}
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => handleSelectPayment(method.value)}
+              className={`flex flex-col items-center gap-2 rounded-xl py-5 text-sm font-bold shadow-sm transition-all disabled:cursor-not-allowed disabled:opacity-60 ${method.className}`}
+            >
+              <span className="text-2xl">{method.icon}</span>
+              <span>{method.value}</span>
+            </button>
+          ))}
+        </div>
+        {isSubmitting && <p className="mt-4 text-center text-sm text-gray-400">주문을 처리 중이에요...</p>}
+      </Modal>
     </aside>
   );
 }
