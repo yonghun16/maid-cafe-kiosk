@@ -25,7 +25,6 @@ export function OrderSummary() {
   const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const orderType = useOrderTypeStore((state) => state.orderType);
-  const resetOrderType = useOrderTypeStore((state) => state.resetOrderType);
   const [isMobileListOpen, setIsMobileListOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,8 +34,10 @@ export function OrderSummary() {
     setIsPaymentModalOpen(true);
   };
 
-  // ✅ 결제 수단을 고르면 바로 주문을 진행합니다. 주문이 성공하면 다음
-  // 손님을 위해 매장/포장 선택 화면으로 되돌립니다.
+  // ✅ 결제 수단을 고르면 바로 주문을 진행합니다. 주문이 성공하면
+  // 매장/포장 선택 화면으로 바로 되돌리지 않고, 장바구니 스토어에 남은
+  // `lastCompletedOrder`를 보고 `HomePage`가 [[주문완료화면]]을 띄웁니다
+  // (그 화면을 닫을 때 매장/포장 선택 화면으로 되돌아갑니다).
   const handleSelectPayment = async (paymentMethod: PaymentMethod) => {
     if (!orderType || isSubmitting) return;
     setIsSubmitting(true);
@@ -44,7 +45,6 @@ export function OrderSummary() {
     setIsSubmitting(false);
     if (success) {
       setIsPaymentModalOpen(false);
-      resetOrderType();
     }
   };
 

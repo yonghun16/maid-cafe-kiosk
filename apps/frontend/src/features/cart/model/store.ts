@@ -1,7 +1,7 @@
 // @owner: ai
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
-import type { OrderType, PaymentMethod, Product, CartItem, ProductOption } from '@repo/types';
+import type { Order, OrderType, PaymentMethod, Product, CartItem, ProductOption } from '@repo/types';
 import { submitOrder as submitOrderRequest } from '../api/orderApi';
 
 interface AddToCartOptions {
@@ -15,11 +15,15 @@ interface AddToCartOptions {
 interface CartState {
   items: CartItem[];
   totalPrice: number;
+  // 방금 성공적으로 제출한 주문. [[주문완료화면]]에서 주문번호를
+  // 보여주는 용도로만 쓰이고, 그 화면을 닫으면 다시 null로 비웁니다.
+  lastCompletedOrder: Order | null;
   addToCart: (product: Product, options?: AddToCartOptions) => void;
   increaseQuantity: (cartItemId: string) => void;
   decreaseQuantity: (cartItemId: string) => void;
   removeFromCart: (cartItemId: string) => void;
   clearCart: () => void;
+  clearLastCompletedOrder: () => void;
   submitOrder: (orderType: OrderType, paymentMethod: PaymentMethod) => Promise<boolean>;
 }
 
@@ -52,6 +56,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   // 1. 상태 (데이터)
   items: [],
   totalPrice: 0,
+  lastCompletedOrder: null,
 
   // 2. 액션 (상태를 변경하는 함수)
   addToCart: (product, options) => {
@@ -127,6 +132,10 @@ export const useCartStore = create<CartState>((set, get) => ({
     set({ items: [], totalPrice: 0 });
   },
 
+  clearLastCompletedOrder: () => {
+    set({ lastCompletedOrder: null });
+  },
+
   submitOrder: async (orderType, paymentMethod) => {
     const { items, totalPrice } = get();
     if (items.length === 0) {
@@ -136,7 +145,7 @@ export const useCartStore = create<CartState>((set, get) => ({
 
     const loadingToast = toast.loading('주문을 처리 중입니다...');
     try {
-      await submitOrderRequest({
+      const createdOrder = await submitOrderRequest({
         items: items.map((item) => ({
           productId: item._id,
           name: item.name,
@@ -154,10 +163,10 @@ export const useCartStore = create<CartState>((set, get) => ({
       });
 
       toast.dismiss(loadingToast);
-      toast.success('주문이 성공적으로 완료되었습니다!');
 
-      // 주문 완료 후 장바구니 비우기
-      set({ items: [], totalPrice: 0 });
+      // 주문 완료 후 장바구니 비우고, 생성된 주문을 [[주문완료화면]]에서
+      // 쓸 수 있게 남겨둡니다(주문번호 안내용).
+      set({ items: [], totalPrice: 0, lastCompletedOrder: createdOrder });
       return true;
     } catch (error) {
       console.error('주문 처리 중 오류가 발생했습니다:', error);

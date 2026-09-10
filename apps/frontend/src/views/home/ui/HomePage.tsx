@@ -8,6 +8,7 @@ import { useCartStore } from '../../../features/cart';
 import { OrderTypeSelect } from '../../../widgets/order-type-select';
 import { ProductList } from '../../../widgets/product-list';
 import { OrderSummary } from '../../../widgets/order-summary';
+import { OrderCompleteScreen } from '../../../widgets/order-complete';
 import { Modal } from '../../../shared/ui';
 
 const ORDER_TYPE_LABEL: Record<OrderType, string> = {
@@ -25,6 +26,8 @@ export function HomePage() {
   const setOrderType = useOrderTypeStore((state) => state.setOrderType);
   const resetOrderType = useOrderTypeStore((state) => state.resetOrderType);
   const clearCart = useCartStore((state) => state.clearCart);
+  const lastCompletedOrder = useCartStore((state) => state.lastCompletedOrder);
+  const clearLastCompletedOrder = useCartStore((state) => state.clearLastCompletedOrder);
   // ✅ 상단 바를 계속 크게 차지하던 "처음으로" 버튼 대신, 작은 배지를
   // 눌렀을 때만 뜨는 팝업으로 옮겼습니다([[매장내포장선택]] 참고).
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
@@ -56,6 +59,17 @@ export function HomePage() {
       activityEvents.forEach((event) => window.removeEventListener(event, resetTimer));
     };
   }, [orderType, clearCart, resetOrderType]);
+
+  // ✅ 주문 제출 직후에는 매장/포장 선택 화면보다 [[주문완료화면]]이
+  // 먼저 보여야 하므로, orderType 체크보다 먼저 검사합니다. "확인"을
+  // 누르거나 자동으로 닫히면 그제서야 매장/포장 선택 화면으로 돌아갑니다.
+  if (lastCompletedOrder) {
+    const handleDismissComplete = () => {
+      clearLastCompletedOrder();
+      resetOrderType();
+    };
+    return <OrderCompleteScreen order={lastCompletedOrder} onDismiss={handleDismissComplete} />;
+  }
 
   if (!orderType) {
     return <OrderTypeSelect />;
