@@ -63,6 +63,11 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
                     {item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'}
                   </span>
                 )}
+                {item.iceAmount && (
+                  <span className="rounded-full bg-sky-100 px-2 py-0.5 text-sm font-semibold text-sky-600">
+                    얼음 {item.iceAmount}
+                  </span>
+                )}
                 {item.hasExtraShot && (
                   <span className="rounded-full bg-pink-100 px-2 py-0.5 text-sm font-semibold text-pink-600">
                     샷 추가

@@ -99,6 +99,10 @@ export interface CartItem extends Product {
   // HOT/ICE 온도 선택. `product.hasTemperatureOption`이 켜진 메뉴에서만
   // 고를 수 있고, 가격에는 영향 없습니다.
   temperature?: 'HOT' | 'ICE';
+  // 얼음양 선택. `temperature`가 'ICE'일 때만 고를 수 있는 하위 옵션이라,
+  // HOT을 고르거나 온도를 아예 선택하지 않으면 값이 없습니다. 가격에는
+  // 영향 없습니다.
+  iceAmount?: '적게' | '적당' | '많이';
   // 이 메뉴에 등록된 커스텀 옵션(`Product.options`) 중 고객이 고른 것들.
   // 이름/가격을 선택 시점 스냅샷으로 담아, 이후 관리자가 메뉴 옵션을
   // 바꿔도 이미 담긴 장바구니/주문 내역은 그대로 유지됩니다.
@@ -131,6 +135,9 @@ export interface OrderItem {
   // 고른 값이 그대로 저장됩니다. 가격에는 영향 없습니다
   // ([[옵션조합관리]] 참고).
   temperature?: 'HOT' | 'ICE';
+  // 얼음양 선택. `temperature`가 'ICE'일 때만 값이 있습니다. 가격에는
+  // 영향 없습니다.
+  iceAmount?: '적게' | '적당' | '많이';
   // 이 아이템에 고른 커스텀 옵션들(이름/가격 스냅샷). `price`에는 이미
   // 이 옵션들의 가격이 더해져 있습니다.
   selectedOptions?: ProductOption[];

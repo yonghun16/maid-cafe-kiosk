@@ -11,6 +11,7 @@ export interface OrderItemDocument {
   hasExtraShot?: boolean;
   magicSpell?: string;
   temperature?: 'HOT' | 'ICE';
+  iceAmount?: '적게' | '적당' | '많이';
   selectedOptions?: ProductOption[];
 }
 
@@ -37,6 +38,7 @@ const orderSchema = new Schema<OrderDocument>({
       hasExtraShot: Boolean,
       magicSpell: String,
       temperature: { type: String, enum: ['HOT', 'ICE'] },
+      iceAmount: { type: String, enum: ['적게', '적당', '많이'] },
       selectedOptions: [
         {
           name: String,

@@ -5,10 +5,17 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Product, ProductOption } from '@repo/types';
 import { Modal } from '../../../shared/ui';
-import { MAGIC_SPELL_OPTIONS, TEMPERATURE_OPTIONS, type Temperature } from '../model/optionConstants';
+import {
+  ICE_AMOUNT_OPTIONS,
+  MAGIC_SPELL_OPTIONS,
+  TEMPERATURE_OPTIONS,
+  type IceAmount,
+  type Temperature,
+} from '../model/optionConstants';
 
 interface ProductOptions {
   temperature?: Temperature;
+  iceAmount?: IceAmount;
   magicSpell?: string;
   selectedOptions?: ProductOption[];
 }
@@ -31,6 +38,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   // 나타납니다([[옵션조합관리]] 참고).
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
   const [temperature, setTemperature] = useState<Temperature | ''>('');
+  const [iceAmount, setIceAmount] = useState<IceAmount | ''>('');
   const [magicSpell, setMagicSpell] = useState('');
   const [selectedOptionNames, setSelectedOptionNames] = useState<string[]>([]);
 
@@ -42,9 +50,20 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
       return;
     }
     setTemperature('');
+    setIceAmount('');
     setMagicSpell('');
     setSelectedOptionNames([]);
     setIsOptionModalOpen(true);
+  };
+
+  // ✅ ICE가 아닐 때 골라둔 얼음양이 남아있지 않도록, 온도를 바꿀 때
+  // ICE가 아니면 얼음양도 같이 초기화합니다.
+  const handleTemperatureClick = (option: Temperature) => {
+    setTemperature((prev) => {
+      const next = prev === option ? '' : option;
+      if (next !== 'ICE') setIceAmount('');
+      return next;
+    });
   };
 
   const toggleOption = (name: string) => {
@@ -57,6 +76,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
     const selectedOptions = productOptions.filter((option) => selectedOptionNames.includes(option.name));
     onAddToCart(product, {
       temperature: temperature || undefined,
+      iceAmount: temperature === 'ICE' ? iceAmount || undefined : undefined,
       magicSpell: magicSpell || undefined,
       selectedOptions: selectedOptions.length > 0 ? selectedOptions : undefined,
     });
@@ -119,7 +139,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
                       <button
                         key={option}
                         type="button"
-                        onClick={() => setTemperature((prev) => (prev === option ? '' : option))}
+                        onClick={() => handleTemperatureClick(option)}
                         className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
                           temperature === option
                             ? 'border-pink-500 bg-pink-500 text-white'
@@ -130,6 +150,27 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
                       </button>
                     ))}
                   </div>
+                  {temperature === 'ICE' && (
+                    <div className="mt-2">
+                      <span className="mb-1 block text-xs font-semibold text-gray-500">얼음양</span>
+                      <div className="flex gap-2">
+                        {ICE_AMOUNT_OPTIONS.map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => setIceAmount((prev) => (prev === option ? '' : option))}
+                            className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-semibold transition-colors ${
+                              iceAmount === option
+                                ? 'border-sky-500 bg-sky-500 text-white'
+                                : 'border-sky-100 text-gray-600 hover:bg-sky-50'
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               {product.hasMagicSpellOption && (

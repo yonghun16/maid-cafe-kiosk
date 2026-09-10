@@ -47,6 +47,7 @@ export function OrderSummary() {
                 {(item.temperature || item.magicSpell || (item.selectedOptions?.length ?? 0) > 0) && (
                   <p className="flex flex-wrap gap-x-1 text-xs font-normal text-pink-500">
                     {item.temperature && <span>({item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'})</span>}
+                    {item.iceAmount && <span>(얼음 {item.iceAmount})</span>}
                     {item.magicSpell && <span>(🪄 {item.magicSpell})</span>}
                     {item.selectedOptions?.map((option) => <span key={option.name}>({option.name})</span>)}
                   </p>

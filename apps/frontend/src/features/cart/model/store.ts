@@ -6,6 +6,7 @@ import { submitOrder as submitOrderRequest } from '../api/orderApi';
 
 interface AddToCartOptions {
   temperature?: 'HOT' | 'ICE';
+  iceAmount?: '적게' | '적당' | '많이';
   magicSpell?: string;
   selectedOptions?: ProductOption[];
 }
@@ -32,11 +33,13 @@ function calculateTotalPrice(items: CartItem[]): number {
 function makeCartItemId(
   productId: string,
   temperature?: 'HOT' | 'ICE',
+  iceAmount?: '적게' | '적당' | '많이',
   magicSpell?: string,
   selectedOptions?: ProductOption[],
 ): string {
   const parts = [productId];
   if (temperature) parts.push(`temp:${temperature}`);
+  if (iceAmount) parts.push(`ice:${iceAmount}`);
   if (magicSpell) parts.push(`spell:${magicSpell}`);
   if (selectedOptions && selectedOptions.length > 0) {
     parts.push(`opts:${selectedOptions.map((o) => o.name).join(',')}`);
@@ -52,9 +55,10 @@ export const useCartStore = create<CartState>((set, get) => ({
   // 2. 액션 (상태를 변경하는 함수)
   addToCart: (product, options) => {
     const temperature = options?.temperature;
+    const iceAmount = options?.iceAmount;
     const magicSpell = options?.magicSpell;
     const selectedOptions = options?.selectedOptions;
-    const cartItemId = makeCartItemId(product._id, temperature, magicSpell, selectedOptions);
+    const cartItemId = makeCartItemId(product._id, temperature, iceAmount, magicSpell, selectedOptions);
 
     const { items } = get(); // 현재 장바구니 상태 가져오기
     const existingItem = items.find((item) => item.cartItemId === cartItemId);
@@ -74,14 +78,19 @@ export const useCartStore = create<CartState>((set, get) => ({
       const price = product.price + selectedOptionsPrice;
       updatedItems = [
         ...items,
-        { ...product, price, quantity: 1, cartItemId, temperature, magicSpell, selectedOptions },
+        { ...product, price, quantity: 1, cartItemId, temperature, iceAmount, magicSpell, selectedOptions },
       ];
     }
 
     // 상태 업데이트
     set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
 
-    const optionLabel = [temperature, magicSpell, ...(selectedOptions ?? []).map((o) => o.name)]
+    const optionLabel = [
+      temperature,
+      iceAmount && `얼음 ${iceAmount}`,
+      magicSpell,
+      ...(selectedOptions ?? []).map((o) => o.name),
+    ]
       .filter(Boolean)
       .join(', ');
     toast.success(`${product.name}${optionLabel ? ` (${optionLabel})` : ''}을(를) 장바구니에 담았습니다!`);
@@ -128,6 +137,7 @@ export const useCartStore = create<CartState>((set, get) => ({
           imageUrl: item.imageUrl,
           quantity: item.quantity,
           temperature: item.temperature,
+          iceAmount: item.iceAmount,
           magicSpell: item.magicSpell,
           selectedOptions: item.selectedOptions,
         })),
