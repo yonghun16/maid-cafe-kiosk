@@ -42,6 +42,11 @@ export function OrderSummary() {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-gray-800">
                   {item.name}
+                  {item.temperature && (
+                    <span className="ml-1 text-xs font-normal text-pink-500">
+                      ({item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'})
+                    </span>
+                  )}
                   {item.hasExtraShot && <span className="ml-1 text-xs font-normal text-pink-500">(샷 추가)</span>}
                 </p>
                 {item.magicSpell && <p className="truncate text-xs text-gray-400">🪄 {item.magicSpell}</p>}

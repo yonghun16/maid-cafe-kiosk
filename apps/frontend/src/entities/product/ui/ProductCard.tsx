@@ -5,12 +5,15 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Product } from '@repo/types';
 import { Modal } from '../../../shared/ui';
-import { EXTRA_SHOT_PRICE, MAGIC_SPELL_OPTIONS } from '../model/optionConstants';
+import { EXTRA_SHOT_PRICE, MAGIC_SPELL_OPTIONS, TEMPERATURE_OPTIONS, type Temperature } from '../model/optionConstants';
 
 interface ProductOptions {
   hasExtraShot: boolean;
   magicSpell?: string;
+  temperature?: Temperature;
 }
+
+const TEMPERATURE_LABEL: Record<Temperature, string> = { HOT: '🔥 HOT', ICE: '🧊 ICE' };
 
 interface ProductCardProps {
   product: Product;
@@ -27,6 +30,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
   const [hasExtraShot, setHasExtraShot] = useState(false);
   const [magicSpell, setMagicSpell] = useState('');
+  const [temperature, setTemperature] = useState<Temperature | ''>('');
 
   const handleClick = () => {
     if (product.isSoldOut) {
@@ -35,11 +39,12 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
     }
     setHasExtraShot(false);
     setMagicSpell('');
+    setTemperature('');
     setIsOptionModalOpen(true);
   };
 
   const handleAdd = () => {
-    onAddToCart(product, { hasExtraShot, magicSpell: magicSpell || undefined });
+    onAddToCart(product, { hasExtraShot, magicSpell: magicSpell || undefined, temperature: temperature || undefined });
     setIsOptionModalOpen(false);
   };
 
@@ -88,6 +93,25 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
               className="aspect-[3/4] w-28 shrink-0 rounded-lg object-cover sm:w-32"
             />
             <div className="flex-1 space-y-3">
+              <div>
+                <span className="mb-1 block text-sm font-semibold text-gray-700">온도</span>
+                <div className="flex gap-2">
+                  {TEMPERATURE_OPTIONS.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setTemperature((prev) => (prev === option ? '' : option))}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                        temperature === option
+                          ? 'border-pink-500 bg-pink-500 text-white'
+                          : 'border-pink-100 text-gray-600 hover:bg-pink-50'
+                      }`}
+                    >
+                      {TEMPERATURE_LABEL[option]}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <label className="flex cursor-pointer items-center justify-between rounded-lg border border-pink-100 px-3 py-2.5">
                 <span className="text-sm font-semibold text-gray-700">샷 추가</span>
                 <span className="flex items-center gap-2">

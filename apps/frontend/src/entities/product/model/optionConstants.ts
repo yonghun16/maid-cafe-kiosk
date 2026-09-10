@@ -13,3 +13,12 @@ export const EXTRA_SHOT_PRICE = 700;
  * 서빙할 때 외쳐주는 주문(スペル)을 고객이 고르는 용도입니다.
  */
 export const MAGIC_SPELL_OPTIONS = ['모에모에뀽', '오이시쿠나레', '냥냥쿵', '하피네스차지!'] as const;
+
+/**
+ * "HOT / ICE" 온도 옵션. 가격에는 영향이 없습니다. 커피/에이드가 아닌
+ * 메뉴(디저트 등)에도 똑같이 노출되지만, 다른 옵션과 마찬가지로
+ * 선택하지 않아도 되는 자유 선택입니다 — 카테고리별로 옵션을 다르게
+ * 보여주는 기능은 이번 범위에 넣지 않았습니다.
+ */
+export const TEMPERATURE_OPTIONS = ['HOT', 'ICE'] as const;
+export type Temperature = (typeof TEMPERATURE_OPTIONS)[number];

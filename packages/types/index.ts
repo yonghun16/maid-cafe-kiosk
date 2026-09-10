@@ -74,6 +74,9 @@ export interface CartItem extends Product {
   // "마법의 주문" 선택값(예: '모에모에뀽'). 가격에는 영향 없는 메이드
   // 카페 컨셉의 재미 옵션이라, 값이 없으면 선택 안 한 것으로 취급합니다.
   magicSpell?: string;
+  // HOT/ICE 온도 선택. 가격에는 영향 없고, 값이 없으면 선택 안 한
+  // 것으로 취급합니다.
+  temperature?: 'HOT' | 'ICE';
 }
 
 // 매장 내(dine-in) / 포장(takeout) 구분
@@ -93,6 +96,8 @@ export interface OrderItem {
   hasExtraShot?: boolean;
   // "마법의 주문" 선택값. 가격에는 영향 없습니다.
   magicSpell?: string;
+  // HOT/ICE 온도 선택. 가격에는 영향 없습니다.
+  temperature?: 'HOT' | 'ICE';
   // MongoDB가 하위 문서에 자동으로 부여하는 id. 주문 생성 요청 바디에는
   // 없고(서버가 저장하며 채움), 저장된 주문을 조회할 때만 내려옵니다 —
   // 같은 상품이 옵션만 다르게 두 줄로 들어간 경우를 구분하는 key로 씁니다.

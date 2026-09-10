@@ -9,6 +9,7 @@ export interface OrderItemDocument {
   quantity: number;
   hasExtraShot?: boolean;
   magicSpell?: string;
+  temperature?: 'HOT' | 'ICE';
 }
 
 export interface OrderDocument extends Document {
@@ -33,6 +34,7 @@ const orderSchema = new Schema<OrderDocument>({
       quantity: Number,
       hasExtraShot: Boolean,
       magicSpell: String,
+      temperature: { type: String, enum: ['HOT', 'ICE'] },
     },
   ],
   totalPrice: { type: Number, required: true },

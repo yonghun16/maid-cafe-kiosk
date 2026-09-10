@@ -50,6 +50,15 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
             <div className="min-w-0 flex-1">
               <p className="truncate text-lg font-semibold text-gray-800">
                 {item.name}
+                {item.temperature && (
+                  <span
+                    className={`ml-2 rounded-full px-2 py-0.5 text-sm font-semibold ${
+                      item.temperature === 'HOT' ? 'bg-orange-100 text-orange-600' : 'bg-sky-100 text-sky-600'
+                    }`}
+                  >
+                    {item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'}
+                  </span>
+                )}
                 {item.hasExtraShot && (
                   <span className="ml-2 rounded-full bg-pink-100 px-2 py-0.5 text-sm font-semibold text-pink-600">
                     샷 추가

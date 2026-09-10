@@ -8,6 +8,7 @@ import { submitOrder as submitOrderRequest } from '../api/orderApi';
 interface AddToCartOptions {
   hasExtraShot?: boolean;
   magicSpell?: string;
+  temperature?: 'HOT' | 'ICE';
 }
 
 // 장바구니 스토어의 상태와 액션에 대한 타입 정의
@@ -29,10 +30,16 @@ function calculateTotalPrice(items: CartItem[]): number {
  * 상품 id + 선택한 옵션으로 장바구니 줄의 고유 id를 만듭니다. 같은
  * 상품이라도 옵션 조합이 다르면 다른 줄로 취급해야 하기 때문입니다.
  */
-function makeCartItemId(productId: string, hasExtraShot: boolean, magicSpell?: string): string {
+function makeCartItemId(
+  productId: string,
+  hasExtraShot: boolean,
+  magicSpell?: string,
+  temperature?: 'HOT' | 'ICE',
+): string {
   const parts = [productId];
   if (hasExtraShot) parts.push('extra-shot');
   if (magicSpell) parts.push(`spell:${magicSpell}`);
+  if (temperature) parts.push(`temp:${temperature}`);
   return parts.join(':');
 }
 
@@ -45,7 +52,8 @@ export const useCartStore = create<CartState>((set, get) => ({
   addToCart: (product, options) => {
     const hasExtraShot = options?.hasExtraShot ?? false;
     const magicSpell = options?.magicSpell;
-    const cartItemId = makeCartItemId(product._id, hasExtraShot, magicSpell);
+    const temperature = options?.temperature;
+    const cartItemId = makeCartItemId(product._id, hasExtraShot, magicSpell, temperature);
 
     const { items } = get(); // 현재 장바구니 상태 가져오기
     const existingItem = items.find((item) => item.cartItemId === cartItemId);
@@ -60,15 +68,20 @@ export const useCartStore = create<CartState>((set, get) => ({
       );
     } else {
       // 없으면 새로 추가. 옵션 추가금(샷 추가)은 여기서 가격에 미리
-      // 더해둡니다. "마법의 주문"은 가격에 영향 없는 재미 옵션입니다.
+      // 더해둡니다. "마법의 주문"/온도(HOT·ICE)는 가격에 영향 없는
+      // 옵션입니다.
       const price = product.price + (hasExtraShot ? EXTRA_SHOT_PRICE : 0);
-      updatedItems = [...items, { ...product, price, quantity: 1, cartItemId, hasExtraShot, magicSpell }];
+      updatedItems = [
+        ...items,
+        { ...product, price, quantity: 1, cartItemId, hasExtraShot, magicSpell, temperature },
+      ];
     }
 
     // 상태 업데이트
     set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
 
-    toast.success(`${product.name}${hasExtraShot ? ' (샷 추가)' : ''}을(를) 장바구니에 담았습니다!`);
+    const optionLabel = [temperature, hasExtraShot ? '샷 추가' : ''].filter(Boolean).join(', ');
+    toast.success(`${product.name}${optionLabel ? ` (${optionLabel})` : ''}을(를) 장바구니에 담았습니다!`);
   },
 
   increaseQuantity: (cartItemId) => {
@@ -113,6 +126,7 @@ export const useCartStore = create<CartState>((set, get) => ({
           quantity: item.quantity,
           hasExtraShot: item.hasExtraShot,
           magicSpell: item.magicSpell,
+          temperature: item.temperature,
         })),
         totalPrice,
         orderType,
