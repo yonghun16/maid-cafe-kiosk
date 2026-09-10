@@ -1,9 +1,10 @@
 // @owner: ai
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { OrderType } from '@repo/types';
 import { useOrderTypeStore } from '../../../features/order-type';
+import { useCartStore } from '../../../features/cart';
 import { OrderTypeSelect } from '../../../widgets/order-type-select';
 import { ProductList } from '../../../widgets/product-list';
 import { OrderSummary } from '../../../widgets/order-summary';
@@ -14,15 +15,47 @@ const ORDER_TYPE_LABEL: Record<OrderType, string> = {
   takeout: '🥡 포장',
 };
 
+// ✅ 세션 타임아웃([[세션타임아웃]] 참고): 손님이 메뉴를 고르다가 자리를
+// 뜨면 다음 손님이 이전 손님의 장바구니를 이어받게 되는 문제를 막기
+// 위해, 이 시간만큼 조작이 없으면 경고 없이 바로 초기화합니다.
+const IDLE_TIMEOUT_MS = 60_000;
+
 export function HomePage() {
   const orderType = useOrderTypeStore((state) => state.orderType);
   const setOrderType = useOrderTypeStore((state) => state.setOrderType);
   const resetOrderType = useOrderTypeStore((state) => state.resetOrderType);
+  const clearCart = useCartStore((state) => state.clearCart);
   // ✅ 상단 바를 계속 크게 차지하던 "처음으로" 버튼 대신, 작은 배지를
   // 눌렀을 때만 뜨는 팝업으로 옮겼습니다([[매장내포장선택]] 참고).
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [isRestartConfirmOpen, setIsRestartConfirmOpen] = useState(false);
   const [pendingOrderType, setPendingOrderType] = useState<OrderType | null>(null);
+
+  // ✅ 주문 화면(orderType이 있는 동안)에서만 미조작 타이머를 돌립니다.
+  // 어떤 조작이든(터치/클릭/키보드/휠) 타이머를 다시 시작시키고, 1분간
+  // 아무 반응도 없으면 경고 없이 바로 장바구니를 비우고 매장/포장 선택
+  // 화면으로 되돌립니다.
+  useEffect(() => {
+    if (!orderType) return;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        clearCart();
+        resetOrderType();
+      }, IDLE_TIMEOUT_MS);
+    };
+
+    const activityEvents = ['pointerdown', 'keydown', 'touchstart', 'wheel'] as const;
+    activityEvents.forEach((event) => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeoutId);
+      activityEvents.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+  }, [orderType, clearCart, resetOrderType]);
 
   if (!orderType) {
     return <OrderTypeSelect />;

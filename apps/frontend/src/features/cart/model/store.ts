@@ -19,6 +19,7 @@ interface CartState {
   increaseQuantity: (cartItemId: string) => void;
   decreaseQuantity: (cartItemId: string) => void;
   removeFromCart: (cartItemId: string) => void;
+  clearCart: () => void;
   submitOrder: (orderType: OrderType, paymentMethod: PaymentMethod) => Promise<boolean>;
 }
 
@@ -118,6 +119,12 @@ export const useCartStore = create<CartState>((set, get) => ({
     const { items } = get();
     const updatedItems = items.filter((item) => item.cartItemId !== cartItemId);
     set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
+  },
+
+  // ✅ 세션 타임아웃([[세션타임아웃]] 참고)처럼 주문 없이 장바구니만
+  // 비워야 하는 경우를 위한 액션입니다.
+  clearCart: () => {
+    set({ items: [], totalPrice: 0 });
   },
 
   submitOrder: async (orderType, paymentMethod) => {
