@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Product, ProductOption } from '@repo/types';
-import { Modal } from '../../../shared/ui';
+import { Dropdown, Modal } from '../../../shared/ui';
 import {
   ICE_AMOUNT_OPTIONS,
   MAGIC_SPELL_OPTIONS,
@@ -180,19 +180,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
                   <label htmlFor="magic-spell" className="mb-1 block text-sm font-semibold text-gray-700">
                     🪄 마법의 주문
                   </label>
-                  <select
-                    id="magic-spell"
-                    value={magicSpell}
-                    onChange={(e) => setMagicSpell(e.target.value)}
-                    className="w-full rounded-lg border border-pink-100 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
-                  >
-                    <option value="">선택 안 함</option>
-                    {MAGIC_SPELL_OPTIONS.map((spell) => (
-                      <option key={spell} value={spell}>
-                        {spell}
-                      </option>
-                    ))}
-                  </select>
+                  <Dropdown id="magic-spell" value={magicSpell} onChange={setMagicSpell} options={MAGIC_SPELL_OPTIONS} />
                 </div>
               )}
               {productOptions.length > 0 && (
