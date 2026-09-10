@@ -78,15 +78,12 @@ export interface ReorderCategoriesInput {
 export interface CartItem extends Product {
   quantity: number;
   // 장바구니 안에서 이 줄을 구분하는 고유 id. 같은 상품이라도 옵션
-  // 조합(예: 마법의 주문, 온도, 커스텀 옵션)이 다르면 다른 줄로
-  // 취급해야 해서, 상품 `_id`와는 별도로 둡니다.
+  // 조합(예: 마법의 주문, 커스텀 옵션)이 다르면 다른 줄로 취급해야
+  // 해서, 상품 `_id`와는 별도로 둡니다.
   cartItemId: string;
   // "마법의 주문" 선택값(예: '모에모에뀽'). 가격에는 영향 없는 메이드
   // 카페 컨셉의 재미 옵션이라, 값이 없으면 선택 안 한 것으로 취급합니다.
   magicSpell?: string;
-  // HOT/ICE 온도 선택. 가격에는 영향 없고, 값이 없으면 선택 안 한
-  // 것으로 취급합니다.
-  temperature?: 'HOT' | 'ICE';
   // 이 메뉴에 등록된 커스텀 옵션(`Product.options`) 중 고객이 고른 것들.
   // 이름/가격을 선택 시점 스냅샷으로 담아, 이후 관리자가 메뉴 옵션을
   // 바꿔도 이미 담긴 장바구니/주문 내역은 그대로 유지됩니다.
@@ -113,7 +110,10 @@ export interface OrderItem {
   hasExtraShot?: boolean;
   // "마법의 주문" 선택값. 가격에는 영향 없습니다.
   magicSpell?: string;
-  // HOT/ICE 온도 선택. 가격에는 영향 없습니다.
+  // HOT/ICE 온도 선택. 샷 추가와 마찬가지로 예전엔 매장 전체 고정
+  // 옵션이었지만 이제는 메뉴별 커스텀 옵션(`selectedOptions`)으로
+  // 등록하는 방식으로 바뀌어서, 이 필드는 그 이전에 생성된 주문에만
+  // 남아있습니다([[옵션조합관리]] 참고).
   temperature?: 'HOT' | 'ICE';
   // 이 아이템에 고른 커스텀 옵션들(이름/가격 스냅샷). `price`에는 이미
   // 이 옵션들의 가격이 더해져 있습니다.

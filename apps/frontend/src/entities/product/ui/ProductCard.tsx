@@ -5,15 +5,12 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Product, ProductOption } from '@repo/types';
 import { Modal } from '../../../shared/ui';
-import { MAGIC_SPELL_OPTIONS, TEMPERATURE_OPTIONS, type Temperature } from '../model/optionConstants';
+import { MAGIC_SPELL_OPTIONS } from '../model/optionConstants';
 
 interface ProductOptions {
   magicSpell?: string;
-  temperature?: Temperature;
   selectedOptions?: ProductOption[];
 }
-
-const TEMPERATURE_LABEL: Record<Temperature, string> = { HOT: '🔥 HOT', ICE: '🧊 ICE' };
 
 interface ProductCardProps {
   product: Product;
@@ -26,12 +23,11 @@ const CARD_STYLE = { bg: 'bg-pink-50', paw: 'text-pink-400' };
 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
   // ✅ 카드를 클릭하면 바로 담기지 않고, 옵션을 고를 수 있는 모달이
-  // 먼저 뜹니다([[상품옵션선택]] 참고). "샷 추가"는 매장 전체 고정
-  // 옵션이 아니라, 필요한 메뉴에만 관리자가 등록하는 자유 옵션
-  // (`product.options`)입니다([[옵션조합관리]] 참고).
+  // 먼저 뜹니다([[상품옵션선택]] 참고). "샷 추가"/"온도(HOT·ICE)"는
+  // 매장 전체 고정 옵션이 아니라, 필요한 메뉴에만 관리자가 등록하는
+  // 자유 옵션(`product.options`)입니다([[옵션조합관리]] 참고).
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
   const [magicSpell, setMagicSpell] = useState('');
-  const [temperature, setTemperature] = useState<Temperature | ''>('');
   const [selectedOptionNames, setSelectedOptionNames] = useState<string[]>([]);
 
   const productOptions = product.options ?? [];
@@ -42,7 +38,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
       return;
     }
     setMagicSpell('');
-    setTemperature('');
     setSelectedOptionNames([]);
     setIsOptionModalOpen(true);
   };
@@ -57,7 +52,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
     const selectedOptions = productOptions.filter((option) => selectedOptionNames.includes(option.name));
     onAddToCart(product, {
       magicSpell: magicSpell || undefined,
-      temperature: temperature || undefined,
       selectedOptions: selectedOptions.length > 0 ? selectedOptions : undefined,
     });
     setIsOptionModalOpen(false);
@@ -111,25 +105,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
               className="aspect-[3/4] w-28 shrink-0 rounded-lg object-cover sm:w-32"
             />
             <div className="flex-1 space-y-3">
-              <div>
-                <span className="mb-1 block text-sm font-semibold text-gray-700">온도</span>
-                <div className="flex gap-2">
-                  {TEMPERATURE_OPTIONS.map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setTemperature((prev) => (prev === option ? '' : option))}
-                      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
-                        temperature === option
-                          ? 'border-pink-500 bg-pink-500 text-white'
-                          : 'border-pink-100 text-gray-600 hover:bg-pink-50'
-                      }`}
-                    >
-                      {TEMPERATURE_LABEL[option]}
-                    </button>
-                  ))}
-                </div>
-              </div>
               {productOptions.length > 0 && (
                 <div className="space-y-2">
                   {productOptions.map((option) => (

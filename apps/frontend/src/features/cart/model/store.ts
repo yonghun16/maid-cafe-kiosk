@@ -6,7 +6,6 @@ import { submitOrder as submitOrderRequest } from '../api/orderApi';
 
 interface AddToCartOptions {
   magicSpell?: string;
-  temperature?: 'HOT' | 'ICE';
   selectedOptions?: ProductOption[];
 }
 
@@ -32,12 +31,10 @@ function calculateTotalPrice(items: CartItem[]): number {
 function makeCartItemId(
   productId: string,
   magicSpell?: string,
-  temperature?: 'HOT' | 'ICE',
   selectedOptions?: ProductOption[],
 ): string {
   const parts = [productId];
   if (magicSpell) parts.push(`spell:${magicSpell}`);
-  if (temperature) parts.push(`temp:${temperature}`);
   if (selectedOptions && selectedOptions.length > 0) {
     parts.push(`opts:${selectedOptions.map((o) => o.name).join(',')}`);
   }
@@ -52,9 +49,8 @@ export const useCartStore = create<CartState>((set, get) => ({
   // 2. 액션 (상태를 변경하는 함수)
   addToCart: (product, options) => {
     const magicSpell = options?.magicSpell;
-    const temperature = options?.temperature;
     const selectedOptions = options?.selectedOptions;
-    const cartItemId = makeCartItemId(product._id, magicSpell, temperature, selectedOptions);
+    const cartItemId = makeCartItemId(product._id, magicSpell, selectedOptions);
 
     const { items } = get(); // 현재 장바구니 상태 가져오기
     const existingItem = items.find((item) => item.cartItemId === cartItemId);
@@ -69,22 +65,19 @@ export const useCartStore = create<CartState>((set, get) => ({
       );
     } else {
       // 없으면 새로 추가. 메뉴별 커스텀 옵션의 추가금은 여기서 가격에
-      // 미리 더해둡니다. "마법의 주문"/온도(HOT·ICE)는 가격에 영향
-      // 없는 옵션입니다.
+      // 미리 더해둡니다. "마법의 주문"은 가격에 영향 없는 옵션입니다.
       const selectedOptionsPrice = (selectedOptions ?? []).reduce((sum, o) => sum + o.price, 0);
       const price = product.price + selectedOptionsPrice;
       updatedItems = [
         ...items,
-        { ...product, price, quantity: 1, cartItemId, magicSpell, temperature, selectedOptions },
+        { ...product, price, quantity: 1, cartItemId, magicSpell, selectedOptions },
       ];
     }
 
     // 상태 업데이트
     set({ items: updatedItems, totalPrice: calculateTotalPrice(updatedItems) });
 
-    const optionLabel = [temperature, ...(selectedOptions ?? []).map((o) => o.name)]
-      .filter(Boolean)
-      .join(', ');
+    const optionLabel = (selectedOptions ?? []).map((o) => o.name).join(', ');
     toast.success(`${product.name}${optionLabel ? ` (${optionLabel})` : ''}을(를) 장바구니에 담았습니다!`);
   },
 
@@ -129,7 +122,6 @@ export const useCartStore = create<CartState>((set, get) => ({
           imageUrl: item.imageUrl,
           quantity: item.quantity,
           magicSpell: item.magicSpell,
-          temperature: item.temperature,
           selectedOptions: item.selectedOptions,
         })),
         totalPrice,
