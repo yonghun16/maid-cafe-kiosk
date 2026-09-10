@@ -151,6 +151,9 @@ importers:
       typescript:
         specifier: 5.8.2
         version: 5.8.2
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@types/node@22.15.3)(vite@8.3.0(@types/node@22.15.3)(esbuild@0.28.2)(jiti@2.5.1)(tsx@4.23.13))
 
   packages/eslint-config:
     devDependencies:
