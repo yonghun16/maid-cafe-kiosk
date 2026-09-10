@@ -48,7 +48,10 @@ export function ProductList() {
   }, [selectedCategory, allProducts]);
 
   return (
-    <main className="w-full md:w-3/5 lg:w-2/3">
+    <main className="w-full pb-36 md:w-3/5 md:pb-0 lg:w-2/3">
+      {/* ✅ 모바일에서 장바구니 요약 카드가 화면 맨 아래에 고정되므로
+          (OrderSummary 참고), 마지막 상품들이 그 뒤에 가려지지 않도록
+          바닥 여백을 넉넉히 둡니다. */}
       <header className="mb-6 text-center md:text-left">
         <div className="relative flex items-center justify-center gap-2 md:justify-start">
           <span className="absolute -top-3 left-6 text-sm md:left-2">✨</span>

@@ -124,8 +124,11 @@ export function OrderSummary() {
         {orderButton}
       </div>
 
-      {/* 모바일: 접이식 요약 카드 */}
-      <div className="rounded-2xl bg-white p-4 shadow-lg md:hidden">
+      {/* 모바일: 화면 맨 아래에 고정되는 접이식 요약 카드. 스크롤해도
+          항상 보이도록 fixed + 다른 콘텐츠 위 레이어(z-40)로 띄우고,
+          펼쳤을 때 목록 자체가 화면을 넘지 않도록 내부에서만
+          스크롤되게 합니다(max-h-[50vh] overflow-y-auto). */}
+      <div className="fixed inset-x-0 bottom-0 z-40 rounded-t-2xl bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.12)] md:hidden">
         <button
           type="button"
           onClick={() => setIsMobileListOpen((prev) => !prev)}
@@ -146,7 +149,9 @@ export function OrderSummary() {
           <span className={`text-gray-400 transition-transform ${isMobileListOpen ? 'rotate-90' : ''}`}>›</span>
         </button>
 
-        {isMobileListOpen && <div className="mt-4 rounded-xl bg-pink-50 p-4">{itemList}</div>}
+        {isMobileListOpen && (
+          <div className="mt-4 max-h-[50vh] overflow-y-auto rounded-xl bg-pink-50 p-4">{itemList}</div>
+        )}
 
         <div className="mt-4">{orderButton}</div>
       </div>
