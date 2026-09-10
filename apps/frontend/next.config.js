@@ -1,3 +1,13 @@
+import withSerwistInit from '@serwist/next';
+
+const withSerwist = withSerwistInit({
+  swSrc: 'src/app/sw.ts',
+  swDest: 'public/sw.js',
+  // 개발 중에는 서비스워커가 핫리로드/캐시와 자주 충돌해 디버깅을
+  // 방해하므로, 프로덕션 빌드에서만 서비스워커를 만듭니다.
+  disable: process.env.NODE_ENV === 'development',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // 상품/광고 이미지는 Cloudflare R2 공개 버킷(`pub-<해시>.r2.dev`)에
@@ -32,4 +42,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);

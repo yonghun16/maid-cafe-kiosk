@@ -13,6 +13,11 @@
 /.next/
 /out/
 
+# serwist가 빌드 시 next.config.js의 swSrc(src/app/sw.ts)로부터
+# 생성하는 서비스워커 번들 — .next/처럼 소스가 아니라 빌드 산출물
+/public/sw.js
+/public/sw.js.map
+
 # production
 /build
 
