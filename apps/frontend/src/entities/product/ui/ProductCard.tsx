@@ -5,10 +5,9 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Product, ProductOption } from '@repo/types';
 import { Modal } from '../../../shared/ui';
-import { EXTRA_SHOT_PRICE, MAGIC_SPELL_OPTIONS, TEMPERATURE_OPTIONS, type Temperature } from '../model/optionConstants';
+import { MAGIC_SPELL_OPTIONS, TEMPERATURE_OPTIONS, type Temperature } from '../model/optionConstants';
 
 interface ProductOptions {
-  hasExtraShot: boolean;
   magicSpell?: string;
   temperature?: Temperature;
   selectedOptions?: ProductOption[];
@@ -26,10 +25,11 @@ interface ProductCardProps {
 const CARD_STYLE = { bg: 'bg-pink-50', paw: 'text-pink-400' };
 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
-  // ✅ 카드를 클릭하면 바로 담기지 않고, 옵션(샷 추가)을 고를 수 있는
-  // 모달이 먼저 뜹니다([[상품옵션선택]] 참고).
+  // ✅ 카드를 클릭하면 바로 담기지 않고, 옵션을 고를 수 있는 모달이
+  // 먼저 뜹니다([[상품옵션선택]] 참고). "샷 추가"는 매장 전체 고정
+  // 옵션이 아니라, 필요한 메뉴에만 관리자가 등록하는 자유 옵션
+  // (`product.options`)입니다([[옵션조합관리]] 참고).
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
-  const [hasExtraShot, setHasExtraShot] = useState(false);
   const [magicSpell, setMagicSpell] = useState('');
   const [temperature, setTemperature] = useState<Temperature | ''>('');
   const [selectedOptionNames, setSelectedOptionNames] = useState<string[]>([]);
@@ -41,7 +41,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
       toast.error('품절된 메뉴입니다.');
       return;
     }
-    setHasExtraShot(false);
     setMagicSpell('');
     setTemperature('');
     setSelectedOptionNames([]);
@@ -57,7 +56,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   const handleAdd = () => {
     const selectedOptions = productOptions.filter((option) => selectedOptionNames.includes(option.name));
     onAddToCart(product, {
-      hasExtraShot,
       magicSpell: magicSpell || undefined,
       temperature: temperature || undefined,
       selectedOptions: selectedOptions.length > 0 ? selectedOptions : undefined,
@@ -68,7 +66,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   const selectedOptionsPrice = productOptions
     .filter((option) => selectedOptionNames.includes(option.name))
     .reduce((sum, option) => sum + option.price, 0);
-  const totalPrice = product.price + (hasExtraShot ? EXTRA_SHOT_PRICE : 0) + selectedOptionsPrice;
+  const totalPrice = product.price + selectedOptionsPrice;
 
   return (
     <>
@@ -132,18 +130,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
                   ))}
                 </div>
               </div>
-              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-pink-100 px-3 py-2.5">
-                <span className="text-sm font-semibold text-gray-700">샷 추가</span>
-                <span className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">+{EXTRA_SHOT_PRICE.toLocaleString()}원</span>
-                  <input
-                    type="checkbox"
-                    checked={hasExtraShot}
-                    onChange={(e) => setHasExtraShot(e.target.checked)}
-                    className="h-5 w-5 accent-pink-500"
-                  />
-                </span>
-              </label>
               {productOptions.length > 0 && (
                 <div className="space-y-2">
                   {productOptions.map((option) => (

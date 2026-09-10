@@ -10,10 +10,10 @@ interface ProductOptionsEditorProps {
 }
 
 /**
- * 메뉴 추가/수정 폼에서 이 메뉴만의 옵션(이름 + 추가금)을 자유롭게
- * 추가/삭제하는 UI. 온도/샷 추가/마법의 주문처럼 매장 전체에 고정된
- * 옵션과 별개로, 메뉴마다 다르게 설정하는 옵션입니다([[상품옵션선택]]
- * 참고).
+ * 메뉴 추가/수정 폼에서 이 메뉴만의 옵션(이름 + 추가금, 예: "샷 추가"
+ * +700원)을 자유롭게 추가/삭제하는 UI. 온도/마법의 주문처럼 매장
+ * 전체에 고정된 옵션과 별개로, 메뉴마다 다르게 설정하는 옵션입니다
+ * ([[옵션조합관리]] 참고).
  */
 export function ProductOptionsEditor({ options, onChange, idPrefix = 'option' }: ProductOptionsEditorProps) {
   const handleAdd = () => {
