@@ -65,7 +65,10 @@ export function AdBanner() {
         onPointerCancel={() => {
           dragStartX.current = null;
         }}
-        className="h-56 w-full cursor-grab object-cover active:cursor-grabbing sm:h-72 md:h-80 lg:h-96"
+        // ✅ 키오스크 화면은 세로로 길어서, 배너 높이가 너무 낮으면
+        // object-cover가 이미지 상하단을 크게 잘라냅니다. 세로로 긴
+        // 화면에 맞춰 높이를 넉넉히 키워 잘림을 줄였습니다.
+        className="h-72 w-full cursor-grab object-cover active:cursor-grabbing sm:h-96 md:h-[28rem] lg:h-[34rem]"
       />
       {ads.length > 1 && (
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
