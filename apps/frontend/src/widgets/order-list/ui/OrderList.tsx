@@ -17,6 +17,7 @@ interface OrderListProps {
 export function OrderList({ status }: OrderListProps) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -37,10 +38,34 @@ export function OrderList({ status }: OrderListProps) {
     return () => clearInterval(intervalId);
   }, [fetchOrders]);
 
+  // ✅ 브라우저가 백그라운드 탭의 setInterval 타이머를 늦추거나 멈출 수
+  // 있어서, 탭이 다시 보일 때 즉시 한 번 새로고침합니다. "직접 새로고침
+  // (F5)해야만 최신 상태로 보인다"는 문제를 자동 폴링만으로는 못 잡는
+  // 경우를 보완합니다.
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchOrders();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [fetchOrders]);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchOrders();
+    setIsRefreshing(false);
+  };
+
   const handleComplete = async (orderId: string) => {
     try {
       await completeOrder(orderId);
       toast.success('주문을 완료 처리했습니다.');
+      // ✅ 재조회 응답을 기다리지 않고도 방금 완료한 주문을 목록에서 바로
+      // 지워서, 네트워크 지연이나 폴링 타이밍과 무관하게 클릭 즉시
+      // 화면에 반영되게 합니다. fetchOrders()로 서버 상태와 다시 맞춥니다.
+      setOrders((prev) => prev.filter((order) => order._id !== orderId));
       fetchOrders();
     } catch (error) {
       console.error('주문 완료 처리 중 오류가 발생했습니다:', error);
@@ -56,10 +81,11 @@ export function OrderList({ status }: OrderListProps) {
         </h2>
         <button
           type="button"
-          onClick={fetchOrders}
-          className="rounded-md border border-pink-300 px-4 py-2 text-base font-semibold text-pink-500 hover:bg-pink-50"
+          onClick={handleManualRefresh}
+          disabled={isRefreshing}
+          className="rounded-md border border-pink-300 px-4 py-2 text-base font-semibold text-pink-500 transition-colors hover:bg-pink-50 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          새로고침
+          {isRefreshing ? '새로고침 중...' : '새로고침'}
         </button>
       </div>
 
