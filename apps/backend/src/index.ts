@@ -426,10 +426,20 @@ app.post(
   '/api/products',
   requireAdmin,
   async (req: Request<Record<string, never>, unknown, ProductInput>, res: Response) => {
-    const { name, price, imageUrl, category, stock, options } = req.body;
+    const { name, price, imageUrl, category, stock, options, hasTemperatureOption, hasMagicSpellOption } = req.body;
     try {
       const order = await Product.countDocuments({ category });
-      const product = new Product({ name, price, imageUrl, category, order, stock, options });
+      const product = new Product({
+        name,
+        price,
+        imageUrl,
+        category,
+        order,
+        stock,
+        options,
+        hasTemperatureOption,
+        hasMagicSpellOption,
+      });
       const newProduct = await product.save();
       res.status(201).json(newProduct);
     } catch (err) {
@@ -479,7 +489,7 @@ app.put(
     req: Request<{ id: string }, unknown, ProductInput>,
     res: Response,
   ) => {
-    const { name, price, imageUrl, category, stock, options } = req.body;
+    const { name, price, imageUrl, category, stock, options, hasTemperatureOption, hasMagicSpellOption } = req.body;
     try {
       const updatedProduct = await Product.findByIdAndUpdate(
         req.params.id,
@@ -493,6 +503,8 @@ app.put(
           // 기존 옵션을 전부 지우는 것으로 취급합니다(재고와 달리 "생략하면
           // 유지"가 아님).
           options: options ?? [],
+          hasTemperatureOption: hasTemperatureOption ?? false,
+          hasMagicSpellOption: hasMagicSpellOption ?? false,
         },
         { new: true, runValidators: true },
       );

@@ -44,8 +44,10 @@ export function OrderSummary() {
                     화면 밖으로 밀려 통째로 가려질 수 있어서, 옵션은
                     줄바꿈되는 별도 영역으로 뺍니다. */}
                 <p className="truncate font-semibold text-gray-800">{item.name}</p>
-                {(item.selectedOptions?.length ?? 0) > 0 && (
+                {(item.temperature || item.magicSpell || (item.selectedOptions?.length ?? 0) > 0) && (
                   <p className="flex flex-wrap gap-x-1 text-xs font-normal text-pink-500">
+                    {item.temperature && <span>({item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'})</span>}
+                    {item.magicSpell && <span>(🪄 {item.magicSpell})</span>}
                     {item.selectedOptions?.map((option) => <span key={option.name}>({option.name})</span>)}
                   </p>
                 )}

@@ -5,8 +5,11 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Product, ProductOption } from '@repo/types';
 import { Modal } from '../../../shared/ui';
+import { MAGIC_SPELL_OPTIONS, TEMPERATURE_OPTIONS, type Temperature } from '../model/optionConstants';
 
 interface ProductOptions {
+  temperature?: Temperature;
+  magicSpell?: string;
   selectedOptions?: ProductOption[];
 }
 
@@ -21,11 +24,12 @@ const CARD_STYLE = { bg: 'bg-pink-50', paw: 'text-pink-400' };
 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
   // ✅ 카드를 클릭하면 바로 담기지 않고, 옵션을 고를 수 있는 모달이
-  // 먼저 뜹니다([[상품옵션선택]] 참고). "샷 추가"/"온도(HOT·ICE)"/
-  // "마법의 주문"은 매장 전체 고정 옵션이 아니라, 필요한 메뉴에만
-  // 관리자가 등록하는 자유 옵션(`product.options`)입니다
-  // ([[옵션조합관리]] 참고).
+  // 먼저 뜹니다([[상품옵션선택]] 참고). 온도/마법의 주문/커스텀 옵션
+  // 모두 매장 전체 고정이 아니라, 메뉴별로 관리자가 켜거나 등록해야
+  // 나타납니다([[옵션조합관리]] 참고).
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
+  const [temperature, setTemperature] = useState<Temperature | ''>('');
+  const [magicSpell, setMagicSpell] = useState('');
   const [selectedOptionNames, setSelectedOptionNames] = useState<string[]>([]);
 
   const productOptions = product.options ?? [];
@@ -35,6 +39,8 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
       toast.error('품절된 메뉴입니다.');
       return;
     }
+    setTemperature('');
+    setMagicSpell('');
     setSelectedOptionNames([]);
     setIsOptionModalOpen(true);
   };
@@ -48,6 +54,8 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   const handleAdd = () => {
     const selectedOptions = productOptions.filter((option) => selectedOptionNames.includes(option.name));
     onAddToCart(product, {
+      temperature: temperature || undefined,
+      magicSpell: magicSpell || undefined,
       selectedOptions: selectedOptions.length > 0 ? selectedOptions : undefined,
     });
     setIsOptionModalOpen(false);
@@ -101,6 +109,46 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
               className="aspect-[3/4] w-28 shrink-0 rounded-lg object-cover sm:w-32"
             />
             <div className="flex-1 space-y-3">
+              {product.hasTemperatureOption && (
+                <div>
+                  <label htmlFor="temperature" className="mb-1 block text-sm font-semibold text-gray-700">
+                    온도
+                  </label>
+                  <select
+                    id="temperature"
+                    value={temperature}
+                    onChange={(e) => setTemperature(e.target.value as Temperature | '')}
+                    className="w-full rounded-lg border border-pink-100 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
+                  >
+                    <option value="">선택 안 함</option>
+                    {TEMPERATURE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {product.hasMagicSpellOption && (
+                <div>
+                  <label htmlFor="magic-spell" className="mb-1 block text-sm font-semibold text-gray-700">
+                    🪄 마법의 주문
+                  </label>
+                  <select
+                    id="magic-spell"
+                    value={magicSpell}
+                    onChange={(e) => setMagicSpell(e.target.value)}
+                    className="w-full rounded-lg border border-pink-100 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
+                  >
+                    <option value="">선택 안 함</option>
+                    {MAGIC_SPELL_OPTIONS.map((spell) => (
+                      <option key={spell} value={spell}>
+                        {spell}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               {productOptions.length > 0 && (
                 <div className="space-y-2">
                   {productOptions.map((option) => (

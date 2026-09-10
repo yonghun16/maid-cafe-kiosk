@@ -1,10 +1,11 @@
 // @owner: ai
 
-// 메뉴별로 관리자가 자유롭게 추가하는 옵션 하나(예: "샷 추가" +700원,
-// "펄 추가" +500원, "HOT"/"ICE"/"모에모에뀽" 등). 매장 전체에 고정된
-// 옵션은 이제 없고, 메뉴마다 필요한 옵션을 직접 등록하는 방식입니다
-// ([[옵션조합관리]] 참고). `price`는 0원도 허용합니다(가격 영향 없는
-// 옵션도 만들 수 있게).
+// 메뉴별로 관리자가 자유롭게 추가하는, 여러 개를 동시에 고를 수 있는
+// 옵션 하나(예: "샷 추가" +700원, "펄 추가" +500원). 온도(HOT/ICE)나
+// 마법의 주문처럼 여러 항목 중 딱 하나만 고르는 옵션은 이 배열이 아니라
+// `Product.hasTemperatureOption`/`hasMagicSpellOption` 토글로 별도
+// 관리합니다([[옵션조합관리]] 참고). `price`는 0원도 허용합니다(가격
+// 영향 없는 옵션도 만들 수 있게).
 export interface ProductOption {
   name: string;
   price: number;
@@ -27,6 +28,14 @@ export interface Product {
   // 이 메뉴에서 고객이 추가로 고를 수 있는 옵션 목록. 없거나 빈 배열이면
   // 이 메뉴엔 커스텀 옵션이 없다는 뜻입니다.
   options?: ProductOption[];
+  // 이 메뉴에 온도(HOT/ICE) 옵션을 노출할지 여부. 켜져 있으면 고객
+  // 화면에 HOT/ICE 중 하나를 고르는 콤보박스가 뜹니다([[옵션조합관리]]
+  // 참고). 값이 없으면 꺼진 것으로 취급합니다.
+  hasTemperatureOption?: boolean;
+  // 이 메뉴에 "마법의 주문" 옵션을 노출할지 여부. 켜져 있으면 고객
+  // 화면에 네 항목 중 하나를 고르는 드롭다운이 뜹니다([[옵션조합관리]]
+  // 참고). 값이 없으면 꺼진 것으로 취급합니다.
+  hasMagicSpellOption?: boolean;
 }
 
 // 상품 생성/수정 요청(POST/PUT /api/products)의 바디 타입 — 프론트/백엔드가
@@ -40,6 +49,8 @@ export interface ProductInput {
   category: string;
   stock?: number;
   options?: ProductOption[];
+  hasTemperatureOption?: boolean;
+  hasMagicSpellOption?: boolean;
 }
 
 // 상품 순서 변경 요청(PATCH /api/products/reorder)의 바디 타입 — 같은
@@ -82,6 +93,12 @@ export interface CartItem extends Product {
   // 조합(커스텀 옵션)이 다르면 다른 줄로 취급해야 해서, 상품 `_id`와는
   // 별도로 둡니다.
   cartItemId: string;
+  // "마법의 주문" 선택값(예: '모에모에뀽'). `product.hasMagicSpellOption`
+  // 이 켜진 메뉴에서만 고를 수 있고, 가격에는 영향 없습니다.
+  magicSpell?: string;
+  // HOT/ICE 온도 선택. `product.hasTemperatureOption`이 켜진 메뉴에서만
+  // 고를 수 있고, 가격에는 영향 없습니다.
+  temperature?: 'HOT' | 'ICE';
   // 이 메뉴에 등록된 커스텀 옵션(`Product.options`) 중 고객이 고른 것들.
   // 이름/가격을 선택 시점 스냅샷으로 담아, 이후 관리자가 메뉴 옵션을
   // 바꿔도 이미 담긴 장바구니/주문 내역은 그대로 유지됩니다.
@@ -101,20 +118,18 @@ export interface OrderItem {
   price: number; // 옵션 추가금이 있으면 이미 더해진 최종 단가
   imageUrl: string;
   quantity: number;
-  // 샷 추가 옵션을 골랐는지 여부. 예전엔 매장 전체 고정 옵션이었지만
-  // 이제는 메뉴별 커스텀 옵션(`selectedOptions`)으로 등록하는 방식으로
-  // 바뀌어서, 이 필드는 그 이전에 생성된 주문에만 남아있습니다
-  // ([[옵션조합관리]] 참고).
+  // 샷 추가 옵션을 골랐는지 여부. 한때 매장 전체 고정 옵션이었다가
+  // 메뉴별 커스텀 옵션(`selectedOptions`)으로 옮겨가서, 이 필드는 그
+  // 이전에 생성된 주문에만 남아있는 과거 호환용입니다([[옵션조합관리]]
+  // 참고).
   hasExtraShot?: boolean;
-  // "마법의 주문" 선택값. 샷 추가/온도와 마찬가지로 예전엔 매장 전체
-  // 고정 옵션이었지만 이제는 메뉴별 커스텀 옵션(`selectedOptions`)으로
-  // 등록하는 방식으로 바뀌어서, 이 필드는 그 이전에 생성된 주문에만
-  // 남아있습니다([[옵션조합관리]] 참고).
+  // "마법의 주문" 선택값. `product.hasMagicSpellOption`이 켜진
+  // 메뉴에서 고른 값이 그대로 저장됩니다. 가격에는 영향 없습니다
+  // ([[옵션조합관리]] 참고).
   magicSpell?: string;
-  // HOT/ICE 온도 선택. 샷 추가와 마찬가지로 예전엔 매장 전체 고정
-  // 옵션이었지만 이제는 메뉴별 커스텀 옵션(`selectedOptions`)으로
-  // 등록하는 방식으로 바뀌어서, 이 필드는 그 이전에 생성된 주문에만
-  // 남아있습니다([[옵션조합관리]] 참고).
+  // HOT/ICE 온도 선택. `product.hasTemperatureOption`이 켜진 메뉴에서
+  // 고른 값이 그대로 저장됩니다. 가격에는 영향 없습니다
+  // ([[옵션조합관리]] 참고).
   temperature?: 'HOT' | 'ICE';
   // 이 아이템에 고른 커스텀 옵션들(이름/가격 스냅샷). `price`에는 이미
   // 이 옵션들의 가격이 더해져 있습니다.

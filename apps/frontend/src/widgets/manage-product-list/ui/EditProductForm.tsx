@@ -22,6 +22,8 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
   // ✅ 비워두면 이 메뉴는 재고를 추적하지 않는 상품이 됩니다([[재고관리]] 참고).
   const [stock, setStock] = useState(product.stock != null ? String(product.stock) : '');
   const [options, setOptions] = useState<ProductOption[]>(product.options ?? []);
+  const [hasTemperatureOption, setHasTemperatureOption] = useState(product.hasTemperatureOption ?? false);
+  const [hasMagicSpellOption, setHasMagicSpellOption] = useState(product.hasMagicSpellOption ?? false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -69,6 +71,8 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
       category,
       ...(stock.trim() ? { stock: Number(stock) } : {}),
       options: cleanedOptions,
+      hasTemperatureOption,
+      hasMagicSpellOption,
     });
     setIsSaving(false);
 
@@ -155,7 +159,15 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
         />
       </div>
-      <ProductOptionsEditor options={options} onChange={setOptions} idPrefix={`edit-option-${product._id}`} />
+      <ProductOptionsEditor
+        options={options}
+        onChange={setOptions}
+        hasTemperatureOption={hasTemperatureOption}
+        onTemperatureOptionChange={setHasTemperatureOption}
+        hasMagicSpellOption={hasMagicSpellOption}
+        onMagicSpellOptionChange={setHasMagicSpellOption}
+        idPrefix={`edit-option-${product._id}`}
+      />
       <div className="flex gap-2">
         <button
           type="submit"

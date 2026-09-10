@@ -23,6 +23,8 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
   // ✅ 비워두면 이 메뉴는 재고를 추적하지 않는 상품이 됩니다([[재고관리]] 참고).
   const [stock, setStock] = useState('');
   const [options, setOptions] = useState<ProductOption[]>([]);
+  const [hasTemperatureOption, setHasTemperatureOption] = useState(false);
+  const [hasMagicSpellOption, setHasMagicSpellOption] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // ✅ 실제 상품을 추가하는 '기능'은 스토어에서 가져옵니다.
@@ -76,6 +78,8 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
       category,
       ...(stock.trim() ? { stock: Number(stock) } : {}),
       ...(cleanedOptions.length > 0 ? { options: cleanedOptions } : {}),
+      hasTemperatureOption,
+      hasMagicSpellOption,
     });
 
     // 성공적으로 추가되면 폼을 초기화합니다.
@@ -85,6 +89,8 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
       setImageUrl('');
       setStock('');
       setOptions([]);
+      setHasTemperatureOption(false);
+      setHasMagicSpellOption(false);
       onSuccess?.();
     }
   };
@@ -149,7 +155,15 @@ export function AddProductForm({ onSuccess }: AddProductFormProps) {
           className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
         />
       </div>
-      <ProductOptionsEditor options={options} onChange={setOptions} idPrefix="add-option" />
+      <ProductOptionsEditor
+        options={options}
+        onChange={setOptions}
+        hasTemperatureOption={hasTemperatureOption}
+        onTemperatureOptionChange={setHasTemperatureOption}
+        hasMagicSpellOption={hasMagicSpellOption}
+        onMagicSpellOptionChange={setHasMagicSpellOption}
+        idPrefix="add-option"
+      />
       <button
         type="submit"
         disabled={isUploadingImage || categories.length === 0}

@@ -24,6 +24,10 @@ const productSchema = new Schema<ProductDocument>({
       price: { type: Number, required: true },
     },
   ],
+  // 온도(HOT/ICE)/마법의 주문 옵션 노출 여부. 여러 항목 중 하나만
+  // 고르는 콤보박스 형태라 `options` 배열과 별도로 boolean 토글로 관리.
+  hasTemperatureOption: { type: Boolean, default: false },
+  hasMagicSpellOption: { type: Boolean, default: false },
 });
 
 export default mongoose.model<ProductDocument>('Product', productSchema);
