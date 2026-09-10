@@ -1,6 +1,5 @@
 // @owner: ai
 import { create } from 'zustand';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import type { Category } from '@repo/types';
 import {
@@ -10,32 +9,7 @@ import {
   deleteCategoryById,
   reorderCategories,
 } from '../../../entities/category';
-
-/**
- * 서버가 응답에 실어 보낸 에러 메시지를 꺼냅니다. 없으면 기본 메시지를
- * 씁니다. "이미 있는 카테고리" 같은 뭉뚱그린 추측 대신, 실제로 무엇이
- * 잘못됐는지(예: "관리자 인증이 필요합니다.") 그대로 보여주기 위함입니다.
- */
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error) && typeof error.response?.data?.message === 'string') {
-    return error.response.data.message;
-  }
-  return fallback;
-}
-
-/** `categoryId`를 `toIndex` 위치로 옮긴 새 배열을 반환합니다. 옮길 게 없으면 null. */
-function reorderArray(categories: Category[], categoryId: string, toIndex: number): Category[] | null {
-  const fromIndex = categories.findIndex((c) => c._id === categoryId);
-  if (fromIndex === -1 || toIndex < 0 || toIndex >= categories.length || fromIndex === toIndex) {
-    return null;
-  }
-  const reordered = [...categories];
-  const moved = reordered[fromIndex];
-  if (!moved) return null;
-  reordered.splice(fromIndex, 1);
-  reordered.splice(toIndex, 0, moved);
-  return reordered;
-}
+import { getErrorMessage, reorderArray } from '../../../shared/lib';
 
 // 카테고리 관리 스토어의 타입 정의
 interface CategoryState {

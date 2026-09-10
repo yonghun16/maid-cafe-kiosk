@@ -1,33 +1,9 @@
 // @owner: ai
 import { create } from 'zustand';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import type { Ad } from '@repo/types';
 import { getAds, createAd, updateAd, deleteAdById, reorderAds } from '../../../entities/ad';
-
-/**
- * 서버가 응답에 실어 보낸 에러 메시지를 꺼냅니다. 없으면 기본 메시지를 씁니다.
- */
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error) && typeof error.response?.data?.message === 'string') {
-    return error.response.data.message;
-  }
-  return fallback;
-}
-
-/** `adId`를 `toIndex` 위치로 옮긴 새 배열을 반환합니다. 옮길 게 없으면 null. */
-function reorderArray(ads: Ad[], adId: string, toIndex: number): Ad[] | null {
-  const fromIndex = ads.findIndex((a) => a._id === adId);
-  if (fromIndex === -1 || toIndex < 0 || toIndex >= ads.length || fromIndex === toIndex) {
-    return null;
-  }
-  const reordered = [...ads];
-  const moved = reordered[fromIndex];
-  if (!moved) return null;
-  reordered.splice(fromIndex, 1);
-  reordered.splice(toIndex, 0, moved);
-  return reordered;
-}
+import { getErrorMessage, reorderArray } from '../../../shared/lib';
 
 // 광고 관리 스토어의 타입 정의
 interface AdState {

@@ -11,6 +11,7 @@ import {
   reorderProducts,
   updateStock,
 } from '../../../entities/product';
+import { getErrorMessage } from '../../../shared/lib';
 
 /**
  * `categoryIds`로 지정된 카테고리에 속한 상품들만, `productId`가 같은
@@ -97,7 +98,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       return true;
     } catch (error) {
       console.error('상품 추가 중 오류가 발생했습니다:', error);
-      toast.error('상품 추가에 실패했습니다.');
+      toast.error(getErrorMessage(error, '상품 추가에 실패했습니다.'));
       return false;
     }
   },
@@ -111,7 +112,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       return true;
     } catch (error) {
       console.error('상품 수정 중 오류가 발생했습니다:', error);
-      toast.error('상품 수정에 실패했습니다.');
+      toast.error(getErrorMessage(error, '상품 수정에 실패했습니다.'));
       return false;
     }
   },
@@ -124,7 +125,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       get().fetchProducts();
     } catch (error) {
       console.error('품절 상태 변경 중 오류가 발생했습니다:', error);
-      toast.error('품절 상태 변경에 실패했습니다.');
+      toast.error(getErrorMessage(error, '품절 상태 변경에 실패했습니다.'));
     }
   },
 
@@ -135,7 +136,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       get().fetchProducts();
     } catch (error) {
       console.error('재고 수량 변경 중 오류가 발생했습니다:', error);
-      toast.error('재고 수량 변경에 실패했습니다.');
+      toast.error(getErrorMessage(error, '재고 수량 변경에 실패했습니다.'));
     }
   },
 
@@ -150,7 +151,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       get().fetchProducts();
     } catch (error) {
       console.error('상품 삭제 중 오류가 발생했습니다:', error);
-      toast.error('상품 삭제에 실패했습니다.');
+      toast.error(getErrorMessage(error, '상품 삭제에 실패했습니다.'));
     }
   },
 
@@ -174,7 +175,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       await reorderProducts(sameCategoryIds);
     } catch (error) {
       console.error('상품 순서 변경 중 오류가 발생했습니다:', error);
-      toast.error('상품 순서 변경에 실패했습니다.');
+      toast.error(getErrorMessage(error, '상품 순서 변경에 실패했습니다.'));
       get().fetchProducts();
     }
   },
@@ -193,7 +194,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       await reorderProducts(sameCategoryIds);
     } catch (error) {
       console.error('상품 순서 저장 중 오류가 발생했습니다:', error);
-      toast.error('상품 순서 변경에 실패했습니다.');
+      toast.error(getErrorMessage(error, '상품 순서 변경에 실패했습니다.'));
       get().fetchProducts();
     }
   },

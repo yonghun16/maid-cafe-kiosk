@@ -23,7 +23,7 @@ completed` 쿼리로 두 상태를 나눠 조회할 수 있습니다. [[주문�
 ### 관련 코드
 - `apps/backend/src/models/Order.ts` (`isCompleted` 필드, 기본값
   `false`)
-- `apps/backend/src/index.ts` — `PATCH /api/orders/:id/complete`,
+- `apps/backend/src/routes/orders.ts` — `PATCH /api/orders/:id/complete`,
   `GET /api/orders`의 `status` 쿼리 필터링
 - `packages/types`의 `Order`(`isCompleted` 필드), `OrderStatusFilter`
 
