@@ -48,11 +48,15 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
               />
             )}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-lg font-semibold text-gray-800">
-                {item.name}
+              {/* ✅ 이름+옵션 배지를 하나의 truncate 문단에 같이 넣으면
+                  줄 너비를 넘는 배지가 통째로 가려져 버려서(옵션이 안
+                  보인다는 원인), flex-wrap으로 바꿔 옵션이 항상 보이게
+                  합니다. */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-lg font-semibold text-gray-800">{item.name}</span>
                 {item.temperature && (
                   <span
-                    className={`ml-2 rounded-full px-2 py-0.5 text-sm font-semibold ${
+                    className={`rounded-full px-2 py-0.5 text-sm font-semibold ${
                       item.temperature === 'HOT' ? 'bg-orange-100 text-orange-600' : 'bg-sky-100 text-sky-600'
                     }`}
                   >
@@ -60,24 +64,24 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
                   </span>
                 )}
                 {item.hasExtraShot && (
-                  <span className="ml-2 rounded-full bg-pink-100 px-2 py-0.5 text-sm font-semibold text-pink-600">
+                  <span className="rounded-full bg-pink-100 px-2 py-0.5 text-sm font-semibold text-pink-600">
                     샷 추가
                   </span>
                 )}
                 {item.magicSpell && (
-                  <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-700">
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-700">
                     🪄 {item.magicSpell}
                   </span>
                 )}
                 {item.selectedOptions?.map((option) => (
                   <span
                     key={option.name}
-                    className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-sm font-semibold text-purple-600"
+                    className="rounded-full bg-purple-100 px-2 py-0.5 text-sm font-semibold text-purple-600"
                   >
                     {option.name}
                   </span>
                 ))}
-              </p>
+              </div>
               <p className="text-base text-gray-500">
                 {item.price.toLocaleString()}원 × {item.quantity}
               </p>

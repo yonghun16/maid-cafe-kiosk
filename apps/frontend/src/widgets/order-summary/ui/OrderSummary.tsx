@@ -40,20 +40,17 @@ export function OrderSummary() {
             <div className="flex items-center gap-3">
               <img src={item.imageUrl} alt={item.name} className="h-12 w-12 shrink-0 rounded-md object-cover" />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-gray-800">
-                  {item.name}
-                  {item.temperature && (
-                    <span className="ml-1 text-xs font-normal text-pink-500">
-                      ({item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'})
-                    </span>
-                  )}
-                  {item.hasExtraShot && <span className="ml-1 text-xs font-normal text-pink-500">(샷 추가)</span>}
-                  {item.selectedOptions?.map((option) => (
-                    <span key={option.name} className="ml-1 text-xs font-normal text-pink-500">
-                      ({option.name})
-                    </span>
-                  ))}
-                </p>
+                {/* ✅ 이름+옵션을 하나의 truncate 문단에 넣으면 옵션이
+                    화면 밖으로 밀려 통째로 가려질 수 있어서, 옵션은
+                    줄바꿈되는 별도 영역으로 뺍니다. */}
+                <p className="truncate font-semibold text-gray-800">{item.name}</p>
+                {(item.temperature || item.hasExtraShot || (item.selectedOptions?.length ?? 0) > 0) && (
+                  <p className="flex flex-wrap gap-x-1 text-xs font-normal text-pink-500">
+                    {item.temperature && <span>({item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'})</span>}
+                    {item.hasExtraShot && <span>(샷 추가)</span>}
+                    {item.selectedOptions?.map((option) => <span key={option.name}>({option.name})</span>)}
+                  </p>
+                )}
                 {item.magicSpell && <p className="truncate text-xs text-gray-400">🪄 {item.magicSpell}</p>}
                 <p className="whitespace-nowrap text-sm text-gray-500">{item.price.toLocaleString()}원</p>
               </div>
