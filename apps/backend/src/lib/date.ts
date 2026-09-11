@@ -33,3 +33,11 @@ export function getKstMonthRange(month: string): { start: Date; end: Date } {
   const end = new Date(Date.UTC(year, monthNum, 1, 0, 0, 0) - KST_OFFSET_MS);
   return { start, end };
 }
+
+/** 'YYYY-MM-DD' 날짜가 가리키는 KST 기준 하루의 시작/끝(다음 날 시작, exclusive)을 UTC Date로 반환합니다. */
+export function getKstDayRange(date: string): { start: Date; end: Date } {
+  const [year, month, day] = date.split('-').map(Number) as [number, number, number];
+  const start = new Date(Date.UTC(year, month - 1, day, 0, 0, 0) - KST_OFFSET_MS);
+  const end = new Date(Date.UTC(year, month - 1, day + 1, 0, 0, 0) - KST_OFFSET_MS);
+  return { start, end };
+}

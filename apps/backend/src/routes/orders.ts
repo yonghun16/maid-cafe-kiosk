@@ -1,30 +1,40 @@
 // @owner: ai
 import { Router, type Request, type Response } from 'express';
-import type { CreateOrderInput, MonthlySalesSummary, OrderStatusFilter, ProductSalesRanking } from '@repo/types';
+import type { CreateOrderInput, MonthlySalesSummary, OrderListQuery, ProductSalesRanking } from '@repo/types';
 import Order from '../models/Order';
 import Product from '../models/Product';
 import { requireAdmin } from '../middleware/requireAdmin';
-import { getKstMonthRange, getKstStartOfToday, getKstYear, getMonthLabelsForYear } from '../lib/date';
+import { getKstDayRange, getKstMonthRange, getKstStartOfToday, getKstYear, getMonthLabelsForYear } from '../lib/date';
 import { decrementStockForOrder } from '../lib/inventory';
 
 export const ordersRouter: Router = Router();
 
 /**
  * 주문 목록을 최신순으로 조회합니다. 주방/관리자가 들어온 주문을 확인하는
- * 용도입니다. `status` 쿼리로 진행중(`pending`)/완료(`completed`) 주문만
- * 걸러볼 수 있고, 생략하면 전체를 반환합니다. 관리자 세션이 없으면
- * `requireAdmin`에서 401로 막습니다.
+ * 용도입니다. `status`(진행중/완료), `orderType`(매장/포장), `date`(그
+ * 날짜 하루, KST 기준 'YYYY-MM-DD')로 걸러볼 수 있고, 전부 생략하면
+ * 전체를 반환합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로
+ * 막습니다.
  * @route GET /api/orders
- * @param req.query.status - `@repo/types`의 `OrderStatusFilter` (선택)
+ * @param req.query - `@repo/types`의 `OrderListQuery` (전부 선택)
  */
 ordersRouter.get(
   '/',
   requireAdmin,
-  async (req: Request<Record<string, never>, unknown, unknown, { status?: OrderStatusFilter }>, res: Response) => {
+  async (req: Request<Record<string, never>, unknown, unknown, OrderListQuery>, res: Response) => {
+    if (req.query.date && !/^\d{4}-\d{2}-\d{2}$/.test(req.query.date)) {
+      res.status(400).json({ message: 'date 형식이 올바르지 않습니다(YYYY-MM-DD).' });
+      return;
+    }
     try {
-      const filter: Record<string, boolean> = {};
+      const filter: Record<string, unknown> = {};
       if (req.query.status === 'pending') filter.isCompleted = false;
       if (req.query.status === 'completed') filter.isCompleted = true;
+      if (req.query.orderType) filter.orderType = req.query.orderType;
+      if (req.query.date) {
+        const { start, end } = getKstDayRange(req.query.date);
+        filter.createdAt = { $gte: start, $lt: end };
+      }
 
       const orders = await Order.find(filter).sort({ createdAt: -1 });
       res.json(orders);

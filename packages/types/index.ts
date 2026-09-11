@@ -175,6 +175,15 @@ export interface Order {
 // 주문 목록 조회(GET /api/orders) 시 진행중/지난 주문을 나누는 필터 값
 export type OrderStatusFilter = 'pending' | 'completed';
 
+// 주문 목록 조회(GET /api/orders)의 쿼리 파라미터 — 전부 선택이며
+// 생략한 조건은 걸지 않습니다(AND 조합). `date`는 'YYYY-MM-DD'
+// 형식으로 KST 기준 하루를 가리킵니다([[주문내역조회]] 참고).
+export interface OrderListQuery {
+  status?: OrderStatusFilter;
+  orderType?: OrderType;
+  date?: string;
+}
+
 // 주문 생성 요청(POST /api/orders)의 바디 타입 — 프론트/백엔드가 공유하는 계약
 export interface CreateOrderInput {
   items: OrderItem[];

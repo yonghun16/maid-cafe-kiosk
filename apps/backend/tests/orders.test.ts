@@ -99,4 +99,36 @@ describe('주문', () => {
     // 3개 + 1개 = 4잔, 잔당 4000원 = 16000원
     expect(total).toBe(16000);
   });
+
+  it('매장/포장(orderType)으로 필터링할 수 있다', async () => {
+    await request(app)
+      .post('/api/orders')
+      .send({ ...orderPayload(1), orderType: 'dine-in' });
+
+    const dineIn = await agent.get('/api/orders?orderType=dine-in');
+    expect(dineIn.body.length).toBeGreaterThan(0);
+    expect(dineIn.body.every((o: { orderType: string }) => o.orderType === 'dine-in')).toBe(true);
+
+    const takeout = await agent.get('/api/orders?orderType=takeout');
+    expect(takeout.body.length).toBeGreaterThan(0);
+    expect(takeout.body.every((o: { orderType: string }) => o.orderType === 'takeout')).toBe(true);
+  });
+
+  it('날짜(date)로 필터링할 수 있고, 다른 필터와 조합할 수 있으며, 잘못된 형식은 400으로 거부된다', async () => {
+    const kstToday = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    const todayList = await agent.get(`/api/orders?date=${kstToday}`);
+    expect(todayList.body.length).toBeGreaterThan(0);
+
+    const pastList = await agent.get('/api/orders?date=2000-01-01');
+    expect(pastList.body.length).toBe(0);
+
+    // 조합 필터: 오늘 + 매장 주문만
+    const combined = await agent.get(`/api/orders?date=${kstToday}&orderType=dine-in`);
+    expect(combined.body.length).toBeGreaterThan(0);
+    expect(combined.body.every((o: { orderType: string }) => o.orderType === 'dine-in')).toBe(true);
+
+    const invalid = await agent.get('/api/orders?date=2026-9-1');
+    expect(invalid.status).toBe(400);
+  });
 });

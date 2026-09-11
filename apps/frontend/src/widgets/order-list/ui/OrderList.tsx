@@ -5,10 +5,18 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import type { Order, OrderStatusFilter } from '@repo/types';
+import type { Order, OrderStatusFilter, OrderType } from '@repo/types';
 import { completeOrder, getOrders, OrderCard } from '../../../entities/order';
 
 const POLL_INTERVAL_MS = 10_000;
+
+type OrderTypeFilter = OrderType | 'all';
+
+const ORDER_TYPE_FILTERS: { value: OrderTypeFilter; label: string }[] = [
+  { value: 'all', label: '전체' },
+  { value: 'dine-in', label: '🍽️ 매장' },
+  { value: 'takeout', label: '🥡 포장' },
+];
 
 interface OrderListProps {
   status: OrderStatusFilter;
@@ -18,10 +26,16 @@ export function OrderList({ status }: OrderListProps) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [dateFilter, setDateFilter] = useState('');
+  const [orderTypeFilter, setOrderTypeFilter] = useState<OrderTypeFilter>('all');
 
   const fetchOrders = useCallback(async () => {
     try {
-      const data = await getOrders(status);
+      const data = await getOrders({
+        status,
+        date: dateFilter || undefined,
+        orderType: orderTypeFilter === 'all' ? undefined : orderTypeFilter,
+      });
       setOrders(data);
     } catch (error) {
       console.error('주문 목록을 불러오는 중 오류가 발생했습니다:', error);
@@ -29,7 +43,7 @@ export function OrderList({ status }: OrderListProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [status]);
+  }, [status, dateFilter, orderTypeFilter]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -89,11 +103,49 @@ export function OrderList({ status }: OrderListProps) {
         </button>
       </div>
 
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <input
+          type="date"
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value)}
+          className="rounded-md border border-gray-300 px-3 py-2 text-base text-gray-700"
+        />
+        {dateFilter && (
+          <button
+            type="button"
+            onClick={() => setDateFilter('')}
+            className="text-sm font-semibold text-gray-400 hover:text-gray-600"
+          >
+            날짜 초기화
+          </button>
+        )}
+        <div className="flex gap-2">
+          {ORDER_TYPE_FILTERS.map((filter) => (
+            <button
+              key={filter.value}
+              type="button"
+              onClick={() => setOrderTypeFilter(filter.value)}
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+                orderTypeFilter === filter.value
+                  ? 'bg-pink-500 text-white'
+                  : 'border border-gray-200 text-gray-500 hover:bg-gray-50'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {isLoading ? (
         <p>로딩 중...</p>
       ) : orders.length === 0 ? (
         <p className="text-gray-400">
-          {status === 'pending' ? '아직 들어온 주문이 없습니다.' : '완료된 주문이 없습니다.'}
+          {dateFilter || orderTypeFilter !== 'all'
+            ? '조건에 맞는 주문이 없습니다.'
+            : status === 'pending'
+              ? '아직 들어온 주문이 없습니다.'
+              : '완료된 주문이 없습니다.'}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
