@@ -43,6 +43,10 @@ apps/
       lib/            # date, seed(1회성 마이그레이션), inventory, r2Client
       middleware/     # requireAdmin
     tests/       # Vitest + Supertest + 인메모리 MongoDB
+  mobile/     # 고객 화면(안드로이드 키오스크 태블릿 전용) React Native + Expo 앱
+              # — 스캐폴딩 단계, 실제 화면 UI 포팅은 진행 중(docs/specs/005 참고)
+    App.tsx      # 임시 확인 화면(NativeWind + 백엔드 통신 스모크 테스트)
+    src/shared/  # axios 인스턴스, 환경설정 — 백엔드에 직접 통신(같은 REST API 재사용)
 packages/
   types/                 # Product/Order/CreateOrderInput 등 프론트-백엔드 공유 타입
   eslint-config/         # 공용 ESLint 설정

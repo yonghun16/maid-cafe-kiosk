@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "메이드 카페 키오스크",
+    "slug": "maid-cafe-kiosk-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.yonghun16.maidcafekiosk",
+      "adaptiveIcon": {
+        "backgroundColor": "#fce7f3",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
