@@ -110,46 +110,92 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
       </Pressable>
 
       <Modal isOpen={isOptionModalOpen} onClose={() => setIsOptionModalOpen(false)} title={product.name}>
-        <View className="gap-3">
-          {product.temperatureOption && (
-            <View>
-              <Text className="mb-1 text-sm font-semibold text-gray-700">🌡️ 온도</Text>
-              {product.temperatureOption === 'BOTH' ? (
-                <View className="flex-row gap-2">
-                  {TEMPERATURE_OPTIONS.map((option) => (
-                    <Pressable
-                      key={option}
-                      onPress={() => handleTemperaturePress(option)}
-                      className={`flex-1 items-center rounded-lg border px-3 py-2 ${
-                        temperature === option ? 'border-pink-500 bg-pink-500' : 'border-pink-100'
-                      }`}
-                    >
-                      <Text
-                        className={`text-sm font-semibold ${temperature === option ? 'text-white' : 'text-gray-600'}`}
-                      >
-                        {TEMPERATURE_LABEL[option]}
+        <View className="gap-4">
+          {/* ✅ 사진을 왼쪽에, 옵션을 오른쪽에 둬서 상품 사진 비율(3:4)이
+              눌리지 않고 그대로 보이게 합니다. items-start로 옵션이
+              늘어나도(예: ICE 얼음양 선택지) 사진 높이가 같이 늘어나지
+              않게 합니다(웹의 ProductCard와 동일한 레이아웃). */}
+          <View className="flex-row items-start gap-4">
+            <View className="aspect-[3/4] w-28 shrink-0 overflow-hidden rounded-lg bg-pink-50">
+              <Image source={{ uri: product.imageUrl }} style={{ flex: 1 }} contentFit="cover" />
+            </View>
+
+            <View className="flex-1 gap-3">
+              {product.temperatureOption && (
+                <View>
+                  <Text className="mb-1 text-sm font-semibold text-gray-700">🌡️ 온도</Text>
+                  {product.temperatureOption === 'BOTH' ? (
+                    <View className="flex-row gap-2">
+                      {TEMPERATURE_OPTIONS.map((option) => (
+                        <Pressable
+                          key={option}
+                          onPress={() => handleTemperaturePress(option)}
+                          className={`flex-1 items-center rounded-lg border px-3 py-2 ${
+                            temperature === option ? 'border-pink-500 bg-pink-500' : 'border-pink-100'
+                          }`}
+                        >
+                          <Text
+                            className={`text-sm font-semibold ${
+                              temperature === option ? 'text-white' : 'text-gray-600'
+                            }`}
+                          >
+                            {TEMPERATURE_LABEL[option]}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : (
+                    <View className="self-start rounded-lg border border-pink-100 bg-pink-50 px-3 py-2">
+                      <Text className="text-sm font-semibold text-gray-600">
+                        {TEMPERATURE_LABEL[product.temperatureOption]}
                       </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              ) : (
-                <View className="self-start rounded-lg border border-pink-100 bg-pink-50 px-3 py-2">
-                  <Text className="text-sm font-semibold text-gray-600">{TEMPERATURE_LABEL[product.temperatureOption]}</Text>
+                    </View>
+                  )}
+                  {temperature === 'ICE' && (
+                    <View className="mt-2">
+                      <Text className="mb-1 text-xs font-semibold text-gray-500">얼음양</Text>
+                      <View className="flex-row gap-2">
+                        {ICE_AMOUNT_OPTIONS.map((option) => (
+                          <Pressable
+                            key={option}
+                            onPress={() => setIceAmount((prev) => (prev === option ? '' : option))}
+                            className={`flex-1 items-center rounded-lg border px-2 py-1.5 ${
+                              iceAmount === option ? 'border-sky-500 bg-sky-500' : 'border-sky-100'
+                            }`}
+                          >
+                            <Text
+                              className={`text-xs font-semibold ${
+                                iceAmount === option ? 'text-white' : 'text-gray-600'
+                              }`}
+                            >
+                              {option}
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    </View>
+                  )}
                 </View>
               )}
-              {temperature === 'ICE' && (
-                <View className="mt-2">
-                  <Text className="mb-1 text-xs font-semibold text-gray-500">얼음양</Text>
-                  <View className="flex-row gap-2">
-                    {ICE_AMOUNT_OPTIONS.map((option) => (
+
+              {product.hasMagicSpellOption && (
+                <View>
+                  <Text className="mb-1 text-sm font-semibold text-gray-700">🪄 마법의 주문</Text>
+                  <View className="flex-row flex-wrap gap-2">
+                    {MAGIC_SPELL_OPTIONS.map((option) => (
                       <Pressable
                         key={option}
-                        onPress={() => setIceAmount((prev) => (prev === option ? '' : option))}
-                        className={`flex-1 items-center rounded-lg border px-2 py-1.5 ${
-                          iceAmount === option ? 'border-sky-500 bg-sky-500' : 'border-sky-100'
+                        onPress={() => setMagicSpell((prev) => (prev === option ? '' : option))}
+                        style={{ width: '47%' }}
+                        className={`items-center rounded-lg border px-2 py-2 ${
+                          magicSpell === option ? 'border-amber-500 bg-amber-500' : 'border-amber-100'
                         }`}
                       >
-                        <Text className={`text-xs font-semibold ${iceAmount === option ? 'text-white' : 'text-gray-600'}`}>
+                        <Text
+                          className={`text-xs font-semibold ${
+                            magicSpell === option ? 'text-white' : 'text-gray-600'
+                          }`}
+                        >
                           {option}
                         </Text>
                       </Pressable>
@@ -157,59 +203,37 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                   </View>
                 </View>
               )}
-            </View>
-          )}
 
-          {product.hasMagicSpellOption && (
-            <View>
-              <Text className="mb-1 text-sm font-semibold text-gray-700">🪄 마법의 주문</Text>
-              <View className="flex-row flex-wrap gap-2">
-                {MAGIC_SPELL_OPTIONS.map((option) => (
-                  <Pressable
-                    key={option}
-                    onPress={() => setMagicSpell((prev) => (prev === option ? '' : option))}
-                    style={{ width: '47%' }}
-                    className={`items-center rounded-lg border px-2 py-2 ${
-                      magicSpell === option ? 'border-amber-500 bg-amber-500' : 'border-amber-100'
-                    }`}
-                  >
-                    <Text className={`text-xs font-semibold ${magicSpell === option ? 'text-white' : 'text-gray-600'}`}>
-                      {option}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-          )}
-
-          {productOptions.length > 0 && (
-            <View className="gap-2">
-              {productOptions.map((option) => {
-                const isSelected = selectedOptionNames.includes(option.name);
-                return (
-                  <Pressable
-                    key={option.name}
-                    onPress={() => toggleCustomOption(option.name)}
-                    className="flex-row items-center justify-between rounded-lg border border-pink-100 px-3 py-2.5"
-                  >
-                    <Text className="text-sm font-semibold text-gray-700">{option.name}</Text>
-                    <View className="flex-row items-center gap-2">
-                      {option.price > 0 && (
-                        <Text className="text-xs text-gray-500">+{option.price.toLocaleString()}원</Text>
-                      )}
-                      <View
-                        className={`h-5 w-5 items-center justify-center rounded border ${
-                          isSelected ? 'border-pink-500 bg-pink-500' : 'border-gray-300'
-                        }`}
+              {productOptions.length > 0 && (
+                <View className="gap-2">
+                  {productOptions.map((option) => {
+                    const isSelected = selectedOptionNames.includes(option.name);
+                    return (
+                      <Pressable
+                        key={option.name}
+                        onPress={() => toggleCustomOption(option.name)}
+                        className="flex-row items-center justify-between rounded-lg border border-pink-100 px-3 py-2.5"
                       >
-                        {isSelected && <Text className="text-xs text-white">✓</Text>}
-                      </View>
-                    </View>
-                  </Pressable>
-                );
-              })}
+                        <Text className="text-sm font-semibold text-gray-700">{option.name}</Text>
+                        <View className="flex-row items-center gap-2">
+                          {option.price > 0 && (
+                            <Text className="text-xs text-gray-500">+{option.price.toLocaleString()}원</Text>
+                          )}
+                          <View
+                            className={`h-5 w-5 items-center justify-center rounded border ${
+                              isSelected ? 'border-pink-500 bg-pink-500' : 'border-gray-300'
+                            }`}
+                          >
+                            {isSelected && <Text className="text-xs text-white">✓</Text>}
+                          </View>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
             </View>
-          )}
+          </View>
 
           <Text className="text-right text-lg font-bold text-pink-600">{totalPrice.toLocaleString()}원</Text>
 
