@@ -59,12 +59,14 @@ describe('주문', () => {
     expect(res.body.orderNumber).toBe(2);
   });
 
-  it('잘못된 결제 수단은 400으로 거부된다', async () => {
+  it('잘못된 결제 수단은 400으로 거부되고, 어떤 값이 왜 잘못됐는지 메시지에 담긴다', async () => {
     const payload = orderPayload(1);
     const res = await request(app)
       .post('/api/orders')
       .send({ ...payload, paymentMethod: '현금' });
     expect(res.status).toBe(400);
+    expect(res.body.message).toContain('paymentMethod');
+    expect(res.body.message).toContain('현금');
   });
 
   it('진행중/완료 상태로 필터링해 조회할 수 있고, 완료 처리하면 목록이 이동한다', async () => {

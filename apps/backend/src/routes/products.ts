@@ -3,6 +3,7 @@ import { Router, type Request, type Response } from 'express';
 import type { ProductInput, ReorderProductsInput, UpdateSoldOutInput, UpdateStockInput } from '@repo/types';
 import Product from '../models/Product';
 import { requireAdmin } from '../middleware/requireAdmin';
+import { toClientErrorMessage } from '../lib/errors';
 
 export const productsRouter: Router = Router();
 
@@ -46,7 +47,7 @@ productsRouter.post(
       const newProduct = await product.save();
       res.status(201).json(newProduct);
     } catch (err) {
-      res.status(400).json({ message: '상품 추가 중 오류가 발생했습니다.' });
+      res.status(400).json({ message: toClientErrorMessage(err, '상품 추가 중 오류가 발생했습니다.') });
     }
   },
 );
@@ -121,7 +122,7 @@ productsRouter.put(
       }
       res.json(updatedProduct);
     } catch (err) {
-      res.status(400).json({ message: '상품 수정 중 오류가 발생했습니다.' });
+      res.status(400).json({ message: toClientErrorMessage(err, '상품 수정 중 오류가 발생했습니다.') });
     }
   },
 );
@@ -152,7 +153,7 @@ productsRouter.patch(
       }
       res.json(updatedProduct);
     } catch (err) {
-      res.status(400).json({ message: '품절 상태 변경 중 오류가 발생했습니다.' });
+      res.status(400).json({ message: toClientErrorMessage(err, '품절 상태 변경 중 오류가 발생했습니다.') });
     }
   },
 );
@@ -186,7 +187,7 @@ productsRouter.patch(
       }
       res.json(updatedProduct);
     } catch (err) {
-      res.status(400).json({ message: '재고 수량 변경 중 오류가 발생했습니다.' });
+      res.status(400).json({ message: toClientErrorMessage(err, '재고 수량 변경 중 오류가 발생했습니다.') });
     }
   },
 );

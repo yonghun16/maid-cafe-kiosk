@@ -4,6 +4,7 @@ import type { CategoryInput, ReorderCategoriesInput } from '@repo/types';
 import Category from '../models/Category';
 import Product from '../models/Product';
 import { requireAdmin } from '../middleware/requireAdmin';
+import { isDuplicateKeyError, toClientErrorMessage } from '../lib/errors';
 
 export const categoriesRouter: Router = Router();
 
@@ -37,7 +38,11 @@ categoriesRouter.post(
       const newCategory = await category.save();
       res.status(201).json(newCategory);
     } catch (err) {
-      res.status(400).json({ message: '이미 있는 카테고리이거나 등록 중 오류가 발생했습니다.' });
+      if (isDuplicateKeyError(err)) {
+        res.status(400).json({ message: '이미 있는 카테고리 이름입니다.' });
+        return;
+      }
+      res.status(400).json({ message: toClientErrorMessage(err, '카테고리 등록 중 오류가 발생했습니다.') });
     }
   },
 );
@@ -93,7 +98,11 @@ categoriesRouter.put(
       await Product.updateMany({ category: oldName }, { $set: { category: req.body.name } });
       res.json(category);
     } catch (err) {
-      res.status(400).json({ message: '이미 있는 카테고리이거나 수정 중 오류가 발생했습니다.' });
+      if (isDuplicateKeyError(err)) {
+        res.status(400).json({ message: '이미 있는 카테고리 이름입니다.' });
+        return;
+      }
+      res.status(400).json({ message: toClientErrorMessage(err, '카테고리 수정 중 오류가 발생했습니다.') });
     }
   },
 );

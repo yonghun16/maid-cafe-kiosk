@@ -69,6 +69,13 @@ describe('카테고리 관리', () => {
     expect(products.body.some((p: { _id: string }) => p._id === product.body._id)).toBe(false);
   });
 
+  it('이미 있는 이름으로 만들면 400과 구체적인 원인 메시지를 받는다', async () => {
+    await agent.post('/api/categories').send({ name: '중복테스트' });
+    const duplicate = await agent.post('/api/categories').send({ name: '중복테스트' });
+    expect(duplicate.status).toBe(400);
+    expect(duplicate.body.message).toBe('이미 있는 카테고리 이름입니다.');
+  });
+
   it('reorder는 보낸 순서 그대로 order 값을 매긴다', async () => {
     const categories = await request(app).get('/api/categories');
     const ids = categories.body.map((c: { _id: string }) => c._id).reverse();

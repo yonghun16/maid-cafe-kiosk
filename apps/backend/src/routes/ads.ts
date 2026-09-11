@@ -3,6 +3,7 @@ import { Router, type Request, type Response } from 'express';
 import type { AdInput, ReorderAdsInput } from '@repo/types';
 import Ad from '../models/Ad';
 import { requireAdmin } from '../middleware/requireAdmin';
+import { toClientErrorMessage } from '../lib/errors';
 
 export const adsRouter: Router = Router();
 
@@ -36,7 +37,7 @@ adsRouter.post(
       const newAd = await ad.save();
       res.status(201).json(newAd);
     } catch (err) {
-      res.status(400).json({ message: '광고 등록 중 오류가 발생했습니다.' });
+      res.status(400).json({ message: toClientErrorMessage(err, '광고 등록 중 오류가 발생했습니다.') });
     }
   },
 );
@@ -91,7 +92,7 @@ adsRouter.put(
       }
       res.json(updatedAd);
     } catch (err) {
-      res.status(400).json({ message: '광고 수정 중 오류가 발생했습니다.' });
+      res.status(400).json({ message: toClientErrorMessage(err, '광고 수정 중 오류가 발생했습니다.') });
     }
   },
 );

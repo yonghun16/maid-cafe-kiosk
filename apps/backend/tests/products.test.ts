@@ -39,7 +39,7 @@ describe('상품 관리', () => {
     expect(res.body.temperatureOption).toBe(value);
   });
 
-  it('잘못된 temperatureOption 값은 400으로 거부된다', async () => {
+  it('잘못된 temperatureOption 값은 400으로 거부되고, 어떤 필드가 왜 잘못됐는지 메시지에 담긴다', async () => {
     const res = await agent.post('/api/products').send({
       name: '잘못된온도',
       price: 1000,
@@ -48,6 +48,8 @@ describe('상품 관리', () => {
       temperatureOption: 'WARM',
     });
     expect(res.status).toBe(400);
+    expect(res.body.message).toContain('temperatureOption');
+    expect(res.body.message).toContain('WARM');
   });
 
   it('수정 시 temperatureOption을 생략하면 $unset으로 필드가 완전히 사라진다', async () => {

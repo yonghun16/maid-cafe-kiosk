@@ -6,6 +6,7 @@ import Product from '../models/Product';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { getKstDayRange, getKstMonthRange, getKstStartOfToday, getKstYear, getMonthLabelsForYear } from '../lib/date';
 import { decrementStockForOrder } from '../lib/inventory';
+import { toClientErrorMessage } from '../lib/errors';
 
 export const ordersRouter: Router = Router();
 
@@ -100,7 +101,7 @@ ordersRouter.post(
         console.error('주문 후 재고 갱신 중 오류가 발생했습니다:', stockErr);
       }
     } catch (err) {
-      res.status(400).json({ message: '주문을 처리하는 중 오류가 발생했습니다.' });
+      res.status(400).json({ message: toClientErrorMessage(err, '주문을 처리하는 중 오류가 발생했습니다.') });
     }
   },
 );
