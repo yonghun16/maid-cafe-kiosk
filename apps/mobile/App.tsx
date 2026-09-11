@@ -1,7 +1,8 @@
 // @owner: ai
 import './global.css';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, Text } from 'react-native';
+import { Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import type { Product } from '@repo/types';
 import { apiClient } from './src/shared/api/client';

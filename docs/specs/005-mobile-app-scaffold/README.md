@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: complete
 created: 2026-09-11
 priority: high
 tags:
@@ -7,9 +7,12 @@ tags:
 - 모바일
 - 아키텍처
 created_at: 2026-09-11T12:49:35.705885Z
-updated_at: 2026-09-11T12:49:35.705885Z
+updated_at: 2026-09-11T13:16:45.738130Z
+completed_at: 2026-09-11T13:16:45.738130Z
+transitions:
+- status: complete
+  at: 2026-09-11T13:16:45.738130Z
 ---
-
 # 고객용 네이티브 앱(apps/mobile) 스캐폴딩
 
 ## Overview
@@ -81,17 +84,36 @@ Native로 옮기는 건 이후 별도 스펙에서 진행하고, 여기서는 `a
       아이콘/안드로이드 적응형 아이콘(전경·배경·모노크롬)/파비콘을
       새로 생성
 - [x] NativeWind 설치·설정(babel/metro/tailwind config) — `nativewind`가
-      의존하는 `react-native-css-interop`이 pnpm의 격리된 node_modules
-      구조 때문에 Metro에서 못 찾는 문제가 있어 `apps/mobile`에 직접
-      의존성으로 추가해 해결
+      쓰는 `react-native-css-interop`을 Metro가 못 찾는 문제가 있었음.
+      처음엔 `apps/mobile`에 직접 의존성으로 추가해 임시로 해결했다고
+      봤지만, 실제 기기 테스트 중 `react-native` 패키지 자신의 내부
+      파일(`LogBox/Data/LogBoxData.js`)에서도 같은 오류가 재발 — pnpm의
+      격리된(symlink) node_modules 구조를 Metro가 완전히 이해하지 못해
+      생기는 근본적인 문제였음. 루트 `.npmrc`에 `node-linker=hoisted`를
+      추가해 평탄한 node_modules 구조로 바꿔 완전히 해결(frontend/
+      backend는 이 변경 후에도 check-types/build/test 전부 정상 확인).
 - [x] `packages/types`를 workspace 의존성으로 추가, 타입 import 확인용
       최소 예시(상품 목록을 fetch해서 화면에 개수만 표시)
 - [x] `package.json` 스크립트(dev/android/ios/check-types) 정의.
       `pnpm turbo run check-types`(루트 전체)와 `npx expo export
-      --platform android`(NativeWind + 공유 타입 + axios 통신 코드까지
-      포함해 945개 모듈이 실제로 번들링되는 것)로 확인
-- [ ] 실제 `expo start`로 시뮬레이터/기기에서 앱을 띄워서 화면이
-      뜨고 백엔드 응답이 표시되는 것까지 확인 — 이 세션엔 시뮬레이터/
-      기기가 없어 미확인. 번들링 성공만으로는 런타임 동작을 완전히
-      보장하지 않음
+      --platform android`(945개 모듈 번들링)로 확인
+- [x] 실제 `expo start --android`로 안드로이드 에뮬레이터(Pixel 9 Pro,
+      사용자가 직접 설치/부팅)에서 앱을 띄워 화면이 뜨고 백엔드 응답이
+      표시되는 것까지 확인 — NativeWind 스타일(핑크 배경/텍스트 색)이
+      정상 렌더링되고, "백엔드 연결 성공 — 메뉴 N개"가 실제 운영 DB의
+      상품 개수와 함께 표시됨.
+      - 과정에서 실제로 겪은 문제: Expo가 딥링크로 기기에 전달하는
+        주소가 호스트의 LAN IP(`exp://172.30.1.65:8081`)였는데, 에뮬
+        레이터에서 이 주소로 접속이 계속 걸려 화면이 계속 검게 떠
+        있었음(크래시도 없고 Metro도 요청을 못 받은 상태로 유휴 상태 —
+        가능성 높은 원인은 macOS 방화벽이 LAN발 수신 연결을 막았지만
+        승인할 사람이 없어 그대로 걸린 것). `adb reverse tcp:8081
+        tcp:8081`은 이미 정상 설정돼 있었던 걸 확인하고,
+        `exp://127.0.0.1:8081`로 직접 딥링크를 보내 이 터널을 타도록
+        강제하니 바로 정상 번들링·로드됨. 실기기(에뮬레이터 아닌 진짜
+        휴대폰)로 테스트할 땐 이 우회가 안 통하므로(같은 네트워크의
+        LAN IP로 접속해야 함), macOS 방화벽에서 node/expo의 수신 연결을
+        허용해줘야 할 수 있음 — 다음에 실기기 테스트 시 참고.
+      - 추가로 `react-native` 자체의 `SafeAreaView`(deprecated) 경고를
+        발견해 `react-native-safe-area-context`로 교체.
 - [x] 루트 `README.md`의 프로젝트 구조 설명에 `apps/mobile` 추가
