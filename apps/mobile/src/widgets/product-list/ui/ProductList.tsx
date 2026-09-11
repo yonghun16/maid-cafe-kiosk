@@ -1,0 +1,90 @@
+// @owner: ai
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import type { Category, Product } from '@repo/types';
+import { ProductCard, getProducts } from '../../../entities/product';
+import { getCategories } from '../../../entities/category';
+import { useCartStore } from '../../../features/cart';
+
+export function ProductList() {
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  // ✅ 손님은 "전체보기"에서 메뉴를 고르지 않고 항상 카테고리를 먼저
+  // 골라 담기 때문에, "전체" 옵션 없이 첫 카테고리를 기본 선택으로 둡니다.
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const addToCart = useCartStore((state) => state.addToCart);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setIsLoading(true);
+        const [products, categoryList] = await Promise.all([getProducts(), getCategories()]);
+        setAllProducts(products);
+        setCategories(categoryList);
+        setSelectedCategory(categoryList[0]?.name ?? '');
+      } catch (error) {
+        console.error('메뉴 목록을 불러오는 중 오류가 발생했습니다:', error);
+        Toast.show({ type: 'error', text1: '메뉴 목록을 불러오는 데 실패했습니다.' });
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, []);
+
+  const filteredProducts = selectedCategory
+    ? allProducts.filter((product) => product.category === selectedCategory)
+    : allProducts;
+
+  // ✅ FlatList의 2열 그리드는 마지막 줄에 상품이 하나만 남으면 그 카드가
+  // flex-1 때문에 줄 전체 너비로 늘어나 버립니다. `null` 채움 칸을 하나
+  // 더 넣어(보이지 않는 빈 View로 렌더링) 항상 2칸이 채워지게 합니다.
+  const dataWithFiller: (Product | null)[] =
+    filteredProducts.length % 2 !== 0 ? [...filteredProducts, null] : filteredProducts;
+
+  return (
+    <View className="flex-1">
+      <View className="flex-row flex-wrap gap-2 px-4 pb-2 pt-4">
+        {categories.map((category) => (
+          <Pressable
+            key={category._id}
+            onPress={() => setSelectedCategory(category.name)}
+            className={
+              selectedCategory === category.name
+                ? 'rounded-full bg-pink-500 px-4 py-2'
+                : 'rounded-full border border-pink-100 bg-white px-4 py-2'
+            }
+          >
+            <Text
+              className={
+                selectedCategory === category.name
+                  ? 'text-sm font-semibold text-white'
+                  : 'text-sm font-semibold text-gray-600'
+              }
+            >
+              {category.name}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {isLoading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color="#ec4899" />
+        </View>
+      ) : (
+        <FlatList
+          data={dataWithFiller}
+          keyExtractor={(item, index) => item?._id ?? `filler-${index}`}
+          numColumns={2}
+          columnWrapperStyle={{ gap: 12, paddingHorizontal: 16 }}
+          contentContainerStyle={{ gap: 12, paddingVertical: 12 }}
+          renderItem={({ item }) =>
+            item ? <ProductCard product={item} onAddToCart={addToCart} /> : <View style={{ flex: 1 }} />
+          }
+        />
+      )}
+    </View>
+  );
+}
