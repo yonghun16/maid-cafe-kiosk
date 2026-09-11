@@ -33,6 +33,20 @@ function CartLine({ item, onIncrease, onDecrease, onRemove }: CartLineProps) {
           <Text className="font-semibold text-gray-800" numberOfLines={1}>
             {item.name}
           </Text>
+          {(item.temperature || item.magicSpell || (item.selectedOptions?.length ?? 0) > 0) && (
+            <View className="mt-0.5 flex-row flex-wrap gap-x-1">
+              {item.temperature && (
+                <Text className="text-xs text-pink-500">({item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'})</Text>
+              )}
+              {item.iceAmount && <Text className="text-xs text-pink-500">(얼음 {item.iceAmount})</Text>}
+              {item.magicSpell && <Text className="text-xs text-pink-500">(🪄 {item.magicSpell})</Text>}
+              {item.selectedOptions?.map((option) => (
+                <Text key={option.name} className="text-xs text-pink-500">
+                  ({option.name})
+                </Text>
+              ))}
+            </View>
+          )}
           <Text className="text-sm text-gray-500">{item.price.toLocaleString()}원</Text>
         </View>
         <Pressable onPress={onRemove} hitSlop={8}>
