@@ -89,9 +89,19 @@ Native로 옮기는 건 이후 별도 스펙에서 진행하고, 여기서는 `a
       봤지만, 실제 기기 테스트 중 `react-native` 패키지 자신의 내부
       파일(`LogBox/Data/LogBoxData.js`)에서도 같은 오류가 재발 — pnpm의
       격리된(symlink) node_modules 구조를 Metro가 완전히 이해하지 못해
-      생기는 근본적인 문제였음. 루트 `.npmrc`에 `node-linker=hoisted`를
-      추가해 평탄한 node_modules 구조로 바꿔 완전히 해결(frontend/
-      backend는 이 변경 후에도 check-types/build/test 전부 정상 확인).
+      생기는 근본적인 문제였음.
+      - 처음엔 루트 `.npmrc`에 `node-linker=hoisted`(전체를 평탄한
+        구조로)를 추가해 해결했다고 봤는데, 이게 `apps/frontend`(Next.js
+        용 React)와 `apps/mobile`(Expo SDK 57용 React 19.2.3)의 서로
+        다른 React 버전을 한 트리로 합쳐버려서 CI에서 frontend 빌드가
+        `Cannot read properties of null (reading 'useRef')`로 깨지는
+        React 이중 로드 문제를 일으킴 — **로컬에서는 재현 안 되고 CI에서만
+        걸려서, CI가 실제로 회귀를 잡아낸 사례**. `node-linker=hoisted`를
+        되돌리고, 대신 `public-hoist-pattern[]=react-native-css-interop`
+        로 딱 그 패키지 하나만 루트로 끌어올려서 다른 앱들의 React 버전
+        격리는 그대로 유지한 채 해결. `pnpm turbo run build --force`로
+        frontend가 다시 정상 프리렌더되는 것, `npx expo export`로
+        mobile이 여전히 정상 번들링되는 것 둘 다 재확인.
 - [x] `packages/types`를 workspace 의존성으로 추가, 타입 import 확인용
       최소 예시(상품 목록을 fetch해서 화면에 개수만 표시)
 - [x] `package.json` 스크립트(dev/android/ios/check-types) 정의.
