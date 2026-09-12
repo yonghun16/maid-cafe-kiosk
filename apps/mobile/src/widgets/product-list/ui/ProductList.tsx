@@ -1,6 +1,6 @@
 // @owner: ai
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import Toast from 'react-native-toast-message';
 import type { Category, Product } from '@repo/types';
 import { ProductCard, getProducts } from '../../../entities/product';
@@ -60,7 +60,14 @@ export function ProductList() {
 
   return (
     <View className={isTablet ? 'flex-none' : 'flex-1'} style={isTablet ? { width: '60%' } : undefined}>
-      <View className="flex-row flex-wrap gap-2 px-4 pb-2 pt-4">
+      {/* ✅ 카테고리가 많아 한 줄에 다 안 들어가면 줄바꿈되던 것을,
+          한 줄로 고정하고 대신 옆으로 드래그해서 넘기게 바꿨습니다
+          (웹의 헤더 도킹 카테고리 바 `variant="scroll"`과 동일한 의도). */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingBottom: 8, paddingTop: 16 }}
+      >
         {categories.map((category) => (
           <Pressable
             key={category._id}
@@ -82,7 +89,7 @@ export function ProductList() {
             </Text>
           </Pressable>
         ))}
-      </View>
+      </ScrollView>
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">

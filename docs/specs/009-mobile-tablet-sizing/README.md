@@ -182,6 +182,17 @@ md:flex-none`(ProductList) + `hidden md:flex md:w-2/5 md:flex-none`/
   검증됐지만, 구조 변경은 지금까지 두 번(`AdBanner`, 이번 건) 모두 className
   방식에서 실패했다.
 
+**후속 조정 8(같은 날) — 카테고리 탭 한 줄 + 드래그 스크롤**: 후속 조정
+7까지 고치고 나니 카테고리가 5개라 좁은 폭에서 두 줄로 줄바꿈되는 게
+눈에 띈다는 지적("카테고리를 1줄로 만들고, 길면 드래그로 끌어서 이동
+시키게 할 수 있어?")을 받았다. `ProductList.tsx`의 카테고리 탭 컨테이너를
+`flex-row flex-wrap`인 `View`에서 `horizontal` `ScrollView`
+(`showsHorizontalScrollIndicator={false}`)로 교체해, 줄바꿈 대신 한 줄로
+고정하고 다 안 들어가는 나머지는 옆으로 드래그해서 넘기게 했다(웹의 헤더
+도킹 카테고리 바 `variant="scroll"`과 동일한 의도). `pnpm --filter mobile
+check-types` 통과 확인 후, 에뮬레이터에서 스크린샷 + `adb shell input
+swipe`로 실제 드래그 스크롤이 동작하는 것까지 확인.
+
 ## Plan
 
 - [x] `shared/ui/Modal.tsx`, `entities/ad/ui/AdBanner.tsx`,
@@ -204,3 +215,5 @@ md:flex-none`(ProductList) + `hidden md:flex md:w-2/5 md:flex-none`/
 - [x] (후속 조정 7) `useWindowDimensions` 기반 JS 분기로 교체, `pnpm
       --filter mobile check-types` 통과 확인 + 에뮬레이터 재기동 후
       스크린샷으로 좌우 분할이 실제로 정상 동작하는 것까지 확인
+- [x] (후속 조정 8) `ProductList.tsx` 카테고리 탭을 `horizontal ScrollView`로
+      교체, `check-types` 통과 확인 + 에뮬레이터에서 드래그 스크롤 동작 확인
