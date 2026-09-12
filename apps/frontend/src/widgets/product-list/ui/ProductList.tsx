@@ -82,12 +82,12 @@ export function ProductList() {
           bg-kiosk-pattern을 그대로 써서 스크롤되는 카드는 가리되
           뒷배경과 자연스럽게 이어지게 합니다. */}
       <div className="bg-kiosk-pattern sticky top-14 z-20 -mt-2 mb-6 pb-4 pt-2">
-        <div className="flex flex-wrap justify-center gap-2 md:justify-start">
+        <div className="flex flex-wrap justify-center gap-2 md:justify-start md:gap-3">
           {categories.map(category => (
             <button
               key={category._id}
               onClick={() => handleSelectCategory(category.name)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 ${selectedCategory === category.name ? 'bg-pink-500 text-white shadow-md' : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'}`}
+              className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 md:px-7 md:py-3 md:text-base ${selectedCategory === category.name ? 'bg-pink-500 text-white shadow-md' : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'}`}
             >
               {category.name}
             </button>
