@@ -10,3 +10,7 @@ process.env.R2_ACCESS_KEY_ID ??= 'test-access-key';
 process.env.R2_SECRET_ACCESS_KEY ??= 'test-secret-key';
 process.env.R2_BUCKET_NAME ??= 'test-bucket';
 process.env.R2_PUBLIC_URL ??= 'https://example.com/test-bucket';
+// 테스트 전용으로 새로 발급한 더미 VAPID 키 쌍입니다(실제 서비스와 무관).
+process.env.VAPID_PUBLIC_KEY ??=
+  'BGU3Ykec35DMS81ykLylWk8stjTzbxVZ6qvNcs4IwRWxDwtV8J32h8FYFpAkgfIyOBQJ_W-VGibwjyRPhjhmk8c';
+process.env.VAPID_PRIVATE_KEY ??= 'dZOoz6BtHZNvIB0203S_KRdnNdi8uzLcCfSo8AiXBqs';

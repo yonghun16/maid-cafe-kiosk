@@ -11,6 +11,7 @@ import { categoriesRouter } from './routes/categories';
 import { productsRouter } from './routes/products';
 import { adsRouter } from './routes/ads';
 import { ordersRouter } from './routes/orders';
+import { pushRouter } from './routes/push';
 
 /**
  * Express 앱을 만들고 미들웨어/라우터를 전부 연결합니다. MongoDB
@@ -75,6 +76,7 @@ export function createApp(sessionMongoUrl: string): Express {
   app.use('/api/products', productsRouter);
   app.use('/api/ads', adsRouter);
   app.use('/api/orders', ordersRouter);
+  app.use('/api/push', pushRouter);
 
   // multer의 파일 크기/타입 검증 실패 등을 JSON 에러로 변환합니다.
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

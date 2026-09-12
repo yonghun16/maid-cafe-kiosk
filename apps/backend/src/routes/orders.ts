@@ -7,6 +7,7 @@ import { requireAdmin } from '../middleware/requireAdmin';
 import { getKstDayRange, getKstMonthRange, getKstStartOfToday, getKstYear, getMonthLabelsForYear } from '../lib/date';
 import { decrementStockForOrder } from '../lib/inventory';
 import { toClientErrorMessage } from '../lib/errors';
+import { notifyKitchenOfNewOrder } from '../lib/webPush';
 
 export const ordersRouter: Router = Router();
 
@@ -72,7 +73,8 @@ ordersRouter.patch('/:id/complete', requireAdmin, async (req: Request<{ id: stri
  * 장바구니 내용을 주문으로 생성합니다. 요청 바디 계약은 `@repo/types`의 `CreateOrderInput`을 따르며,
  * 프론트엔드 `features/cart/api/orderApi.ts`와 동일한 타입을 공유합니다. 응답의
  * `orderNumber`는 한국 시간(KST) 기준 당일 자정부터 1번씩 다시 매기는 짧은
- * 주문번호입니다(스타벅스 매장 주문번호 방식).
+ * 주문번호입니다(스타벅스 매장 주문번호 방식). 저장 후 재고 차감과 함께
+ * 주방 화면에 새 주문 웹 푸시 알림도 보냅니다([[주방알림]] 참고).
  * @route POST /api/orders
  */
 ordersRouter.post(
@@ -92,13 +94,18 @@ ordersRouter.post(
       await newOrder.save();
       res.status(201).json(newOrder);
 
-      // 재고 갱신은 주문 자체의 성공/실패와 분리합니다 — 이미 응답을
-      // 보낸 뒤이므로 여기서 오류가 나도 손님의 주문 제출에는 영향이
-      // 없고, 로그만 남깁니다.
+      // 재고 갱신/알림 전송은 주문 자체의 성공/실패와 분리합니다 — 이미
+      // 응답을 보낸 뒤이므로 여기서 오류가 나도 손님의 주문 제출에는
+      // 영향이 없고, 로그만 남깁니다.
       try {
         await decrementStockForOrder(req.body.items);
       } catch (stockErr) {
         console.error('주문 후 재고 갱신 중 오류가 발생했습니다:', stockErr);
+      }
+      try {
+        await notifyKitchenOfNewOrder(newOrder.orderNumber, newOrder.orderType);
+      } catch (notifyErr) {
+        console.error('주방 화면 알림 전송 중 오류가 발생했습니다:', notifyErr);
       }
     } catch (err) {
       res.status(400).json({ message: toClientErrorMessage(err, '주문을 처리하는 중 오류가 발생했습니다.') });

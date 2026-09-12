@@ -255,3 +255,21 @@ export interface AdInput {
 export interface ReorderAdsInput {
   orderedIds: string[];
 }
+
+// 웹 푸시 구독 등록 요청(POST /api/push/subscribe)의 바디 타입 —
+// 브라우저 `PushSubscription.toJSON()` 결과를 그대로 전달합니다
+// ([[주방알림]] 참고). 새 주문이 들어오면 이 구독으로 알림을 보냅니다.
+export interface PushSubscriptionInput {
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+}
+
+// VAPID 공개키 조회(GET /api/push/vapid-public-key)의 응답 타입 —
+// 프론트가 `PushManager.subscribe()`를 호출할 때 `applicationServerKey`로
+// 넘길 값입니다. 비밀값이 아니라 인증 없이 조회할 수 있습니다.
+export interface VapidPublicKeyResponse {
+  publicKey: string;
+}

@@ -36,3 +36,47 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+interface OrderPushPayload {
+  title: string;
+  body: string;
+  url: string;
+}
+
+/**
+ * 백엔드(`apps/backend/src/lib/webPush.ts`의 `notifyKitchenOfNewOrder`)가
+ * 새 주문이 들어올 때 보내는 웹 푸시를 받아 알림으로 띄웁니다
+ * ([[주방알림]] 참고). 탭이 꺼져 있거나 백그라운드에 있어도 OS
+ * 알림으로 뜹니다.
+ */
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  const { title, body, url } = event.data.json() as OrderPushPayload;
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: '/icon.png',
+      data: { url },
+    }),
+  );
+});
+
+/**
+ * 알림을 누르면 주방 화면 탭이 이미 열려 있으면 포커스만 옮기고,
+ * 없으면 새로 엽니다.
+ */
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data as { url?: string } | undefined)?.url ?? '/kitchen';
+  event.waitUntil(
+    (async () => {
+      const allClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const existing = allClients.find((client) => client.url.includes(targetUrl));
+      if (existing) {
+        await existing.focus();
+      } else {
+        await self.clients.openWindow(targetUrl);
+      }
+    })(),
+  );
+});

@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from "next";
 import { Dancing_Script } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
+import { SerwistProvider } from '@serwist/next/react';
 import "./globals.css";
 
 const dancingScript = Dancing_Script({
@@ -37,8 +38,14 @@ export default function RootLayout({
   return (
     <html lang="ko" className={dancingScript.variable}>
       <body>
-        <Toaster position="top-center" reverseOrder={false} />
-        {children}
+        {/* ✅ 서비스워커(`sw.ts`)를 실제로 등록해야 정적 리소스 캐싱과
+            주방 화면 새 주문 웹 푸시([[주방알림]])가 동작합니다.
+            next.config.js와 동일하게 개발 중에는 비활성화합니다 —
+            개발 서버는 sw.js를 빌드하지 않아 등록해도 404입니다. */}
+        <SerwistProvider swUrl="/sw.js" disable={process.env.NODE_ENV === 'development'}>
+          <Toaster position="top-center" reverseOrder={false} />
+          {children}
+        </SerwistProvider>
       </body>
     </html>
   );

@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LoginForm, useAdminAuthStore } from '../../../features/admin-auth';
+import { KitchenPushToggle } from '../../../features/kitchen-push-notification';
 import { OrderList } from '../../../widgets/order-list';
 
 type KitchenTab = 'orders' | 'history';
@@ -48,6 +49,7 @@ export function KitchenPage() {
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-4xl font-bold text-pink-500">🍳 주방 화면</h1>
         <div className="flex items-center gap-3">
+          <KitchenPushToggle />
           <Link
             href="/admin"
             className="rounded-md border border-pink-300 px-4 py-2 text-sm font-semibold text-pink-500 hover:bg-pink-50"
