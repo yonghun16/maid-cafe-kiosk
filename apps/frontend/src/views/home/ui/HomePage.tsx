@@ -110,28 +110,27 @@ export function HomePage() {
     <div className="min-h-screen bg-kiosk-pattern font-sans text-gray-700">
       {/* ✅ 메뉴를 스크롤해도 항상 보이도록 상단 고정 바를 두되, 매장/포장
           표시는 작은 배지로 줄여 화면을 덜 차지하게 합니다. */}
+      {/* ✅ 로고를 없앤 자리에 도킹된 카테고리 탭이 들어오게 해서, 예전처럼
+          별도 줄을 추가하지 않고 한 줄짜리 얇은 바를 유지합니다. 평소엔
+          이 자리가 비어 있다가(너비 0), 카테고리가 도킹되는 순간 펼쳐져
+          배지 왼쪽에 나란히 놓입니다. */}
       <div className="fixed inset-x-0 top-0 z-40 bg-white/95 shadow-sm backdrop-blur-sm">
-        <div className="container mx-auto flex items-center justify-end px-4 py-3 md:px-8">
+        <div className="container mx-auto flex items-center gap-3 px-4 py-3 md:px-8">
+          <div
+            className={`overflow-hidden transition-all duration-200 ${
+              isCategoryBarDocked ? 'flex-1 opacity-100' : 'w-0 flex-none opacity-0'
+            }`}
+          >
+            <CategoryFilterBar />
+          </div>
           <button
             type="button"
             onClick={handleOpenChangeModal}
-            className="inline-flex items-center gap-1 rounded-full border border-pink-200 bg-white px-3 py-1.5 text-sm font-semibold text-gray-600 shadow-sm transition-colors hover:bg-pink-50 hover:text-pink-500"
+            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-pink-200 bg-white px-3 py-1.5 text-sm font-semibold text-gray-600 shadow-sm transition-colors hover:bg-pink-50 hover:text-pink-500"
           >
             <span>{ORDER_TYPE_LABEL[orderType]}</span>
             <span className="text-gray-400">▾</span>
           </button>
-        </div>
-        {/* ✅ 평소엔 접혀 있다가(높이 0), ProductList 쪽 카테고리 탭이
-            스크롤에 밀려 이 헤더 밑으로 넘어가려는 순간 펼쳐지면서
-            "탭이 헤더 안으로 들어가는" 효과를 냅니다. max-height로
-            애니메이션하고, 실제 내용 높이보다 넉넉한 값을 목표로
-            잡아둡니다. */}
-        <div
-          className={`container mx-auto overflow-hidden px-4 transition-[max-height,opacity] duration-200 md:px-8 ${
-            isCategoryBarDocked ? 'max-h-24 pb-3 opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <CategoryFilterBar />
         </div>
       </div>
 
