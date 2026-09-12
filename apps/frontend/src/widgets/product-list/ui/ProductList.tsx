@@ -78,10 +78,13 @@ export function ProductList() {
       {/* ✅ 스크롤해도 카테고리 탭은 계속 보이도록 고정하고 메뉴 목록만
           그 아래에서 스크롤되게 합니다. 상단 고정 헤더(HomePage,
           높이 약 56px) 바로 아래에 붙도록 top-14로 오프셋을 맞췄습니다.
-          배경은 흰 바(bg-white)로 자르지 않고 페이지와 같은
-          bg-kiosk-pattern을 그대로 써서 스크롤되는 카드는 가리되
-          뒷배경과 자연스럽게 이어지게 합니다. */}
-      <div className="bg-kiosk-pattern sticky top-14 z-20 -mt-2 mb-6 pb-4 pt-2">
+          배경은 페이지와 똑같은 도트 패턴(bg-kiosk-pattern)을 그대로
+          쓰면 경계가 안 보여서 메뉴 이미지가 이 판 밑으로 사라지는
+          게 아니라 반투명한 막 아래로 스며드는 것처럼 보이는 문제가
+          있었습니다. 같은 바탕색(pink-50)을 쓰되 도트만 없애고
+          그림자를 줘서, 색은 이어지면서도 "페이지 위에 떠 있는 판"이라는
+          게 분명히 보이게 했습니다. */}
+      <div className="sticky top-14 z-20 -mt-2 mb-6 bg-pink-50 pb-4 pt-2 shadow-md">
         <div className="flex flex-wrap justify-center gap-2 md:justify-start md:gap-3">
           {categories.map(category => (
             <button
