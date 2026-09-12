@@ -3,31 +3,28 @@
 
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import type { Category, Product } from '@repo/types';
+import type { Product } from '@repo/types';
 import { ProductCard, getProducts } from '../../../entities/product';
-import { getCategories } from '../../../entities/category';
+import { useCategoryFilterStore } from '../../../entities/category';
 import { useCartStore } from '../../../features/cart';
 
 export function ProductList() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  // ✅ 손님은 "전체보기"에서 메뉴를 고르지 않고 항상 카테고리를 먼저
-  // 골라 담기 때문에, "전체" 옵션 없이 첫 카테고리를 기본 선택으로 둡니다.
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  // ✅ 카테고리 탭은 상단 고정 헤더(CategoryFilterBar)로 옮겨갔지만,
+  // 선택 상태는 entities/category의 공유 스토어를 통해 그대로 받아옵니다.
+  const selectedCategory = useCategoryFilterStore((state) => state.selectedCategory);
 
   // ✅ Zustand 스토어에서 장바구니에 담는 함수만 가져옵니다.
   const addToCart = useCartStore((state) => state.addToCart);
 
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const [products, categoryList] = await Promise.all([getProducts(), getCategories()]);
+        const products = await getProducts();
         setAllProducts(products);
-        setCategories(categoryList);
-        setSelectedCategory(categoryList[0]?.name ?? '');
       } catch (error) {
         console.error('메뉴 목록을 불러오는 중 오류가 발생했습니다:', error);
         toast.error('메뉴 목록을 불러오는 데 실패했습니다.');
@@ -35,7 +32,7 @@ export function ProductList() {
         setIsLoading(false);
       }
     };
-    fetchInitialData();
+    fetchProducts();
   }, []);
 
   useEffect(() => {
@@ -46,14 +43,6 @@ export function ProductList() {
       setFilteredProducts(filtered);
     }
   }, [selectedCategory, allProducts]);
-
-  // ✅ 카테고리를 바꾸면 이전 카테고리에서 스크롤해둔 위치가 그대로
-  // 남아있어 새 목록의 중간부터 보이는 문제가 있어서, 카테고리를 누를
-  // 때마다 페이지를 맨 위로 되돌립니다.
-  const handleSelectCategory = (categoryName: string) => {
-    setSelectedCategory(categoryName);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   return (
     <main className="w-full pb-36 md:w-3/5 md:pb-0 lg:w-2/3">
@@ -75,33 +64,10 @@ export function ProductList() {
         </div>
       </header>
 
-      {/* ✅ 스크롤해도 카테고리 탭은 계속 보이도록 고정하고 메뉴 목록만
-          그 아래에서 스크롤되게 합니다. 상단 고정 헤더(HomePage,
-          높이 약 56px) 바로 아래에 붙도록 top-14로 오프셋을 맞췄습니다.
-          배경은 페이지와 똑같은 도트 패턴(bg-kiosk-pattern)을 그대로
-          쓰면 경계가 안 보여서 메뉴 이미지가 이 판 밑으로 사라지는
-          게 아니라 반투명한 막 아래로 스며드는 것처럼 보이는 문제가
-          있었습니다. 같은 바탕색(pink-50)을 쓰되 도트만 없애고
-          그림자를 줘서, 색은 이어지면서도 "페이지 위에 떠 있는 판"이라는
-          게 분명히 보이게 했습니다. */}
-      <div className="sticky top-14 z-20 -mt-2 mb-6 bg-pink-50 pb-4 pt-2 shadow-md">
-        <div className="flex flex-wrap justify-center gap-2 md:justify-start md:gap-3">
-          {categories.map(category => (
-            <button
-              key={category._id}
-              onClick={() => handleSelectCategory(category.name)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 md:px-7 md:py-3 md:text-base ${selectedCategory === category.name ? 'bg-pink-500 text-white shadow-md' : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'}`}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-4 flex items-center gap-3">
-          <div className="h-px flex-1 bg-pink-200" />
-          <span className="text-sm">🎀</span>
-          <div className="h-px flex-1 bg-pink-200" />
-        </div>
+      <div className="mb-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-pink-200" />
+        <span className="text-sm">🎀</span>
+        <div className="h-px flex-1 bg-pink-200" />
       </div>
 
       {isLoading ? (

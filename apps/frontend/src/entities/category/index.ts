@@ -6,3 +6,4 @@ export {
   deleteCategoryById,
   reorderCategories,
 } from './api/categoryApi';
+export { useCategoryFilterStore } from './model/store';
