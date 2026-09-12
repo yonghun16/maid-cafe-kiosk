@@ -135,8 +135,11 @@ export function OrderSummary() {
 
   return (
     <aside className="w-full md:w-2/5 lg:w-1/3">
-      {/* 데스크톱/태블릿: 항상 펼쳐진 사이드바 */}
-      <div className="sticky top-8 hidden rounded-2xl bg-white p-6 shadow-lg md:block">
+      {/* 데스크톱/태블릿: 항상 펼쳐진 사이드바. sticky의 top을 이 카드가
+          처음 놓이는 위치(HomePage 콘텐츠 영역의 pt-20/md:pt-24)와
+          똑같이 맞춰서, 스크롤로 고정되는 순간 위치가 튀지 않고 처음
+          자리 그대로 고정된 것처럼 보이게 합니다. */}
+      <div className="sticky top-20 hidden rounded-2xl bg-white p-6 shadow-lg md:top-24 md:block">
         <h2 className="text-center text-xl font-bold text-pink-500">🎀 주문 목록 🎀</h2>
         <p className="mt-1 text-center text-sm text-gray-400">
           {orderType === 'dine-in' ? '🍽️ 매장에서' : '🥡 포장'}
