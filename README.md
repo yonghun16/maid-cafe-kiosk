@@ -3,6 +3,7 @@
 > **웹 + 네이티브 앱을 한 백엔드로 함께 운영하는 무인 주문 키오스크 서비스**
 > 손님은 태블릿에서 메뉴를 고르고 주문하고, 사장님은 관리자 화면에서 메뉴·광고·매출을 관리하고, 주방은 새 주문을 실시간 알림으로 받습니다.
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=flat-square&logo=vercel)](https://maid-cafe-kiosk-frontend.vercel.app/)
 [![Docs](https://img.shields.io/badge/Docs-Quartz_v5-84a59d?style=flat-square)](https://yonghun16.github.io/maid-cafe-kiosk/)
 [![Next.js](https://img.shields.io/badge/Next.js-15_App_Router-000000?style=flat-square&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -12,7 +13,9 @@
 [![Turborepo](https://img.shields.io/badge/Monorepo-Turborepo-EF4444?style=flat-square&logo=turborepo)](https://turbo.build/)
 
 <p align="center">
-  <img src="image%20asset/layout/desktop.png" alt="Maid Kiosk Preview" width="700"/>
+  <a href="https://maid-cafe-kiosk-frontend.vercel.app/">
+    <img src="image%20asset/layout/desktop.png" alt="Maid Kiosk Preview" width="700"/>
+  </a>
 </p>
 
 ---
@@ -32,6 +35,9 @@ API와 타입 계약(`packages/types`)을 공유합니다.
 - **타겟 사용자**: 카페 손님(키오스크), 매장 사장님(관리자), 주방/카운터 직원
 - **핵심 목표**: 결제 게이트웨이 없이도 실제 카페 운영 흐름(주문→조리
   확인→매출 집계)을 처음부터 끝까지 재현
+- **라이브 데모**: 🔗 [https://maid-cafe-kiosk-frontend.vercel.app/](https://maid-cafe-kiosk-frontend.vercel.app/)
+  — 고객용 첫 화면이며, 관리자(`/admin`)·주방(`/kitchen`) 화면은 같은
+  도메인에서 공유 비밀번호로 보호됩니다
 - **개발 문서**: 🔗 [온라인 아키텍처/알고리즘 명세서 바로가기](https://yonghun16.github.io/maid-cafe-kiosk/)
   (12장짜리 상세 문서 — 각 기능을 "왜 그렇게 만들었는지"까지 다룸)
 
