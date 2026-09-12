@@ -112,17 +112,17 @@ export function HomePage() {
           표시는 작은 배지로 줄여 화면을 덜 차지하게 합니다. */}
       {/* ✅ 로고를 없앤 자리에 도킹된 카테고리 탭이 들어오게 해서, 예전처럼
           별도 줄을 추가하지 않고 한 줄짜리 얇은 바를 유지합니다. 평소엔
-          이 자리가 비어 있다가(너비 0), 카테고리가 도킹되는 순간 펼쳐져
-          배지 왼쪽에 나란히 놓입니다. */}
+          이 자리에 아예 아무 것도 렌더링하지 않다가(너비 0에 CSS로만
+          숨기면 안쪽 버튼들이 flex-wrap 때문에 세로로 줄줄이 접혀
+          바 전체 높이가 늘어나는 버그가 있었음), 카테고리가 도킹되는
+          순간에만 렌더링해서 배지 왼쪽에 나란히 놓입니다. */}
       <div className="fixed inset-x-0 top-0 z-40 bg-white/95 shadow-sm backdrop-blur-sm">
         <div className="container mx-auto flex items-center gap-3 px-4 py-3 md:px-8">
-          <div
-            className={`overflow-hidden transition-all duration-200 ${
-              isCategoryBarDocked ? 'flex-1 opacity-100' : 'w-0 flex-none opacity-0'
-            }`}
-          >
-            <CategoryFilterBar />
-          </div>
+          {isCategoryBarDocked && (
+            <div className="flex-1 overflow-hidden">
+              <CategoryFilterBar />
+            </div>
+          )}
           <button
             type="button"
             onClick={handleOpenChangeModal}
