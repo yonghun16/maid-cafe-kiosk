@@ -47,6 +47,14 @@ export function ProductList() {
     }
   }, [selectedCategory, allProducts]);
 
+  // ✅ 카테고리를 바꾸면 이전 카테고리에서 스크롤해둔 위치가 그대로
+  // 남아있어 새 목록의 중간부터 보이는 문제가 있어서, 카테고리를 누를
+  // 때마다 페이지를 맨 위로 되돌립니다.
+  const handleSelectCategory = (categoryName: string) => {
+    setSelectedCategory(categoryName);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <main className="w-full pb-36 md:w-3/5 md:pb-0 lg:w-2/3">
       {/* ✅ 모바일에서 장바구니 요약 카드가 화면 맨 아래에 고정되므로
@@ -71,7 +79,7 @@ export function ProductList() {
         {categories.map(category => (
           <button
             key={category._id}
-            onClick={() => setSelectedCategory(category.name)}
+            onClick={() => handleSelectCategory(category.name)}
             className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 ${selectedCategory === category.name ? 'bg-pink-500 text-white shadow-md' : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'}`}
           >
             {category.name}

@@ -97,45 +97,47 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           <Image source={{ uri: product.imageUrl }} style={{ flex: 1 }} contentFit="cover" />
           {product.isSoldOut && (
             <View className="absolute inset-0 items-center justify-center bg-black/40">
-              <Text className="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-700">품절</Text>
+              <Text className="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-700 md:px-5 md:py-2 md:text-lg">
+                품절
+              </Text>
             </View>
           )}
         </View>
-        <View className="p-3">
-          <Text className="font-semibold text-gray-800" numberOfLines={1}>
+        <View className="p-3 md:p-5">
+          <Text className="text-base font-semibold text-gray-800 md:text-2xl" numberOfLines={1}>
             {product.name}
           </Text>
-          <Text className="mt-1 text-sm text-pink-600">{product.price.toLocaleString()}원</Text>
+          <Text className="mt-1 text-sm text-pink-600 md:text-xl">{product.price.toLocaleString()}원</Text>
         </View>
       </Pressable>
 
       <Modal isOpen={isOptionModalOpen} onClose={() => setIsOptionModalOpen(false)} title={product.name}>
-        <View className="gap-4">
+        <View className="gap-4 md:gap-8">
           {/* ✅ 사진을 왼쪽에, 옵션을 오른쪽에 둬서 상품 사진 비율(3:4)이
               눌리지 않고 그대로 보이게 합니다. items-start로 옵션이
               늘어나도(예: ICE 얼음양 선택지) 사진 높이가 같이 늘어나지
               않게 합니다(웹의 ProductCard와 동일한 레이아웃). */}
-          <View className="flex-row items-start gap-4">
-            <View className="aspect-[3/4] w-28 shrink-0 overflow-hidden rounded-lg bg-pink-50">
+          <View className="flex-row items-start gap-4 md:gap-8">
+            <View className="aspect-[3/4] w-28 shrink-0 overflow-hidden rounded-lg bg-pink-50 md:w-56">
               <Image source={{ uri: product.imageUrl }} style={{ flex: 1 }} contentFit="cover" />
             </View>
 
-            <View className="flex-1 gap-3">
+            <View className="flex-1 gap-3 md:gap-6">
               {product.temperatureOption && (
                 <View>
-                  <Text className="mb-1 text-sm font-semibold text-gray-700">🌡️ 온도</Text>
+                  <Text className="mb-1 text-sm font-semibold text-gray-700 md:mb-2 md:text-2xl">🌡️ 온도</Text>
                   {product.temperatureOption === 'BOTH' ? (
-                    <View className="flex-row gap-2">
+                    <View className="flex-row gap-2 md:gap-4">
                       {TEMPERATURE_OPTIONS.map((option) => (
                         <Pressable
                           key={option}
                           onPress={() => handleTemperaturePress(option)}
-                          className={`flex-1 items-center rounded-lg border px-3 py-2 ${
+                          className={`flex-1 items-center rounded-lg border px-3 py-2 md:px-5 md:py-4 ${
                             temperature === option ? 'border-pink-500 bg-pink-500' : 'border-pink-100'
                           }`}
                         >
                           <Text
-                            className={`text-sm font-semibold ${
+                            className={`text-sm font-semibold md:text-2xl ${
                               temperature === option ? 'text-white' : 'text-gray-600'
                             }`}
                           >
@@ -145,26 +147,26 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                       ))}
                     </View>
                   ) : (
-                    <View className="self-start rounded-lg border border-pink-100 bg-pink-50 px-3 py-2">
-                      <Text className="text-sm font-semibold text-gray-600">
+                    <View className="self-start rounded-lg border border-pink-100 bg-pink-50 px-3 py-2 md:px-5 md:py-4">
+                      <Text className="text-sm font-semibold text-gray-600 md:text-2xl">
                         {TEMPERATURE_LABEL[product.temperatureOption]}
                       </Text>
                     </View>
                   )}
                   {temperature === 'ICE' && (
-                    <View className="mt-2">
-                      <Text className="mb-1 text-xs font-semibold text-gray-500">얼음양</Text>
-                      <View className="flex-row gap-2">
+                    <View className="mt-2 md:mt-4">
+                      <Text className="mb-1 text-xs font-semibold text-gray-500 md:mb-2 md:text-lg">얼음양</Text>
+                      <View className="flex-row gap-2 md:gap-4">
                         {ICE_AMOUNT_OPTIONS.map((option) => (
                           <Pressable
                             key={option}
                             onPress={() => setIceAmount((prev) => (prev === option ? '' : option))}
-                            className={`flex-1 items-center rounded-lg border px-2 py-1.5 ${
+                            className={`flex-1 items-center rounded-lg border px-2 py-1.5 md:px-4 md:py-3 ${
                               iceAmount === option ? 'border-sky-500 bg-sky-500' : 'border-sky-100'
                             }`}
                           >
                             <Text
-                              className={`text-xs font-semibold ${
+                              className={`text-xs font-semibold md:text-xl ${
                                 iceAmount === option ? 'text-white' : 'text-gray-600'
                               }`}
                             >
@@ -180,19 +182,19 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
               {product.hasMagicSpellOption && (
                 <View>
-                  <Text className="mb-1 text-sm font-semibold text-gray-700">🪄 마법의 주문</Text>
-                  <View className="flex-row flex-wrap gap-2">
+                  <Text className="mb-1 text-sm font-semibold text-gray-700 md:mb-2 md:text-2xl">🪄 마법의 주문</Text>
+                  <View className="flex-row flex-wrap gap-2 md:gap-4">
                     {MAGIC_SPELL_OPTIONS.map((option) => (
                       <Pressable
                         key={option}
                         onPress={() => setMagicSpell((prev) => (prev === option ? '' : option))}
                         style={{ width: '47%' }}
-                        className={`items-center rounded-lg border px-2 py-2 ${
+                        className={`items-center rounded-lg border px-2 py-2 md:px-4 md:py-4 ${
                           magicSpell === option ? 'border-amber-500 bg-amber-500' : 'border-amber-100'
                         }`}
                       >
                         <Text
-                          className={`text-xs font-semibold ${
+                          className={`text-xs font-semibold md:text-xl ${
                             magicSpell === option ? 'text-white' : 'text-gray-600'
                           }`}
                         >
@@ -205,26 +207,26 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
               )}
 
               {productOptions.length > 0 && (
-                <View className="gap-2">
+                <View className="gap-2 md:gap-3">
                   {productOptions.map((option) => {
                     const isSelected = selectedOptionNames.includes(option.name);
                     return (
                       <Pressable
                         key={option.name}
                         onPress={() => toggleCustomOption(option.name)}
-                        className="flex-row items-center justify-between rounded-lg border border-pink-100 px-3 py-2.5"
+                        className="flex-row items-center justify-between rounded-lg border border-pink-100 px-3 py-2.5 md:px-5 md:py-4"
                       >
-                        <Text className="text-sm font-semibold text-gray-700">{option.name}</Text>
-                        <View className="flex-row items-center gap-2">
+                        <Text className="text-sm font-semibold text-gray-700 md:text-2xl">{option.name}</Text>
+                        <View className="flex-row items-center gap-2 md:gap-3">
                           {option.price > 0 && (
-                            <Text className="text-xs text-gray-500">+{option.price.toLocaleString()}원</Text>
+                            <Text className="text-xs text-gray-500 md:text-lg">+{option.price.toLocaleString()}원</Text>
                           )}
                           <View
-                            className={`h-5 w-5 items-center justify-center rounded border ${
+                            className={`h-5 w-5 items-center justify-center rounded border md:h-8 md:w-8 ${
                               isSelected ? 'border-pink-500 bg-pink-500' : 'border-gray-300'
                             }`}
                           >
-                            {isSelected && <Text className="text-xs text-white">✓</Text>}
+                            {isSelected && <Text className="text-xs text-white md:text-lg">✓</Text>}
                           </View>
                         </View>
                       </Pressable>
@@ -235,10 +237,12 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             </View>
           </View>
 
-          <Text className="text-right text-lg font-bold text-pink-600">{totalPrice.toLocaleString()}원</Text>
+          <Text className="text-right text-lg font-bold text-pink-600 md:text-4xl">
+            {totalPrice.toLocaleString()}원
+          </Text>
 
-          <Pressable onPress={handleAdd} className="items-center rounded-md bg-pink-500 py-3">
-            <Text className="text-base font-bold text-white">담기</Text>
+          <Pressable onPress={handleAdd} className="items-center rounded-md bg-pink-500 py-3 md:py-6">
+            <Text className="text-base font-bold text-white md:text-3xl">담기</Text>
           </Pressable>
         </View>
       </Modal>

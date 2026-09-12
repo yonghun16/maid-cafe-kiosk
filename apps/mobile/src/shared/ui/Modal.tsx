@@ -17,13 +17,13 @@ interface ModalProps {
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   return (
     <RNModal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable className="flex-1 items-center justify-center bg-black/50 p-6" onPress={onClose}>
-        <Pressable onPress={() => {}} className="w-full max-w-md rounded-2xl bg-white p-6">
+      <Pressable className="flex-1 items-center justify-center bg-black/50 p-4" onPress={onClose}>
+        <Pressable onPress={() => {}} className="w-full max-w-md rounded-2xl bg-white p-6 md:max-w-4xl md:p-12">
           {title && (
-            <View className="mb-4 flex-row items-center justify-between">
-              <Text className="text-lg font-bold text-gray-800">{title}</Text>
+            <View className="mb-4 flex-row items-center justify-between md:mb-10">
+              <Text className="text-lg font-bold text-gray-800 md:text-4xl">{title}</Text>
               <Pressable onPress={onClose} hitSlop={8}>
-                <Text className="text-xl text-gray-400">✕</Text>
+                <Text className="text-xl text-gray-400 md:text-4xl">✕</Text>
               </Pressable>
             </View>
           )}

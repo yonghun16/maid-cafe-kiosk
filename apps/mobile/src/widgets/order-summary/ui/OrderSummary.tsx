@@ -26,40 +26,50 @@ interface CartLineProps {
 
 function CartLine({ item, onIncrease, onDecrease, onRemove }: CartLineProps) {
   return (
-    <View className="rounded-md bg-white p-3 shadow-sm">
-      <View className="flex-row items-center gap-3">
-        <Image source={{ uri: item.imageUrl }} style={{ width: 48, height: 48, borderRadius: 8 }} contentFit="cover" />
+    <View className="rounded-md bg-white p-3 shadow-sm md:p-5">
+      <View className="flex-row items-center gap-3 md:gap-4">
+        <View className="h-12 w-12 shrink-0 overflow-hidden rounded-lg md:h-24 md:w-24 md:rounded-xl">
+          <Image source={{ uri: item.imageUrl }} style={{ flex: 1 }} contentFit="cover" />
+        </View>
         <View className="flex-1">
-          <Text className="font-semibold text-gray-800" numberOfLines={1}>
+          <Text className="font-semibold text-gray-800 md:text-2xl" numberOfLines={1}>
             {item.name}
           </Text>
           {(item.temperature || item.magicSpell || (item.selectedOptions?.length ?? 0) > 0) && (
             <View className="mt-0.5 flex-row flex-wrap gap-x-1">
               {item.temperature && (
-                <Text className="text-xs text-pink-500">({item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'})</Text>
+                <Text className="text-xs text-pink-500 md:text-lg">
+                  ({item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'})
+                </Text>
               )}
-              {item.iceAmount && <Text className="text-xs text-pink-500">(얼음 {item.iceAmount})</Text>}
-              {item.magicSpell && <Text className="text-xs text-pink-500">(🪄 {item.magicSpell})</Text>}
+              {item.iceAmount && <Text className="text-xs text-pink-500 md:text-lg">(얼음 {item.iceAmount})</Text>}
+              {item.magicSpell && <Text className="text-xs text-pink-500 md:text-lg">(🪄 {item.magicSpell})</Text>}
               {item.selectedOptions?.map((option) => (
-                <Text key={option.name} className="text-xs text-pink-500">
+                <Text key={option.name} className="text-xs text-pink-500 md:text-lg">
                   ({option.name})
                 </Text>
               ))}
             </View>
           )}
-          <Text className="text-sm text-gray-500">{item.price.toLocaleString()}원</Text>
+          <Text className="text-sm text-gray-500 md:text-xl">{item.price.toLocaleString()}원</Text>
         </View>
         <Pressable onPress={onRemove} hitSlop={8}>
-          <Text className="text-gray-300">🗑</Text>
+          <Text className="text-gray-300 md:text-2xl">🗑</Text>
         </Pressable>
       </View>
-      <View className="mt-2 flex-row items-center justify-end gap-2">
-        <Pressable onPress={onDecrease} className="h-7 w-7 items-center justify-center rounded-full border border-pink-200">
-          <Text className="text-pink-500">−</Text>
+      <View className="mt-2 flex-row items-center justify-end gap-2 md:mt-4 md:gap-4">
+        <Pressable
+          onPress={onDecrease}
+          className="h-7 w-7 items-center justify-center rounded-full border border-pink-200 md:h-12 md:w-12"
+        >
+          <Text className="text-pink-500 md:text-2xl">−</Text>
         </Pressable>
-        <Text className="w-6 text-center text-sm font-semibold">{item.quantity}</Text>
-        <Pressable onPress={onIncrease} className="h-7 w-7 items-center justify-center rounded-full border border-pink-200">
-          <Text className="text-pink-500">+</Text>
+        <Text className="w-6 text-center text-sm font-semibold md:w-10 md:text-xl">{item.quantity}</Text>
+        <Pressable
+          onPress={onIncrease}
+          className="h-7 w-7 items-center justify-center rounded-full border border-pink-200 md:h-12 md:w-12"
+        >
+          <Text className="text-pink-500 md:text-2xl">+</Text>
         </Pressable>
       </View>
     </View>
@@ -97,19 +107,19 @@ export function OrderSummary() {
   };
 
   return (
-    <View className="border-t border-pink-100 bg-white p-4 pb-6">
+    <View className="border-t border-pink-100 bg-white p-4 pb-6 md:p-8 md:pb-10">
       <Pressable onPress={() => setIsListOpen((prev) => !prev)} className="flex-row items-center justify-between">
-        <Text className="text-sm text-gray-500">🛒 총 {totalCount}개</Text>
-        <Text className="font-bold text-pink-600">{totalPrice.toLocaleString()}원</Text>
-        <Text className="text-gray-400">{isListOpen ? '접기 ︿' : '펼치기 ﹀'}</Text>
+        <Text className="text-sm text-gray-500 md:text-2xl">🛒 총 {totalCount}개</Text>
+        <Text className="font-bold text-pink-600 md:text-3xl">{totalPrice.toLocaleString()}원</Text>
+        <Text className="text-gray-400 md:text-2xl">{isListOpen ? '접기 ︿' : '펼치기 ﹀'}</Text>
       </Pressable>
 
       {isListOpen && (
-        <ScrollView className="mt-3 max-h-64 rounded-xl bg-pink-50 p-3" nestedScrollEnabled>
+        <ScrollView className="mt-3 max-h-64 rounded-xl bg-pink-50 p-3 md:mt-5 md:max-h-96 md:p-4" nestedScrollEnabled>
           {items.length === 0 ? (
-            <Text className="py-6 text-center text-gray-400">장바구니가 비어있어요</Text>
+            <Text className="py-6 text-center text-gray-400 md:text-2xl">장바구니가 비어있어요</Text>
           ) : (
-            <View className="gap-2">
+            <View className="gap-2 md:gap-3">
               {items.map((item) => (
                 <CartLine
                   key={item.cartItemId}
@@ -127,30 +137,32 @@ export function OrderSummary() {
       <Pressable
         onPress={handleOpenPaymentModal}
         disabled={items.length === 0}
-        className={`mt-3 items-center rounded-full py-3 ${items.length === 0 ? 'bg-gray-300' : 'bg-pink-500'}`}
+        className={`mt-3 items-center rounded-full py-3 md:mt-5 md:py-6 ${items.length === 0 ? 'bg-gray-300' : 'bg-pink-500'}`}
       >
-        <Text className="text-lg font-bold text-white">♥ 주문하기</Text>
+        <Text className="text-lg font-bold text-white md:text-3xl">♥ 주문하기</Text>
       </Pressable>
 
       <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} title="결제 수단 선택">
-        <Text className="mb-4 text-center text-sm text-gray-500">
+        <Text className="mb-4 text-center text-sm text-gray-500 md:mb-8 md:text-2xl">
           총 {totalPrice.toLocaleString()}원을 어떻게 결제하시겠어요?
         </Text>
-        <View className="flex-row flex-wrap gap-3">
+        <View className="flex-row flex-wrap gap-3 md:gap-5">
           {PAYMENT_METHODS.map((method) => (
             <Pressable
               key={method.value}
               disabled={isSubmitting}
               onPress={() => handleSelectPayment(method.value)}
               style={{ width: '47%' }}
-              className="items-center gap-2 rounded-xl bg-gray-100 py-5"
+              className="items-center gap-2 rounded-xl bg-gray-100 py-5 md:py-12"
             >
-              <Text className="text-2xl">{method.icon}</Text>
-              <Text className="text-sm font-bold text-gray-800">{method.value}</Text>
+              <Text className="text-2xl md:text-6xl">{method.icon}</Text>
+              <Text className="text-sm font-bold text-gray-800 md:text-2xl">{method.value}</Text>
             </Pressable>
           ))}
         </View>
-        {isSubmitting && <Text className="mt-4 text-center text-sm text-gray-400">주문을 처리 중이에요...</Text>}
+        {isSubmitting && (
+          <Text className="mt-4 text-center text-sm text-gray-400 md:text-xl">주문을 처리 중이에요...</Text>
+        )}
       </Modal>
     </View>
   );

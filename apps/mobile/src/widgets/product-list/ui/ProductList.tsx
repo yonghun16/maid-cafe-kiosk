@@ -1,5 +1,5 @@
 // @owner: ai
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import type { Category, Product } from '@repo/types';
@@ -15,6 +15,15 @@ export function ProductList() {
   // 골라 담기 때문에, "전체" 옵션 없이 첫 카테고리를 기본 선택으로 둡니다.
   const [selectedCategory, setSelectedCategory] = useState('');
   const addToCart = useCartStore((state) => state.addToCart);
+  const listRef = useRef<FlatList>(null);
+
+  // ✅ 카테고리를 바꾸면 이전 카테고리에서 스크롤해둔 위치가 그대로
+  // 남아있어 새 목록의 중간부터 보이는 문제가 있어서, 카테고리를 누를
+  // 때마다 목록을 맨 위로 되돌립니다.
+  const handleSelectCategory = (categoryName: string) => {
+    setSelectedCategory(categoryName);
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
 
   useEffect(() => {
     (async () => {
@@ -49,18 +58,18 @@ export function ProductList() {
         {categories.map((category) => (
           <Pressable
             key={category._id}
-            onPress={() => setSelectedCategory(category.name)}
+            onPress={() => handleSelectCategory(category.name)}
             className={
               selectedCategory === category.name
-                ? 'rounded-full bg-pink-500 px-4 py-2'
-                : 'rounded-full border border-pink-100 bg-white px-4 py-2'
+                ? 'rounded-full bg-pink-500 px-4 py-2 md:px-8 md:py-4'
+                : 'rounded-full border border-pink-100 bg-white px-4 py-2 md:px-8 md:py-4'
             }
           >
             <Text
               className={
                 selectedCategory === category.name
-                  ? 'text-sm font-semibold text-white'
-                  : 'text-sm font-semibold text-gray-600'
+                  ? 'text-sm font-semibold text-white md:text-2xl'
+                  : 'text-sm font-semibold text-gray-600 md:text-2xl'
               }
             >
               {category.name}
@@ -75,6 +84,7 @@ export function ProductList() {
         </View>
       ) : (
         <FlatList
+          ref={listRef}
           data={dataWithFiller}
           keyExtractor={(item, index) => item?._id ?? `filler-${index}`}
           numColumns={2}
