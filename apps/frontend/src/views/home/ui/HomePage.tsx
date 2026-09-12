@@ -111,8 +111,7 @@ export function HomePage() {
       {/* ✅ 메뉴를 스크롤해도 항상 보이도록 상단 고정 바를 두되, 매장/포장
           표시는 작은 배지로 줄여 화면을 덜 차지하게 합니다. */}
       <div className="fixed inset-x-0 top-0 z-40 bg-white/95 shadow-sm backdrop-blur-sm">
-        <div className="container mx-auto flex items-center justify-between px-4 py-3 md:px-8">
-          <span className="font-script text-lg font-bold text-pink-500 md:text-xl">🎀 Maid Kiosk</span>
+        <div className="container mx-auto flex items-center justify-end px-4 py-3 md:px-8">
           <button
             type="button"
             onClick={handleOpenChangeModal}
