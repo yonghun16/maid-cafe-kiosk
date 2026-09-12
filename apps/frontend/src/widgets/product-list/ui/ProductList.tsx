@@ -75,22 +75,27 @@ export function ProductList() {
         </div>
       </header>
 
-      <div className="mb-4 flex flex-wrap justify-center gap-2 md:justify-start">
-        {categories.map(category => (
-          <button
-            key={category._id}
-            onClick={() => handleSelectCategory(category.name)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 ${selectedCategory === category.name ? 'bg-pink-500 text-white shadow-md' : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'}`}
-          >
-            {category.name}
-          </button>
-        ))}
-      </div>
+      {/* ✅ 스크롤해도 카테고리 탭은 계속 보이도록 고정하고 메뉴 목록만
+          그 아래에서 스크롤되게 합니다. 상단 고정 헤더(HomePage,
+          높이 약 56px) 바로 아래에 붙도록 top-14로 오프셋을 맞췄습니다. */}
+      <div className="sticky top-14 z-20 -mt-2 mb-6 bg-white/95 pb-4 pt-2 shadow-sm backdrop-blur-sm">
+        <div className="flex flex-wrap justify-center gap-2 md:justify-start">
+          {categories.map(category => (
+            <button
+              key={category._id}
+              onClick={() => handleSelectCategory(category.name)}
+              className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 ${selectedCategory === category.name ? 'bg-pink-500 text-white shadow-md' : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'}`}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
 
-      <div className="mb-6 flex items-center gap-3">
-        <div className="h-px flex-1 bg-pink-200" />
-        <span className="text-sm">🎀</span>
-        <div className="h-px flex-1 bg-pink-200" />
+        <div className="mt-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-pink-200" />
+          <span className="text-sm">🎀</span>
+          <div className="h-px flex-1 bg-pink-200" />
+        </div>
       </div>
 
       {isLoading ? (
