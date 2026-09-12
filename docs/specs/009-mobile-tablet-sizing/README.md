@@ -193,6 +193,29 @@ md:flex-none`(ProductList) + `hidden md:flex md:w-2/5 md:flex-none`/
 check-types` 통과 확인 후, 에뮬레이터에서 스크린샷 + `adb shell input
 swipe`로 실제 드래그 스크롤이 동작하는 것까지 확인.
 
+**후속 조정 9(같은 날) — 버튼 세로 길이 버그 + 좌우 화살표 버튼 추가**:
+후속 조정 8 직후 "카테고리 안의 버튼이 너무 세로길이가 긴데?"(버그 지적)와
+"카테고리 박스 양쪽에 왼쪽/오른쪽 세모 버튼을 만들어서 가려진 다음 항목을
+볼 수 있게 해줘"(기능 추가) 두 가지를 함께 요청받았다.
+- **원인(버그)**: `horizontal` `ScrollView`의 `contentContainerStyle`에
+  `alignItems`를 지정하지 않아 기본값 `stretch`가 적용됐다 — 가로
+  `ScrollView`의 컨텐츠 컨테이너는 자동으로 `flexDirection: 'row'`가 되고,
+  cross-axis(세로)의 기본 정렬이 `stretch`라 각 카테고리 버튼이 `ScrollView`
+  세로 높이만큼 늘어나 버렸다. `contentContainerStyle`에 `alignItems:
+  'center'`를 추가해 각 버튼이 자기 내용물 높이만큼만 차지하도록 고쳤다.
+- **기능 추가**: `categoryScrollRef`(`ScrollView`)와
+  `categoryScrollOffsetRef`(현재 스크롤 위치, 리렌더 방지를 위해 state
+  대신 ref로 보관 — `AdBanner`의 `panResponder`와 같은 패턴)를 추가하고,
+  `ScrollView`의 `onScroll`(`scrollEventThrottle={16}`)로 위치를 갱신한다.
+  좌우에 ◀/▶ `Pressable` 버튼을 두고, 누르면 `categoryScrollOffsetRef`
+  기준으로 `CATEGORY_SCROLL_STEP`(160px)만큼 이동한 위치로
+  `scrollTo({ x, animated: true })` 호출. 드래그 스크롤과 화살표 버튼
+  스크롤이 서로 방해하지 않고 공존한다.
+- `pnpm --filter mobile check-types` 통과 확인 후, 에뮬레이터를 재기동해
+  스크린샷으로 버튼 높이가 정상으로 돌아온 것, `adb shell input tap`으로
+  오른쪽 화살표를 눌러 가려져 있던 "food" 카테고리가 실제로 보이는 것까지
+  확인.
+
 ## Plan
 
 - [x] `shared/ui/Modal.tsx`, `entities/ad/ui/AdBanner.tsx`,
@@ -217,3 +240,6 @@ swipe`로 실제 드래그 스크롤이 동작하는 것까지 확인.
       스크린샷으로 좌우 분할이 실제로 정상 동작하는 것까지 확인
 - [x] (후속 조정 8) `ProductList.tsx` 카테고리 탭을 `horizontal ScrollView`로
       교체, `check-types` 통과 확인 + 에뮬레이터에서 드래그 스크롤 동작 확인
+- [x] (후속 조정 9) `alignItems: 'center'`로 버튼 세로 늘어남 버그 수정 +
+      좌우 화살표 버튼 추가, `check-types` 통과 확인 + 에뮬레이터에서
+      버튼 높이/화살표 스크롤 동작 확인
