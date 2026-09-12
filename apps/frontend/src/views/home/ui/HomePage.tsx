@@ -110,18 +110,21 @@ export function HomePage() {
     <div className="min-h-screen bg-kiosk-pattern font-sans text-gray-700">
       {/* ✅ 메뉴를 스크롤해도 항상 보이도록 상단 고정 바를 두되, 매장/포장
           표시는 작은 배지로 줄여 화면을 덜 차지하게 합니다. */}
-      {/* ✅ 로고를 없앤 자리에 도킹된 카테고리 탭이 들어오게 해서, 예전처럼
-          별도 줄을 추가하지 않고 한 줄짜리 얇은 바를 유지합니다. 평소엔
-          이 자리에 아예 아무 것도 렌더링하지 않다가(너비 0에 CSS로만
-          숨기면 안쪽 버튼들이 flex-wrap 때문에 세로로 줄줄이 접혀
-          바 전체 높이가 늘어나는 버그가 있었음), 카테고리가 도킹되는
-          순간에만 렌더링해서 배지 왼쪽에 나란히 놓입니다. */}
+      {/* ✅ 평소엔 로고가 왼쪽에 있다가, 카테고리 탭이 스크롤에 밀려 이
+          헤더로 도킹되는 순간 로고 대신 그 자리에 나타납니다(둘이
+          같은 왼쪽 자리를 두고 번갈아 씀). 배지는 justify-between으로
+          항상 오른쪽에 고정됩니다. 카테고리 쪽은 도킹된 순간에만
+          렌더링합니다 — CSS로만 숨기면 flex-wrap 때문에 버튼들이 폭
+          0짜리 세로 기둥으로 줄줄이 접히면서 바 전체 높이가 늘어나는
+          버그가 있었습니다. */}
       <div className="fixed inset-x-0 top-0 z-40 bg-white/95 shadow-sm backdrop-blur-sm">
-        <div className="container mx-auto flex items-center gap-3 px-4 py-3 md:px-8">
-          {isCategoryBarDocked && (
-            <div className="flex-1 overflow-hidden">
+        <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3 md:px-8">
+          {isCategoryBarDocked ? (
+            <div className="min-w-0 flex-1 overflow-hidden">
               <CategoryFilterBar />
             </div>
+          ) : (
+            <span className="font-script text-lg font-bold text-pink-500 md:text-xl">🎀 Maid Kiosk</span>
           )}
           <button
             type="button"
