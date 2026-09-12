@@ -5,11 +5,14 @@ import { useEffect } from 'react';
 import { useCategoryFilterStore } from '../../../entities/category';
 
 /**
- * 카테고리 탭 목록입니다. `ProductList`가 이 컴포넌트를 sticky
- * 컨테이너로 감싸서, 평소엔 제목 바로 아래 자기 자리에 있다가
- * 스크롤하면 상단 고정 헤더 밑에 붙어 계속 보이게 합니다. 카테고리
- * 선택 상태는 `entities/category`의 공유 스토어를 씁니다(메뉴 그리드
- * 필터링과 같은 상태를 봐야 하기 때문).
+ * 카테고리 탭 목록입니다. 두 곳(`ProductList`의 제목 바로 아래 자리,
+ * `HomePage`의 상단 고정 헤더)에서 동시에 렌더링되고, 둘 다 같은
+ * `entities/category` 공유 스토어를 보고 있습니다. 평소엔 `ProductList`
+ * 쪽만 보이고 헤더 쪽은 접혀 있다가, 원래 자리가 스크롤에 밀려 헤더
+ * 밑으로 넘어가려는 순간(`isHeaderDocked`) 서로 자리를 바꿔서 "탭이
+ * 헤더 안으로 들어가는" 효과를 냅니다 — 실제로 두 벌이 항상 DOM에
+ * 있고 보이는 쪽만 바뀌는 방식이라, 클릭 가능한 사본은 항상 하나뿐
+ * 입니다(숨은 쪽은 `pointer-events-none`/`max-h-0`로 막힘).
  */
 export function CategoryFilterBar() {
   const categories = useCategoryFilterStore((state) => state.categories);

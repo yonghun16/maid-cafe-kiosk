@@ -5,8 +5,9 @@ import { useEffect, useState } from 'react';
 import type { OrderType } from '@repo/types';
 import { useOrderTypeStore } from '../../../features/order-type';
 import { useCartStore } from '../../../features/cart';
+import { useCategoryFilterStore } from '../../../entities/category';
 import { OrderTypeSelect } from '../../../widgets/order-type-select';
-import { ProductList } from '../../../widgets/product-list';
+import { CategoryFilterBar, ProductList } from '../../../widgets/product-list';
 import { OrderSummary } from '../../../widgets/order-summary';
 import { OrderCompleteScreen } from '../../../widgets/order-complete';
 import { Modal } from '../../../shared/ui';
@@ -28,6 +29,10 @@ export function HomePage() {
   const clearCart = useCartStore((state) => state.clearCart);
   const lastCompletedOrder = useCartStore((state) => state.lastCompletedOrder);
   const clearLastCompletedOrder = useCartStore((state) => state.clearLastCompletedOrder);
+  // ✅ 카테고리 탭이 제자리에서 스크롤에 밀려 이 헤더 밑으로 넘어가려는
+  // 순간, 여기 사본을 펼쳐서 "탭이 헤더 안으로 들어가는" 것처럼
+  // 보이게 합니다(ProductList의 IntersectionObserver가 갱신).
+  const isCategoryBarDocked = useCategoryFilterStore((state) => state.isHeaderDocked);
   // ✅ 상단 바를 계속 크게 차지하던 "처음으로" 버튼 대신, 작은 배지를
   // 눌렀을 때만 뜨는 팝업으로 옮겼습니다([[매장내포장선택]] 참고).
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
@@ -116,6 +121,18 @@ export function HomePage() {
             <span>{ORDER_TYPE_LABEL[orderType]}</span>
             <span className="text-gray-400">▾</span>
           </button>
+        </div>
+        {/* ✅ 평소엔 접혀 있다가(높이 0), ProductList 쪽 카테고리 탭이
+            스크롤에 밀려 이 헤더 밑으로 넘어가려는 순간 펼쳐지면서
+            "탭이 헤더 안으로 들어가는" 효과를 냅니다. max-height로
+            애니메이션하고, 실제 내용 높이보다 넉넉한 값을 목표로
+            잡아둡니다. */}
+        <div
+          className={`container mx-auto overflow-hidden px-4 transition-[max-height,opacity] duration-200 md:px-8 ${
+            isCategoryBarDocked ? 'max-h-24 pb-3 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <CategoryFilterBar />
         </div>
       </div>
 

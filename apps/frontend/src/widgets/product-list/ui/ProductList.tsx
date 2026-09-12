@@ -1,13 +1,18 @@
 // @owner: ai
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Product } from '@repo/types';
 import { ProductCard, getProducts } from '../../../entities/product';
 import { useCategoryFilterStore } from '../../../entities/category';
 import { useCartStore } from '../../../features/cart';
 import { CategoryFilterBar } from './CategoryFilterBar';
+
+// ✅ 상단 고정 헤더의 실제 높이(약 56px)만큼 뷰포트 상단을 당겨서,
+// 이 지점 아래에서 카테고리 탭이 헤더 바로 밑에 닿기 직전에
+// docked 상태로 전환되게 합니다.
+const HEADER_HEIGHT_PX = 56;
 
 export function ProductList() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -16,6 +21,9 @@ export function ProductList() {
   // ✅ 카테고리 탭(CategoryFilterBar)은 이 컴포넌트 안에서 렌더링하되
   // entities/category의 공유 스토어를 통해 선택 상태를 받아옵니다.
   const selectedCategory = useCategoryFilterStore((state) => state.selectedCategory);
+  const isHeaderDocked = useCategoryFilterStore((state) => state.isHeaderDocked);
+  const setHeaderDocked = useCategoryFilterStore((state) => state.setHeaderDocked);
+  const categoryRowRef = useRef<HTMLDivElement>(null);
 
   // ✅ Zustand 스토어에서 장바구니에 담는 함수만 가져옵니다.
   const addToCart = useCartStore((state) => state.addToCart);
@@ -45,6 +53,26 @@ export function ProductList() {
     }
   }, [selectedCategory, allProducts]);
 
+  // ✅ 카테고리 탭이 원래 자리(제목 바로 아래)에서 스크롤에 밀려 상단
+  // 고정 헤더 밑으로 넘어가려는 순간을 감지해서, 헤더 쪽 사본이 대신
+  // 나타나 "탭이 헤더 안으로 들어가는" 것처럼 보이게 합니다. 실제로
+  // 두 벌이 같은 스토어를 보고 있다가 하나는 숨고 하나는 나타나는
+  // 방식이라 클릭 가능한 사본은 항상 하나뿐입니다(숨은 쪽은
+  // pointer-events-none).
+  useEffect(() => {
+    const target = categoryRowRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry) setHeaderDocked(!entry.isIntersecting);
+      },
+      { rootMargin: `-${HEADER_HEIGHT_PX}px 0px 0px 0px`, threshold: 0 },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [setHeaderDocked]);
+
   return (
     <main className="w-full pb-36 md:w-3/5 md:pb-0 lg:w-2/3">
       {/* ✅ 모바일에서 장바구니 요약 카드가 화면 맨 아래에 고정되므로
@@ -66,12 +94,16 @@ export function ProductList() {
       </header>
 
       {/* ✅ 평소엔 이 자리(제목 바로 아래)에 그대로 있다가, 스크롤해서
-          이 지점이 상단 고정 헤더(높이 약 56px)에 닿으면 그 아래에
-          붙어서 계속 보입니다(position: sticky) — 메뉴 그리드만 그
-          아래에서 스크롤됩니다. 배경은 페이지와 같은 계열 색(pink-50)에
-          도트만 없애고 그림자를 줘서, 페이지 배경과 헷갈리지 않게
-          "위에 떠 있는 판"이라는 걸 분명히 했습니다. */}
-      <div className="sticky top-14 z-20 -mt-2 mb-6 bg-pink-50 pb-4 pt-2 shadow-md">
+          상단 고정 헤더 밑으로 넘어가려는 순간 투명해지면서(자리는
+          그대로 차지) 헤더 쪽 사본이 대신 나타납니다 — "탭이 헤더 안
+          으로 들어가는" 효과. 자리를 계속 차지하게 두는 이유는, 이
+          위치 자체가 IntersectionObserver의 관찰 대상이라 높이가
+          바뀌면 스크롤 위치와 감지 결과가 서로 영향을 주는 문제가
+          생기기 때문입니다. */}
+      <div
+        ref={categoryRowRef}
+        className={`mb-6 transition-opacity duration-150 ${isHeaderDocked ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
+      >
         <CategoryFilterBar />
 
         <div className="mt-4 flex items-center gap-3">
