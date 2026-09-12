@@ -121,7 +121,7 @@ export function HomePage() {
         <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3 md:px-8">
           {isCategoryBarDocked ? (
             <div className="min-w-0 flex-1 overflow-hidden">
-              <CategoryFilterBar />
+              <CategoryFilterBar variant="scroll" />
             </div>
           ) : (
             <span className="font-script text-lg font-bold text-pink-500 md:text-xl">🎀 Maid Kiosk</span>

@@ -4,6 +4,15 @@
 import { useEffect } from 'react';
 import { useCategoryFilterStore } from '../../../entities/category';
 
+interface CategoryFilterBarProps {
+  // ✅ 'wrap'(기본값): ProductList 안 원래 자리에서 쓰는 모드 — 폭이
+  // 모자라면 여러 줄로 줄바꿈합니다. 'scroll': 상단 헤더에 도킹됐을
+  // 때 쓰는 모드 — 좁은 화면(특히 모바일)에서 카테고리가 5개 넘게
+  // 있으면 줄바꿈되며 헤더 바 전체가 두꺼워지는 문제가 있어서, 한 줄로
+  // 고정하고 대신 가로로 스크롤되게 합니다.
+  variant?: 'wrap' | 'scroll';
+}
+
 /**
  * 카테고리 탭 목록입니다. 두 곳(`ProductList`의 제목 바로 아래 자리,
  * `HomePage`의 상단 고정 헤더)에서 동시에 렌더링되고, 둘 다 같은
@@ -14,7 +23,7 @@ import { useCategoryFilterStore } from '../../../entities/category';
  * 있고 보이는 쪽만 바뀌는 방식이라, 클릭 가능한 사본은 항상 하나뿐
  * 입니다(숨은 쪽은 `pointer-events-none`/`max-h-0`로 막힘).
  */
-export function CategoryFilterBar() {
+export function CategoryFilterBar({ variant = 'wrap' }: CategoryFilterBarProps) {
   const categories = useCategoryFilterStore((state) => state.categories);
   const selectedCategory = useCategoryFilterStore((state) => state.selectedCategory);
   const setSelectedCategory = useCategoryFilterStore((state) => state.setSelectedCategory);
@@ -35,12 +44,18 @@ export function CategoryFilterBar() {
   if (categories.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap justify-center gap-2 md:justify-start md:gap-3">
+    <div
+      className={
+        variant === 'scroll'
+          ? 'flex flex-nowrap gap-2 overflow-x-auto [scrollbar-width:none] md:gap-3 [&::-webkit-scrollbar]:hidden'
+          : 'flex flex-wrap justify-center gap-2 md:justify-start md:gap-3'
+      }
+    >
       {categories.map((category) => (
         <button
           key={category._id}
           onClick={() => handleSelectCategory(category.name)}
-          className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 md:px-7 md:py-3 md:text-base ${
+          className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 md:px-7 md:py-3 md:text-base ${
             selectedCategory === category.name
               ? 'bg-pink-500 text-white shadow-md'
               : 'border border-pink-100 bg-white text-gray-600 hover:bg-pink-100 hover:text-pink-600'
