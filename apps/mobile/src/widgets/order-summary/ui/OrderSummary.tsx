@@ -1,11 +1,17 @@
 // @owner: ai
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import type { CartItem, PaymentMethod } from '@repo/types';
 import { useCartStore } from '../../../features/cart';
 import { useOrderTypeStore } from '../../../features/order-type';
 import { Modal } from '../../../shared/ui';
+
+// ✅ HomePage와 동일한 이유로 `hidden`/`md:flex` 같은 반응형 구조 클래스
+// 대신 `useWindowDimensions`로 직접 판단해 두 레이아웃을 완전히 분기해
+// 렌더링합니다([[태블릿레이아웃]] 참고) — 태블릿 사이드바와 폰 접이식
+// 바가 동시에 마운트될 일이 없어 더 명확합니다.
+const TABLET_BREAKPOINT = 768;
 
 // ✅ 실제 결제 게이트웨이 연동은 아직 없어서, "주문하기"를 누르면 결제
 // 수단을 고르는 모달만 먼저 보여주고, 고른 수단을 기록만 한 뒤 바로
@@ -77,6 +83,8 @@ function CartLine({ item, onIncrease, onDecrease, onRemove }: CartLineProps) {
 }
 
 export function OrderSummary() {
+  const { width } = useWindowDimensions();
+  const isTablet = width >= TABLET_BREAKPOINT;
   const items = useCartStore((state) => state.items);
   const totalPrice = useCartStore((state) => state.totalPrice);
   const submitOrder = useCartStore((state) => state.submitOrder);
@@ -135,42 +143,41 @@ export function OrderSummary() {
 
   return (
     <>
-      {/* ✅ 태블릿(md 이상): 웹의 항상 펼쳐진 사이드바와 동일한 레이아웃으로
-          바꿉니다 — 접이식 대신 목록이 늘 보이는 오른쪽 패널입니다. 폰 쪽
-          접이식 바와 동시에 마운트되지만 display:none으로 숨겨집니다
-          (웹 OrderSummary의 `hidden md:block` / `md:hidden` 쌍과 동일한
-          방식). */}
-      <View className="hidden border-l border-pink-100 bg-white p-6 md:flex md:w-2/5 md:flex-none">
-        <Text className="text-center text-2xl font-bold text-pink-500">🎀 주문 목록 🎀</Text>
-        <Text className="mt-1 text-center text-lg text-gray-400">
-          {orderType === 'dine-in' ? '🍽️ 매장에서' : '🥡 포장'}
-        </Text>
-        <ScrollView className="mt-4 flex-1 rounded-xl bg-pink-50 p-4" nestedScrollEnabled>
-          {cartItemList}
-        </ScrollView>
-        <View className="my-4 flex-row items-center justify-between">
-          <Text className="text-lg font-bold text-gray-700">총 금액</Text>
-          <Text className="text-lg font-bold text-pink-600">{totalPrice.toLocaleString()}원</Text>
-        </View>
-        {orderButton}
-      </View>
-
-      {/* ✅ 폰(md 미만): 화면 하단에 붙는 기존 접이식 요약 바. */}
-      <View className="border-t border-pink-100 bg-white p-4 pb-6 md:hidden">
-        <Pressable onPress={() => setIsListOpen((prev) => !prev)} className="flex-row items-center justify-between">
-          <Text className="text-sm text-gray-500">🛒 총 {totalCount}개</Text>
-          <Text className="font-bold text-pink-600">{totalPrice.toLocaleString()}원</Text>
-          <Text className="text-gray-400">{isListOpen ? '접기 ︿' : '펼치기 ﹀'}</Text>
-        </Pressable>
-
-        {isListOpen && (
-          <ScrollView className="mt-3 max-h-64 rounded-xl bg-pink-50 p-3" nestedScrollEnabled>
+      {isTablet ? (
+        // ✅ 태블릿: 웹의 항상 펼쳐진 사이드바와 동일한 레이아웃 — 접이식
+        // 대신 목록이 늘 보이는 오른쪽 패널입니다.
+        <View className="border-l border-pink-100 bg-white p-6" style={{ width: '40%' }}>
+          <Text className="text-center text-2xl font-bold text-pink-500">🎀 주문 목록 🎀</Text>
+          <Text className="mt-1 text-center text-lg text-gray-400">
+            {orderType === 'dine-in' ? '🍽️ 매장에서' : '🥡 포장'}
+          </Text>
+          <ScrollView className="mt-4 flex-1 rounded-xl bg-pink-50 p-4" nestedScrollEnabled>
             {cartItemList}
           </ScrollView>
-        )}
+          <View className="my-4 flex-row items-center justify-between">
+            <Text className="text-lg font-bold text-gray-700">총 금액</Text>
+            <Text className="text-lg font-bold text-pink-600">{totalPrice.toLocaleString()}원</Text>
+          </View>
+          {orderButton}
+        </View>
+      ) : (
+        // ✅ 폰: 화면 하단에 붙는 기존 접이식 요약 바.
+        <View className="border-t border-pink-100 bg-white p-4 pb-6">
+          <Pressable onPress={() => setIsListOpen((prev) => !prev)} className="flex-row items-center justify-between">
+            <Text className="text-sm text-gray-500">🛒 총 {totalCount}개</Text>
+            <Text className="font-bold text-pink-600">{totalPrice.toLocaleString()}원</Text>
+            <Text className="text-gray-400">{isListOpen ? '접기 ︿' : '펼치기 ﹀'}</Text>
+          </Pressable>
 
-        <View className="mt-3">{orderButton}</View>
-      </View>
+          {isListOpen && (
+            <ScrollView className="mt-3 max-h-64 rounded-xl bg-pink-50 p-3" nestedScrollEnabled>
+              {cartItemList}
+            </ScrollView>
+          )}
+
+          <View className="mt-3">{orderButton}</View>
+        </View>
+      )}
 
       <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} title="결제 수단 선택">
         <Text className="mb-4 text-center text-sm text-gray-500 md:mb-8 md:text-2xl">

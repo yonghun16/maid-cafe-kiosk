@@ -1,13 +1,19 @@
 // @owner: ai
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Text, View, useWindowDimensions } from 'react-native';
 import Toast from 'react-native-toast-message';
 import type { Category, Product } from '@repo/types';
 import { ProductCard, getProducts } from '../../../entities/product';
 import { getCategories } from '../../../entities/category';
 import { useCartStore } from '../../../features/cart';
 
+// ✅ HomePage와 동일한 이유로 `md:w-3/5` 같은 반응형 구조 클래스 대신
+// `useWindowDimensions`로 직접 판단합니다([[태블릿레이아웃]] 참고).
+const TABLET_BREAKPOINT = 768;
+
 export function ProductList() {
+  const { width } = useWindowDimensions();
+  const isTablet = width >= TABLET_BREAKPOINT;
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,7 +59,7 @@ export function ProductList() {
     filteredProducts.length % 2 !== 0 ? [...filteredProducts, null] : filteredProducts;
 
   return (
-    <View className="flex-1 md:w-3/5 md:flex-none">
+    <View className={isTablet ? 'flex-none' : 'flex-1'} style={isTablet ? { width: '60%' } : undefined}>
       <View className="flex-row flex-wrap gap-2 px-4 pb-2 pt-4">
         {categories.map((category) => (
           <Pressable

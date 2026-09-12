@@ -135,18 +135,52 @@ Tailwind 단계 기준 한 단계씩 더 키우는 방식으로 한 번에 처�
   - `ProductList.tsx`: 바깥 `View`에 `md:w-3/5 md:flex-none` 추가(웹의
     `md:w-3/5`와 동일 비율).
   - `OrderSummary.tsx`: 웹의 `hidden md:block`(항상 펼쳐진 사이드바) /
-    `md:hidden`(접이식 바) 쌍을 RN의 `hidden`/`md:flex`/`md:hidden`
-    (NativeWind가 `display: none`/`flex`로 매핑)로 그대로 재현 — 태블릿
-    전용 사이드바 블록(제목 "🎀 주문 목록 🎀" + 매장/포장 라벨 + 항상 보이는
-    목록 + 합계 + 주문 버튼, `md:w-2/5 md:flex-none`)과 폰 전용 접이식 바
-    블록(기존 동작 그대로)을 나란히 두고, 실제 화면 폭에 따라 하나만
-    보이게 함. 두 블록이 동시에 마운트되는 점(보이지 않는 쪽도 트리에는
-    존재)은 웹 버전이 이미 쓰고 있는 방식과 동일해 새로운 문제가 아님.
+    `md:hidden`(접이식 바) 쌍과 동일한 두 가지 레이아웃을 만듦.
   - 메뉴 그리드 열 수(2열)는 이번에도 바꾸지 않음 — 웹도 `xl`(1280px)
     미만에서는 2열 그대로라, `Galaxy_Tab`의 dp 폭(927, `md`~`lg` 구간)
     에서는 웹과 동일하게 2열이 맞는 선택.
 - `pnpm --filter mobile check-types` 통과 확인. 이 저장소의 mobile 앱은
   별도 lint 스크립트가 없어(package.json 확인) check-types만 검증 대상.
+
+**후속 조정 7(같은 날) — 첫 시도(`md:flex-row`)가 실제로는 겹쳐 보이던
+버그**: 후속 조정 6을 `md:flex-row`(HomePage 컨테이너) + `md:w-3/5
+md:flex-none`(ProductList) + `hidden md:flex md:w-2/5 md:flex-none`/
+`md:hidden`(OrderSummary) 조합, 즉 웹처럼 반응형 className만으로 구현해
+`check-types`까지 통과시켰지만, 실제로 `Galaxy_Tab` AVD에 떠 있는 화면을
+스크린샷/`uiautomator dump`로 확인해보니 장바구니 사이드바(폭 40%는 정확)가
+왼쪽에, 카테고리 탭들이 그 사이드바 영역과 겹쳐서 세로로 우겨 접힌 채
+보이는 등 완전히 깨져 있었다("화면이 아주 엉망인데?" 라는 사용자 지적).
+- **원인**: 이 저장소에서 `md:flex-row`처럼 반응형 클래스로 **구조**(방향
+  전환, 폭 분할)를 바꾸는 시도는 이번이 처음이었다. `entities/ad/AdBanner`가
+  겪었던 것과 같은 계열의 RN/Yoga·NativeWind 신뢰성 문제로 보이며(그때는
+  `w-full`+`aspectRatio` 조합이 문제), 이번엔 `flex-1`/`flex-none`/
+  분수 `w-*`/`hidden`+`md:flex`를 반응형 프리픽스와 함께 조합한 구조 변경이
+  깨지는 것으로 재현됨. `check-types`는 클래스 문자열이 유효한 문자열이기만
+  하면 통과하므로 이런 런타임 레이아웃 버그를 전혀 잡아내지 못했다 —
+  실제 기기/에뮬레이터 화면 확인이 반드시 필요했던 사례.
+- **해결**: `AdBanner`가 이미 쓰고 있는, 이 저장소의 검증된 패턴을 그대로
+  따름 — 반응형 className 대신 `useWindowDimensions()`로 폭을 직접 읽어
+  `TABLET_BREAKPOINT = 768`과 비교한 JS 값(`isTablet`)으로 분기.
+  - `HomePage.tsx`: 컨테이너 className을 `isTablet ? 'flex-1 flex-row' :
+    'flex-1'`로 JS 삼항 분기.
+  - `ProductList.tsx`: `className={isTablet ? 'flex-none' : 'flex-1'}
+    style={isTablet ? { width: '60%' } : undefined}` — 폭은 className이
+    아니라 명시적 `style`로 지정.
+  - `OrderSummary.tsx`: `hidden`/`md:flex` 두 블록을 동시에 마운트하는
+    대신, `{isTablet ? <사이드바 JSX> : <접이식 바 JSX>}`로 아예 둘 중
+    하나만 렌더링하도록 완전히 분기(마운트 자체를 나눔) — 폭도 `style={{
+    width: '40%' }}`로 명시.
+- `pnpm --filter mobile check-types` 통과 재확인 후, `adb`로 에뮬레이터를
+  강제 재시작(`am force-stop` → 재실행)해 최신 번들로 다시 띄우고
+  스크린샷으로 실제 확인 — 카테고리 탭 한 줄 + 2열 메뉴 그리드(좌측
+  60%)와 "🎀 주문 목록 🎀" 제목의 항상 펼쳐진 장바구니 사이드바(우측 40%)가
+  올바르게 좌우로 나뉘어 보이는 것을 확인.
+- **교훈**: 이 프로젝트에서 RN 쪽 반응형 처리는 **크기(글자/패딩/치수)는
+  `md:` className, 구조(방향 전환/폭 분할/보임-숨김 전환)는
+  `useWindowDimensions` + JS 분기**로 나눠 쓰는 것이 안전하다. 크기 변경은
+  이미 여러 화면(spec 009 앞부분, `md:text-*`/`md:p-*` 등)에서 문제없이
+  검증됐지만, 구조 변경은 지금까지 두 번(`AdBanner`, 이번 건) 모두 className
+  방식에서 실패했다.
 
 ## Plan
 
@@ -163,6 +197,10 @@ Tailwind 단계 기준 한 단계씩 더 키우는 방식으로 한 번에 처�
       → 결제 수단 선택 모달까지 실제로 조작하며 스크린샷으로 전/후 비교
       확인 — 반응형 적용 전에는 폰 크기 그대로였던 제목/버튼/모달 텍스트가
       적용 후 눈에 띄게 커지고 균형 잡힌 것을 확인
-- [x] (후속 조정 6) `HomePage.tsx`/`ProductList.tsx`/`OrderSummary.tsx`에
-      웹과 동일한 `md:flex-row` 좌우 분할 + 항상 펼쳐진 장바구니 사이드바
-      구조 추가, `pnpm --filter mobile check-types` 통과 확인
+- [x] (후속 조정 6, 실패 → 후속 조정 7에서 교체) `HomePage.tsx`/
+      `ProductList.tsx`/`OrderSummary.tsx`에 웹과 동일한 `md:flex-row` 좌우
+      분할 + 항상 펼쳐진 장바구니 사이드바 구조 추가 시도 — `check-types`는
+      통과했으나 실제 기기에서는 겹쳐 보이는 버그로 확인됨
+- [x] (후속 조정 7) `useWindowDimensions` 기반 JS 분기로 교체, `pnpm
+      --filter mobile check-types` 통과 확인 + 에뮬레이터 재기동 후
+      스크린샷으로 좌우 분할이 실제로 정상 동작하는 것까지 확인
