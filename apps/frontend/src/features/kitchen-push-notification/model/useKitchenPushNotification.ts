@@ -24,9 +24,18 @@ export function useKitchenPushNotification() {
         setStatus('denied');
         return;
       }
-      const registration = await navigator.serviceWorker.ready;
-      const existing = await registration.pushManager.getSubscription();
-      setStatus(existing ? 'on' : 'off');
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const existing = await registration.pushManager.getSubscription();
+        // ✅ 구독이 브라우저(origin)마다 독립적이라는 걸 진단하기 쉽게
+        // 남깁니다 — "새로고침하면 꺼진다"는 문의가 실제로는 다른
+        // origin(예: localhost vs 배포 주소)을 오간 것이었던 사례가 있음.
+        console.log('[주방 알림] 현재 origin:', window.location.origin, '/ 구독 존재:', Boolean(existing));
+        setStatus(existing ? 'on' : 'off');
+      } catch (error) {
+        console.error('푸시 구독 상태를 확인하는 중 오류가 발생했습니다:', error);
+        setStatus('off');
+      }
     })();
   }, []);
 

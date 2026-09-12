@@ -9,11 +9,22 @@ const VAPID_SUBJECT = process.env.VAPID_SUBJECT ?? 'mailto:admin@example.com';
 
 const isConfigured = Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY);
 
+// ✅ 두 키 중 하나만 빠져도 알림이 조용히 전송되지 않는(에러 없이
+// 그냥 안 보내지는) 상태가 되는데, 이게 실제로 배포 환경에서
+// VAPID_PRIVATE_KEY 오타 때문에 발생한 적이 있어서, 서버가 뜰 때
+// 콘솔에 어느 키가 빠졌는지까지 명확히 남깁니다(Render 배포 로그에서
+// 바로 확인 가능).
 if (isConfigured) {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY!, VAPID_PRIVATE_KEY!);
+  console.log('✅ 주방 화면 새 주문 웹 푸시 알림이 활성화되었습니다.');
 } else {
+  const missing = [
+    !VAPID_PUBLIC_KEY && 'VAPID_PUBLIC_KEY',
+    !VAPID_PRIVATE_KEY && 'VAPID_PRIVATE_KEY',
+  ].filter(Boolean);
   console.warn(
-    '⚠️ VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY 환경변수가 없어 주방 화면 새 주문 푸시 알림이 비활성화됩니다.',
+    `⚠️ 환경변수(${missing.join(', ')})가 없어 주방 화면 새 주문 푸시 알림이 비활성화됩니다. ` +
+      '값이 정확한 이름으로, 앞뒤 공백 없이 설정돼 있는지 확인하세요.',
   );
 }
 
