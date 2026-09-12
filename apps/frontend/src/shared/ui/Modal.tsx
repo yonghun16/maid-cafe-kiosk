@@ -32,16 +32,16 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-xl md:max-w-3xl md:p-10"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-700">{title}</h2>
+        <div className="mb-4 flex items-center justify-between md:mb-6">
+          <h2 className="text-2xl font-bold text-gray-700 md:text-3xl">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="text-2xl leading-none text-gray-400 hover:text-gray-600"
+            className="text-2xl leading-none text-gray-400 hover:text-gray-600 md:text-3xl"
           >
             ×
           </button>

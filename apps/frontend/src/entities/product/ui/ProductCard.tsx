@@ -131,33 +131,33 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
       </div>
 
       <Modal isOpen={isOptionModalOpen} onClose={() => setIsOptionModalOpen(false)} title={product.name}>
-        <div className="space-y-4">
-          <div className="flex items-start gap-4">
+        <div className="space-y-4 md:space-y-6">
+          <div className="flex items-start gap-4 md:gap-8">
             {/* ✅ 그림을 왼쪽에, 옵션을 오른쪽에 둬서 상품 사진 비율(3:4)이
                 눌리지 않고 그대로 보이게 합니다. items-start로 옵션이
                 늘어나도(예: ICE 얼음양 선택지) flex가 사진 높이를 늘리지
                 않게 합니다. */}
-            <div className="relative aspect-[3/4] w-28 shrink-0 sm:w-32">
+            <div className="relative aspect-[3/4] w-28 shrink-0 sm:w-32 md:w-48">
               <Image
                 src={product.imageUrl}
                 alt={product.name}
                 fill
-                sizes="128px"
+                sizes="(min-width: 768px) 192px, 128px"
                 className="rounded-lg object-cover"
               />
             </div>
-            <div className="flex-1 space-y-3">
+            <div className="flex-1 space-y-3 md:space-y-5">
               {product.temperatureOption && (
                 <div>
-                  <span className="mb-1 block text-sm font-semibold text-gray-700">🌡️ 온도</span>
+                  <span className="mb-1 block text-sm font-semibold text-gray-700 md:mb-2 md:text-lg">🌡️ 온도</span>
                   {product.temperatureOption === 'BOTH' ? (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 md:gap-4">
                       {TEMPERATURE_OPTIONS.map((option) => (
                         <button
                           key={option}
                           type="button"
                           onClick={() => handleTemperatureClick(option)}
-                          className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                          className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors md:px-5 md:py-3 md:text-lg ${
                             temperature === option
                               ? 'border-pink-500 bg-pink-500 text-white'
                               : 'border-pink-100 text-gray-600 hover:bg-pink-50'
@@ -170,20 +170,20 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
                   ) : (
                     // ✅ 이 메뉴는 온도가 하나로 고정돼 있어(예: 카레는
                     // HOT만) 고를 필요가 없습니다 — 안내용 배지만 보여줍니다.
-                    <span className="inline-block rounded-lg border border-pink-100 bg-pink-50 px-3 py-2 text-sm font-semibold text-gray-600">
+                    <span className="inline-block rounded-lg border border-pink-100 bg-pink-50 px-3 py-2 text-sm font-semibold text-gray-600 md:px-5 md:py-3 md:text-lg">
                       {TEMPERATURE_LABEL[product.temperatureOption]}
                     </span>
                   )}
                   {temperature === 'ICE' && (
-                    <div className="mt-2">
-                      <span className="mb-1 block text-xs font-semibold text-gray-500">얼음양</span>
-                      <div className="flex gap-2">
+                    <div className="mt-2 md:mt-4">
+                      <span className="mb-1 block text-xs font-semibold text-gray-500 md:mb-2 md:text-base">얼음양</span>
+                      <div className="flex gap-2 md:gap-4">
                         {ICE_AMOUNT_OPTIONS.map((option) => (
                           <button
                             key={option}
                             type="button"
                             onClick={() => setIceAmount((prev) => (prev === option ? '' : option))}
-                            className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-semibold transition-colors ${
+                            className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-semibold transition-colors md:px-4 md:py-2.5 md:text-base ${
                               iceAmount === option
                                 ? 'border-sky-500 bg-sky-500 text-white'
                                 : 'border-sky-100 text-gray-600 hover:bg-sky-50'
@@ -199,29 +199,29 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
               )}
               {product.hasMagicSpellOption && (
                 <div>
-                  <label htmlFor="magic-spell" className="mb-1 block text-sm font-semibold text-gray-700">
+                  <label htmlFor="magic-spell" className="mb-1 block text-sm font-semibold text-gray-700 md:mb-2 md:text-lg">
                     🪄 마법의 주문
                   </label>
                   <Dropdown id="magic-spell" value={magicSpell} onChange={setMagicSpell} options={MAGIC_SPELL_OPTIONS} />
                 </div>
               )}
               {productOptions.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-2 md:space-y-3">
                   {productOptions.map((option) => (
                     <label
                       key={option.name}
-                      className="flex cursor-pointer items-center justify-between rounded-lg border border-pink-100 px-3 py-2.5"
+                      className="flex cursor-pointer items-center justify-between rounded-lg border border-pink-100 px-3 py-2.5 md:px-5 md:py-4"
                     >
-                      <span className="text-sm font-semibold text-gray-700">{option.name}</span>
-                      <span className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-gray-700 md:text-lg">{option.name}</span>
+                      <span className="flex items-center gap-2 md:gap-3">
                         {option.price > 0 && (
-                          <span className="text-xs text-gray-500">+{option.price.toLocaleString()}원</span>
+                          <span className="text-xs text-gray-500 md:text-sm">+{option.price.toLocaleString()}원</span>
                         )}
                         <input
                           type="checkbox"
                           checked={selectedOptionNames.includes(option.name)}
                           onChange={() => toggleOption(option.name)}
-                          className="h-5 w-5 accent-pink-500"
+                          className="h-5 w-5 accent-pink-500 md:h-6 md:w-6"
                         />
                       </span>
                     </label>
@@ -230,11 +230,11 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
               )}
             </div>
           </div>
-          <p className="text-right text-lg font-bold text-pink-600">{totalPrice.toLocaleString()}원</p>
+          <p className="text-right text-lg font-bold text-pink-600 md:text-2xl">{totalPrice.toLocaleString()}원</p>
           <button
             type="button"
             onClick={handleAdd}
-            className="w-full rounded-md bg-pink-500 py-3 text-base font-bold text-white transition-colors hover:bg-pink-600"
+            className="w-full rounded-md bg-pink-500 py-3 text-base font-bold text-white transition-colors hover:bg-pink-600 md:py-4 md:text-xl"
           >
             담기
           </button>

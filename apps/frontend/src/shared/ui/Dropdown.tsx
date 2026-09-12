@@ -82,7 +82,7 @@ export function Dropdown({ value, onChange, options, placeholder = '선택 안 �
         id={id}
         type="button"
         onClick={handleToggle}
-        className="flex w-full items-center justify-between rounded-lg border border-pink-100 px-3 py-2 text-left text-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500"
+        className="flex w-full items-center justify-between rounded-lg border border-pink-100 px-3 py-2 text-left text-sm focus:border-pink-500 focus:outline-none focus:ring-pink-500 md:px-5 md:py-3 md:text-lg"
       >
         <span className={value ? 'text-gray-800' : 'text-gray-400'}>{value || placeholder}</span>
         <span className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
@@ -93,7 +93,7 @@ export function Dropdown({ value, onChange, options, placeholder = '선택 안 �
           <div
             ref={listRef}
             style={{ position: 'fixed', top: position.top, left: position.left, width: position.width }}
-            className="z-50 max-h-56 overflow-y-auto rounded-lg border border-pink-100 bg-white py-1 shadow-lg"
+            className="z-50 max-h-56 overflow-y-auto rounded-lg border border-pink-100 bg-white py-1 shadow-lg md:max-h-72"
           >
             <button
               type="button"
@@ -109,7 +109,7 @@ export function Dropdown({ value, onChange, options, placeholder = '선택 안 �
                 key={option}
                 type="button"
                 onClick={() => handleSelect(option)}
-                className={`block w-full px-3 py-2 text-left text-sm hover:bg-pink-50 ${
+                className={`block w-full px-3 py-2 text-left text-sm hover:bg-pink-50 md:px-5 md:py-3 md:text-lg ${
                   value === option ? 'font-semibold text-pink-500' : 'text-gray-600'
                 }`}
               >
