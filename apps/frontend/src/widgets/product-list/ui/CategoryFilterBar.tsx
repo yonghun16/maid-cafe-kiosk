@@ -5,11 +5,11 @@ import { useEffect } from 'react';
 import { useCategoryFilterStore } from '../../../entities/category';
 
 /**
- * 카테고리 탭 목록입니다. 상단 고정 헤더(`views/home/ui/HomePage.tsx`)
- * 안에서 렌더링되어, 스크롤해도 항상 같은 흰 바 위에 붙어 있습니다 —
- * 예전에는 이 탭들이 메뉴 그리드 위에서 자체적으로 sticky 처리돼
- * 있었는데, 페이지 배경과 구분이 안 가는 문제가 있어서 이미 항상
- * 고정돼 있는 헤더 바에 그대로 편입시켰습니다.
+ * 카테고리 탭 목록입니다. `ProductList`가 이 컴포넌트를 sticky
+ * 컨테이너로 감싸서, 평소엔 제목 바로 아래 자기 자리에 있다가
+ * 스크롤하면 상단 고정 헤더 밑에 붙어 계속 보이게 합니다. 카테고리
+ * 선택 상태는 `entities/category`의 공유 스토어를 씁니다(메뉴 그리드
+ * 필터링과 같은 상태를 봐야 하기 때문).
  */
 export function CategoryFilterBar() {
   const categories = useCategoryFilterStore((state) => state.categories);
@@ -32,7 +32,7 @@ export function CategoryFilterBar() {
   if (categories.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 md:gap-3">
+    <div className="flex flex-wrap justify-center gap-2 md:justify-start md:gap-3">
       {categories.map((category) => (
         <button
           key={category._id}

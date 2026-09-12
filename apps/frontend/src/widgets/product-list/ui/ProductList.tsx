@@ -7,13 +7,14 @@ import type { Product } from '@repo/types';
 import { ProductCard, getProducts } from '../../../entities/product';
 import { useCategoryFilterStore } from '../../../entities/category';
 import { useCartStore } from '../../../features/cart';
+import { CategoryFilterBar } from './CategoryFilterBar';
 
 export function ProductList() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  // ✅ 카테고리 탭은 상단 고정 헤더(CategoryFilterBar)로 옮겨갔지만,
-  // 선택 상태는 entities/category의 공유 스토어를 통해 그대로 받아옵니다.
+  // ✅ 카테고리 탭(CategoryFilterBar)은 이 컴포넌트 안에서 렌더링하되
+  // entities/category의 공유 스토어를 통해 선택 상태를 받아옵니다.
   const selectedCategory = useCategoryFilterStore((state) => state.selectedCategory);
 
   // ✅ Zustand 스토어에서 장바구니에 담는 함수만 가져옵니다.
@@ -64,10 +65,20 @@ export function ProductList() {
         </div>
       </header>
 
-      <div className="mb-6 flex items-center gap-3">
-        <div className="h-px flex-1 bg-pink-200" />
-        <span className="text-sm">🎀</span>
-        <div className="h-px flex-1 bg-pink-200" />
+      {/* ✅ 평소엔 이 자리(제목 바로 아래)에 그대로 있다가, 스크롤해서
+          이 지점이 상단 고정 헤더(높이 약 56px)에 닿으면 그 아래에
+          붙어서 계속 보입니다(position: sticky) — 메뉴 그리드만 그
+          아래에서 스크롤됩니다. 배경은 페이지와 같은 계열 색(pink-50)에
+          도트만 없애고 그림자를 줘서, 페이지 배경과 헷갈리지 않게
+          "위에 떠 있는 판"이라는 걸 분명히 했습니다. */}
+      <div className="sticky top-14 z-20 -mt-2 mb-6 bg-pink-50 pb-4 pt-2 shadow-md">
+        <CategoryFilterBar />
+
+        <div className="mt-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-pink-200" />
+          <span className="text-sm">🎀</span>
+          <div className="h-px flex-1 bg-pink-200" />
+        </div>
       </div>
 
       {isLoading ? (

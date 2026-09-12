@@ -6,7 +6,7 @@ import type { OrderType } from '@repo/types';
 import { useOrderTypeStore } from '../../../features/order-type';
 import { useCartStore } from '../../../features/cart';
 import { OrderTypeSelect } from '../../../widgets/order-type-select';
-import { CategoryFilterBar, ProductList } from '../../../widgets/product-list';
+import { ProductList } from '../../../widgets/product-list';
 import { OrderSummary } from '../../../widgets/order-summary';
 import { OrderCompleteScreen } from '../../../widgets/order-complete';
 import { Modal } from '../../../shared/ui';
@@ -105,12 +105,6 @@ export function HomePage() {
     <div className="min-h-screen bg-kiosk-pattern font-sans text-gray-700">
       {/* ✅ 메뉴를 스크롤해도 항상 보이도록 상단 고정 바를 두되, 매장/포장
           표시는 작은 배지로 줄여 화면을 덜 차지하게 합니다. */}
-      {/* ✅ 카테고리 탭(CategoryFilterBar)을 이 안에 같이 두면, 메뉴
-          그리드를 스크롤해도 항상 이 흰 바 위에 붙어 있습니다. 예전에는
-          탭이 메뉴 그리드 쪽에서 자체적으로 sticky 처리돼 있었는데,
-          페이지의 도트 배경과 구분이 안 가서 메뉴 이미지가 반투명한 막
-          아래로 스며드는 것처럼 보이는 문제가 있었습니다 — 이미 항상
-          떠 있는 이 헤더 바에 편입시켜서 그 문제 자체를 없앴습니다. */}
       <div className="fixed inset-x-0 top-0 z-40 bg-white/95 shadow-sm backdrop-blur-sm">
         <div className="container mx-auto flex items-center justify-between px-4 py-3 md:px-8">
           <span className="font-script text-lg font-bold text-pink-500 md:text-xl">🎀 Maid Kiosk</span>
@@ -123,12 +117,9 @@ export function HomePage() {
             <span className="text-gray-400">▾</span>
           </button>
         </div>
-        <div className="container mx-auto px-4 pb-3 md:px-8">
-          <CategoryFilterBar />
-        </div>
       </div>
 
-      <div className="container mx-auto flex flex-col gap-6 p-4 pt-32 md:flex-row md:gap-8 md:p-8 md:pt-40">
+      <div className="container mx-auto flex flex-col gap-6 p-4 pt-20 md:flex-row md:gap-8 md:p-8 md:pt-24">
         <ProductList />
         <OrderSummary />
       </div>
