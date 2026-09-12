@@ -45,8 +45,13 @@ export function HomePage() {
         <Text className="text-lg font-bold text-pink-500 md:text-3xl">🎀 Maid Kiosk</Text>
         <Text className="text-sm font-semibold text-gray-600 md:text-2xl">{ORDER_TYPE_LABEL[orderType]}</Text>
       </View>
-      <ProductList />
-      <OrderSummary />
+      {/* ✅ 폰에서는 세로로 쌓이고(기본 flex-col), 태블릿(md 이상)에서는
+          웹 태블릿 레이아웃과 동일하게 메뉴 목록 + 장바구니 사이드바가
+          좌우로 나뉩니다. */}
+      <View className="flex-1 md:flex-row">
+        <ProductList />
+        <OrderSummary />
+      </View>
     </SafeAreaView>
   );
 }

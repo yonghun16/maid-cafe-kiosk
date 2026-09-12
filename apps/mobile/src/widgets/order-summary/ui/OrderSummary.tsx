@@ -106,41 +106,71 @@ export function OrderSummary() {
     if (success) setIsPaymentModalOpen(false);
   };
 
+  const cartItemList =
+    items.length === 0 ? (
+      <Text className="py-6 text-center text-gray-400 md:text-2xl">장바구니가 비어있어요</Text>
+    ) : (
+      <View className="gap-2 md:gap-3">
+        {items.map((item) => (
+          <CartLine
+            key={item.cartItemId}
+            item={item}
+            onIncrease={() => increaseQuantity(item.cartItemId)}
+            onDecrease={() => decreaseQuantity(item.cartItemId)}
+            onRemove={() => removeFromCart(item.cartItemId)}
+          />
+        ))}
+      </View>
+    );
+
+  const orderButton = (
+    <Pressable
+      onPress={handleOpenPaymentModal}
+      disabled={items.length === 0}
+      className={`items-center rounded-full py-3 md:py-6 ${items.length === 0 ? 'bg-gray-300' : 'bg-pink-500'}`}
+    >
+      <Text className="text-lg font-bold text-white md:text-3xl">♥ 주문하기</Text>
+    </Pressable>
+  );
+
   return (
-    <View className="border-t border-pink-100 bg-white p-4 pb-6 md:p-8 md:pb-10">
-      <Pressable onPress={() => setIsListOpen((prev) => !prev)} className="flex-row items-center justify-between">
-        <Text className="text-sm text-gray-500 md:text-2xl">🛒 총 {totalCount}개</Text>
-        <Text className="font-bold text-pink-600 md:text-3xl">{totalPrice.toLocaleString()}원</Text>
-        <Text className="text-gray-400 md:text-2xl">{isListOpen ? '접기 ︿' : '펼치기 ﹀'}</Text>
-      </Pressable>
-
-      {isListOpen && (
-        <ScrollView className="mt-3 max-h-64 rounded-xl bg-pink-50 p-3 md:mt-5 md:max-h-96 md:p-4" nestedScrollEnabled>
-          {items.length === 0 ? (
-            <Text className="py-6 text-center text-gray-400 md:text-2xl">장바구니가 비어있어요</Text>
-          ) : (
-            <View className="gap-2 md:gap-3">
-              {items.map((item) => (
-                <CartLine
-                  key={item.cartItemId}
-                  item={item}
-                  onIncrease={() => increaseQuantity(item.cartItemId)}
-                  onDecrease={() => decreaseQuantity(item.cartItemId)}
-                  onRemove={() => removeFromCart(item.cartItemId)}
-                />
-              ))}
-            </View>
-          )}
+    <>
+      {/* ✅ 태블릿(md 이상): 웹의 항상 펼쳐진 사이드바와 동일한 레이아웃으로
+          바꿉니다 — 접이식 대신 목록이 늘 보이는 오른쪽 패널입니다. 폰 쪽
+          접이식 바와 동시에 마운트되지만 display:none으로 숨겨집니다
+          (웹 OrderSummary의 `hidden md:block` / `md:hidden` 쌍과 동일한
+          방식). */}
+      <View className="hidden border-l border-pink-100 bg-white p-6 md:flex md:w-2/5 md:flex-none">
+        <Text className="text-center text-2xl font-bold text-pink-500">🎀 주문 목록 🎀</Text>
+        <Text className="mt-1 text-center text-lg text-gray-400">
+          {orderType === 'dine-in' ? '🍽️ 매장에서' : '🥡 포장'}
+        </Text>
+        <ScrollView className="mt-4 flex-1 rounded-xl bg-pink-50 p-4" nestedScrollEnabled>
+          {cartItemList}
         </ScrollView>
-      )}
+        <View className="my-4 flex-row items-center justify-between">
+          <Text className="text-lg font-bold text-gray-700">총 금액</Text>
+          <Text className="text-lg font-bold text-pink-600">{totalPrice.toLocaleString()}원</Text>
+        </View>
+        {orderButton}
+      </View>
 
-      <Pressable
-        onPress={handleOpenPaymentModal}
-        disabled={items.length === 0}
-        className={`mt-3 items-center rounded-full py-3 md:mt-5 md:py-6 ${items.length === 0 ? 'bg-gray-300' : 'bg-pink-500'}`}
-      >
-        <Text className="text-lg font-bold text-white md:text-3xl">♥ 주문하기</Text>
-      </Pressable>
+      {/* ✅ 폰(md 미만): 화면 하단에 붙는 기존 접이식 요약 바. */}
+      <View className="border-t border-pink-100 bg-white p-4 pb-6 md:hidden">
+        <Pressable onPress={() => setIsListOpen((prev) => !prev)} className="flex-row items-center justify-between">
+          <Text className="text-sm text-gray-500">🛒 총 {totalCount}개</Text>
+          <Text className="font-bold text-pink-600">{totalPrice.toLocaleString()}원</Text>
+          <Text className="text-gray-400">{isListOpen ? '접기 ︿' : '펼치기 ﹀'}</Text>
+        </Pressable>
+
+        {isListOpen && (
+          <ScrollView className="mt-3 max-h-64 rounded-xl bg-pink-50 p-3" nestedScrollEnabled>
+            {cartItemList}
+          </ScrollView>
+        )}
+
+        <View className="mt-3">{orderButton}</View>
+      </View>
 
       <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} title="결제 수단 선택">
         <Text className="mb-4 text-center text-sm text-gray-500 md:mb-8 md:text-2xl">
@@ -164,6 +194,6 @@ export function OrderSummary() {
           <Text className="mt-4 text-center text-sm text-gray-400 md:text-xl">주문을 처리 중이에요...</Text>
         )}
       </Modal>
-    </View>
+    </>
   );
 }

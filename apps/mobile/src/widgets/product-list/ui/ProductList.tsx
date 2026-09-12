@@ -53,7 +53,7 @@ export function ProductList() {
     filteredProducts.length % 2 !== 0 ? [...filteredProducts, null] : filteredProducts;
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 md:w-3/5 md:flex-none">
       <View className="flex-row flex-wrap gap-2 px-4 pb-2 pt-4">
         {categories.map((category) => (
           <Pressable
