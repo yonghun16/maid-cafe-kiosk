@@ -56,7 +56,7 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
       <ul className="mt-4 space-y-3">
         {order.items.map((item, index) => (
           <li key={item._id ?? `${item.productId}-${index}`} className="flex flex-col gap-2">
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               {item.imageUrl && (
                 <div className="relative h-16 w-16 shrink-0">
                   <Image
