@@ -20,7 +20,7 @@ function formatMonthLabel(month: string): string {
 }
 
 const CHART_WIDTH = 1000;
-const CHART_HEIGHT = 320;
+const CHART_HEIGHT = 260;
 const CHART_PADDING_X = 32;
 const CHART_PADDING_TOP = 40;
 const CHART_PADDING_BOTTOM = 40;
@@ -50,7 +50,7 @@ function MonthlyLineChart({ summary, selectedMonth, onSelectMonth }: MonthlyLine
   return (
     <svg
       viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
-      className="h-72 w-full sm:h-80 lg:h-[26rem]"
+      className="aspect-[1000/260] w-full"
       role="img"
       aria-label="월별 판매량 추이 그래프"
     >
@@ -72,19 +72,19 @@ function MonthlyLineChart({ summary, selectedMonth, onSelectMonth }: MonthlyLine
             <circle
               cx={p.x}
               cy={p.y}
-              r={isSelected ? 7 : 5}
+              r={isSelected ? 8 : 6}
               fill={isSelected ? '#ec4899' : '#ffffff'}
               stroke="#ec4899"
               strokeWidth={2}
             />
-            <text x={p.x} y={p.y - 14} textAnchor="middle" className="fill-gray-600 text-[13px] font-semibold">
+            <text x={p.x} y={p.y - 16} textAnchor="middle" className="fill-gray-600 text-[18px] font-semibold">
               {p.totalQuantity}
             </text>
             <text
               x={p.x}
-              y={BASELINE_Y + 26}
+              y={BASELINE_Y + 28}
               textAnchor="middle"
-              className={`text-[13px] font-semibold ${isSelected ? 'fill-pink-500' : 'fill-gray-500'}`}
+              className={`text-[18px] font-semibold ${isSelected ? 'fill-pink-500' : 'fill-gray-500'}`}
             >
               {formatMonthLabel(p.month)}
             </text>
