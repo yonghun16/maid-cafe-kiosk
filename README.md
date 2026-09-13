@@ -92,11 +92,11 @@ API와 타입 계약(`packages/types`)을 공유합니다.
       <b>Mobile (Web)</b>
     </td>
     <td align="center" width="33%">
-      <img src="image%20asset/preview/tablet(web).gif" width="200"/><br/>
+      <img src="image%20asset/preview/tablet(web).gif" width="300"/><br/>
       <b>Tablet (Web)</b>
     </td>
     <td align="center" width="33%">
-      <img src="image%20asset/preview/tablet(app).gif" width="200"/><br/>
+      <img src="image%20asset/preview/tablet(app).gif" width="300"/><br/>
       <b>Tablet (Native App)</b>
     </td>
   </tr>
@@ -114,23 +114,6 @@ API와 타입 계약(`packages/types`)을 공유합니다.
       <img src="image%20asset/preview/kitchen.gif" width="360"/><br/>
       <b>주방 화면 (<code>/kitchen</code>)</b> — 진행중/완료/취소 주문 확인·처리
     </td>
-  </tr>
-</table>
-
----
-
-## 🖼️ 초기 컨셉 디자인 (참고용)
-
-> 아래 이미지는 개발 착수 전에 만든 **초기 컨셉 디자인 시안**입니다(위
-> 데모가 실제 구현된 화면입니다). 실제 구현된 화면은 이 톤/무드를
-> 기반으로 하되 세부 UI(카테고리 구성, 헤더 구조 등)는 개발 과정에서
-> 여러 차례 다듬어졌습니다.
-
-<table>
-  <tr>
-    <td align="center"><img src="image%20asset/layout/desktop.png" width="220"/><br/>데스크탑</td>
-    <td align="center"><img src="image%20asset/layout/tablet(portrait).png" width="170"/><br/>태블릿(세로)</td>
-    <td align="center"><img src="image%20asset/layout/mobile.png" width="150"/><br/>모바일</td>
   </tr>
 </table>
 
