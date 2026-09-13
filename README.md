@@ -81,17 +81,56 @@ API와 타입 계약(`packages/types`)을 공유합니다.
 
 ---
 
-## 🖼️ 스크린샷 (초기 컨셉 디자인)
+## 🎬 데모 (실제 화면)
 
-> 아래 이미지는 개발 착수 전에 만든 **초기 컨셉 디자인 시안**입니다.
-> 실제 구현된 화면은 이 톤/무드를 기반으로 하되 세부 UI(카테고리 구성,
-> 헤더 구조 등)는 개발 과정에서 여러 차례 다듬어졌습니다.
+### 고객 화면 (Client)
 
 <table>
   <tr>
-    <td align="center"><img src="image%20asset/layout/desktop.png" width="260"/><br/>데스크탑</td>
-    <td align="center"><img src="image%20asset/layout/tablet(portrait).png" width="200"/><br/>태블릿(세로)</td>
-    <td align="center"><img src="image%20asset/layout/mobile.png" width="180"/><br/>모바일</td>
+    <td align="center" width="33%">
+      <img src="image%20asset/preview/mobile(web).gif" width="200"/><br/>
+      <b>Mobile (Web)</b>
+    </td>
+    <td align="center" width="33%">
+      <img src="image%20asset/preview/tablet(web).gif" width="200"/><br/>
+      <b>Tablet (Web)</b>
+    </td>
+    <td align="center" width="33%">
+      <img src="image%20asset/preview/tablet(app).gif" width="200"/><br/>
+      <b>Tablet (Native App)</b>
+    </td>
+  </tr>
+</table>
+
+### 관리자 · 주방 화면 (Admin / Kitchen)
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="image%20asset/preview/admin.gif" width="360"/><br/>
+      <b>관리자 화면 (<code>/admin</code>)</b> — 메뉴·카테고리·광고 관리, 판매 통계
+    </td>
+    <td align="center" width="50%">
+      <img src="image%20asset/preview/kitchen.gif" width="360"/><br/>
+      <b>주방 화면 (<code>/kitchen</code>)</b> — 진행중/완료/취소 주문 확인·처리
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🖼️ 초기 컨셉 디자인 (참고용)
+
+> 아래 이미지는 개발 착수 전에 만든 **초기 컨셉 디자인 시안**입니다(위
+> 데모가 실제 구현된 화면입니다). 실제 구현된 화면은 이 톤/무드를
+> 기반으로 하되 세부 UI(카테고리 구성, 헤더 구조 등)는 개발 과정에서
+> 여러 차례 다듬어졌습니다.
+
+<table>
+  <tr>
+    <td align="center"><img src="image%20asset/layout/desktop.png" width="220"/><br/>데스크탑</td>
+    <td align="center"><img src="image%20asset/layout/tablet(portrait).png" width="170"/><br/>태블릿(세로)</td>
+    <td align="center"><img src="image%20asset/layout/mobile.png" width="150"/><br/>모바일</td>
   </tr>
 </table>
 
