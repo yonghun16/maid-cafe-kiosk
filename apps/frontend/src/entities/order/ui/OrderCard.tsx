@@ -1,12 +1,20 @@
 // @owner: ai
 import Image from 'next/image';
-import type { Order } from '@repo/types';
+import type { Order, PaymentMethod } from '@repo/types';
 
 interface OrderCardProps {
   order: Order;
   /** 전달하면 카드에 "완료" 버튼이 표시되고, 클릭 시 호출됩니다. */
   onComplete?: () => void;
 }
+
+// 결제수단을 한눈에 구분할 수 있도록 브랜드 색상에 맞춰 배지 색을 다르게 합니다.
+const PAYMENT_METHOD_BADGE_CLASS: Record<PaymentMethod, string> = {
+  신용카드: 'bg-gray-200 text-gray-600',
+  NPay: 'bg-green-100 text-green-700',
+  토스페이: 'bg-blue-100 text-blue-700',
+  'Kakao Pay': 'bg-yellow-200 text-yellow-800',
+};
 
 export function OrderCard({ order, onComplete }: OrderCardProps) {
   const createdAt = new Date(order.createdAt);
@@ -35,7 +43,9 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
           )}
         </div>
         {order.paymentMethod && (
-          <span className="rounded-full bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-600">
+          <span
+            className={`rounded-full px-3 py-1 text-sm font-semibold ${PAYMENT_METHOD_BADGE_CLASS[order.paymentMethod]}`}
+          >
             {order.paymentMethod}
           </span>
         )}
