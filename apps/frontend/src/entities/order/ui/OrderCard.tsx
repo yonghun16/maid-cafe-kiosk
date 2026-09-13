@@ -58,12 +58,8 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
               </div>
             )}
             <div className="min-w-0 flex-1">
-              {/* ✅ 이름+옵션 배지를 하나의 truncate 문단에 같이 넣으면
-                  줄 너비를 넘는 배지가 통째로 가려져 버려서(옵션이 안
-                  보인다는 원인), flex-wrap으로 바꿔 옵션이 항상 보이게
-                  합니다. */}
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-lg font-semibold text-gray-800">{item.name}</span>
+              <span className="text-lg font-semibold text-gray-800">{item.name}</span>
+              <div className="mt-1 flex flex-col items-start gap-1">
                 {item.temperature && (
                   <span
                     className={`rounded-full px-2 py-0.5 text-sm font-semibold ${
@@ -97,7 +93,7 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
                   </span>
                 ))}
               </div>
-              <p className="text-base text-gray-500">
+              <p className="mt-1 text-base text-gray-500">
                 {item.price.toLocaleString()}원 × {item.quantity}
               </p>
             </div>
