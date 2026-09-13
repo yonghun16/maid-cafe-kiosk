@@ -55,63 +55,63 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
       </div>
       <ul className="mt-4 space-y-3">
         {order.items.map((item, index) => (
-          <li key={item._id ?? `${item.productId}-${index}`} className="flex flex-col gap-2">
-            <div className="flex items-start gap-3">
-              {item.imageUrl && (
-                <div className="relative h-16 w-16 shrink-0">
-                  <Image
-                    src={item.imageUrl}
-                    alt={item.name}
-                    fill
-                    sizes="64px"
-                    className="rounded-lg object-cover"
-                  />
-                </div>
-              )}
-              <span className="min-w-0 flex-1 text-lg font-semibold text-gray-800">{item.name}</span>
-            </div>
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-1.5">
-                {item.temperature && (
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-sm font-semibold ${
-                      item.temperature === 'HOT' ? 'bg-orange-100 text-orange-600' : 'bg-sky-100 text-sky-600'
-                    }`}
-                  >
-                    {item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'}
-                  </span>
-                )}
-                {item.iceAmount && (
-                  <span className="rounded-full bg-sky-100 px-2 py-0.5 text-sm font-semibold text-sky-600">
-                    얼음 {item.iceAmount}
-                  </span>
-                )}
-                {item.hasExtraShot && (
-                  <span className="rounded-full bg-pink-100 px-2 py-0.5 text-sm font-semibold text-pink-600">
-                    샷 추가
-                  </span>
-                )}
-                {item.magicSpell && (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-700">
-                    🪄 {item.magicSpell}
-                  </span>
-                )}
-                {item.selectedOptions?.map((option) => (
-                  <span
-                    key={option.name}
-                    className="rounded-full bg-purple-100 px-2 py-0.5 text-sm font-semibold text-purple-600"
-                  >
-                    {option.name}
-                  </span>
-                ))}
+          <li key={item._id ?? `${item.productId}-${index}`} className="flex items-start gap-3">
+            {item.imageUrl && (
+              <div className="relative h-16 w-16 shrink-0">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  fill
+                  sizes="64px"
+                  className="rounded-lg object-cover"
+                />
               </div>
-              <div className="shrink-0 text-right">
-                <p className="text-base text-gray-500">
-                  {item.price.toLocaleString()}원 × {item.quantity}
-                </p>
-                <span className="text-lg font-bold text-gray-700">
-                  {(item.price * item.quantity).toLocaleString()}원
-                </span>
+            )}
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <span className="text-lg font-semibold text-gray-800">{item.name}</span>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {item.temperature && (
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-sm font-semibold ${
+                        item.temperature === 'HOT' ? 'bg-orange-100 text-orange-600' : 'bg-sky-100 text-sky-600'
+                      }`}
+                    >
+                      {item.temperature === 'HOT' ? '🔥 HOT' : '🧊 ICE'}
+                    </span>
+                  )}
+                  {item.iceAmount && (
+                    <span className="rounded-full bg-sky-100 px-2 py-0.5 text-sm font-semibold text-sky-600">
+                      얼음 {item.iceAmount}
+                    </span>
+                  )}
+                  {item.hasExtraShot && (
+                    <span className="rounded-full bg-pink-100 px-2 py-0.5 text-sm font-semibold text-pink-600">
+                      샷 추가
+                    </span>
+                  )}
+                  {item.magicSpell && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-700">
+                      🪄 {item.magicSpell}
+                    </span>
+                  )}
+                  {item.selectedOptions?.map((option) => (
+                    <span
+                      key={option.name}
+                      className="rounded-full bg-purple-100 px-2 py-0.5 text-sm font-semibold text-purple-600"
+                    >
+                      {option.name}
+                    </span>
+                  ))}
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-base text-gray-500">
+                    {item.price.toLocaleString()}원 × {item.quantity}
+                  </p>
+                  <span className="text-lg font-bold text-gray-700">
+                    {(item.price * item.quantity).toLocaleString()}원
+                  </span>
+                </div>
               </div>
             </div>
           </li>
