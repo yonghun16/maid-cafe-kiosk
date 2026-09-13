@@ -5,7 +5,7 @@ import Order from '../models/Order';
 import Product from '../models/Product';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { getKstDayRange, getKstMonthRange, getKstStartOfToday, getKstYear, getMonthLabelsForYear } from '../lib/date';
-import { decrementStockForOrder } from '../lib/inventory';
+import { decrementStockForOrder, restoreStockForOrder } from '../lib/inventory';
 import { toClientErrorMessage } from '../lib/errors';
 import { notifyKitchenOfNewOrder } from '../lib/webPush';
 
@@ -13,10 +13,11 @@ export const ordersRouter: Router = Router();
 
 /**
  * 주문 목록을 최신순으로 조회합니다. 주방/관리자가 들어온 주문을 확인하는
- * 용도입니다. `status`(진행중/완료), `orderType`(매장/포장), `date`(그
+ * 용도입니다. `status`(진행중/완료/취소), `orderType`(매장/포장), `date`(그
  * 날짜 하루, KST 기준 'YYYY-MM-DD')로 걸러볼 수 있고, 전부 생략하면
- * 전체를 반환합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로
- * 막습니다.
+ * 전체를 반환합니다. `status=pending`/`completed`는 취소된 주문을
+ * 제외하고, `status=cancelled`는 취소된 주문만 반환합니다. 관리자
+ * 세션이 없으면 `requireAdmin`에서 401로 막습니다.
  * @route GET /api/orders
  * @param req.query - `@repo/types`의 `OrderListQuery` (전부 선택)
  */
@@ -30,8 +31,15 @@ ordersRouter.get(
     }
     try {
       const filter: Record<string, unknown> = {};
-      if (req.query.status === 'pending') filter.isCompleted = false;
-      if (req.query.status === 'completed') filter.isCompleted = true;
+      if (req.query.status === 'pending') {
+        filter.isCompleted = false;
+        filter.isCancelled = { $ne: true };
+      } else if (req.query.status === 'completed') {
+        filter.isCompleted = true;
+        filter.isCancelled = { $ne: true };
+      } else if (req.query.status === 'cancelled') {
+        filter.isCancelled = true;
+      }
       if (req.query.orderType) filter.orderType = req.query.orderType;
       if (req.query.date) {
         const { start, end } = getKstDayRange(req.query.date);
@@ -66,6 +74,70 @@ ordersRouter.patch('/:id/complete', requireAdmin, async (req: Request<{ id: stri
     res.json(updatedOrder);
   } catch (err) {
     res.status(400).json({ message: '주문 완료 처리 중 오류가 발생했습니다.' });
+  }
+});
+
+/**
+ * 완료 처리를 취소하고 주문을 다시 진행중 상태로 되돌립니다. 완료 처리를
+ * 잘못 눌렀거나 주방에서 다시 작업해야 할 때 씁니다. 관리자 세션이
+ * 없으면 `requireAdmin`에서 401로 막습니다.
+ * @route PATCH /api/orders/:id/uncomplete
+ */
+ordersRouter.patch('/:id/uncomplete', requireAdmin, async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      res.status(404).json({ message: '주문을 찾을 수 없습니다.' });
+      return;
+    }
+    if (!order.isCompleted) {
+      res.status(400).json({ message: '이미 진행중인 주문입니다.' });
+      return;
+    }
+    order.isCompleted = false;
+    await order.save();
+    res.json(order);
+  } catch (err) {
+    res.status(400).json({ message: '주문 되돌리기 처리 중 오류가 발생했습니다.' });
+  }
+});
+
+/**
+ * 아직 완료되지 않은(진행중) 주문을 취소합니다. 취소 시 주문 생성 때
+ * 차감했던 재고를 되돌립니다([[재고관리]] 참고). 이미 완료되었거나 이미
+ * 취소된 주문은 취소할 수 없습니다. 관리자 세션이 없으면 `requireAdmin`
+ * 에서 401로 막습니다.
+ * @route PATCH /api/orders/:id/cancel
+ */
+ordersRouter.patch('/:id/cancel', requireAdmin, async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      res.status(404).json({ message: '주문을 찾을 수 없습니다.' });
+      return;
+    }
+    if (order.isCancelled) {
+      res.status(400).json({ message: '이미 취소된 주문입니다.' });
+      return;
+    }
+    if (order.isCompleted) {
+      res.status(400).json({ message: '완료된 주문은 취소할 수 없습니다. 먼저 되돌리기 후 취소해주세요.' });
+      return;
+    }
+    order.isCancelled = true;
+    await order.save();
+
+    // 취소 자체는 이미 반영된 뒤이므로, 재고 복원이 실패해도 취소
+    // 처리에는 영향이 없도록 별도로 감싸 처리하고 로그만 남깁니다.
+    try {
+      await restoreStockForOrder(order.items);
+    } catch (stockErr) {
+      console.error('주문 취소 후 재고 복원 중 오류가 발생했습니다:', stockErr);
+    }
+
+    res.json(order);
+  } catch (err) {
+    res.status(400).json({ message: '주문 취소 처리 중 오류가 발생했습니다.' });
   }
 });
 
@@ -116,8 +188,8 @@ ordersRouter.post(
 /**
  * 특정 연도(기본값: 올해, KST 기준) 1~12월의 월별 매출/판매량 추이를
  * 집계해 조회합니다. 주문이 없는 달도 0으로 채워 넣어 차트 x축이
- * 끊기지 않게 합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로
- * 막습니다.
+ * 끊기지 않게 합니다. 취소된 주문은 실제 매출이 아니므로 집계에서
+ * 제외합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로 막습니다.
  * @route GET /api/orders/stats/monthly
  * @param req.query.year - 조회할 연도(선택, 기본 올해)
  */
@@ -133,7 +205,7 @@ ordersRouter.get(
 
       const rows: { _id: string; totalRevenue: number; totalQuantity: number; orderCount: number }[] =
         await Order.aggregate([
-          { $match: { createdAt: { $gte: rangeStart, $lt: rangeEnd } } },
+          { $match: { createdAt: { $gte: rangeStart, $lt: rangeEnd }, isCancelled: { $ne: true } } },
           {
             $project: {
               month: { $dateToString: { format: '%Y-%m', date: '$createdAt', timezone: '+09:00' } },
@@ -170,8 +242,8 @@ ordersRouter.get(
 
 /**
  * 특정 월(KST 기준)의 메뉴별 판매량/매출 순위를 조회합니다.
- * 판매량(`quantitySold`)이 많은 순으로 정렬됩니다. 관리자 세션이 없으면
- * `requireAdmin`에서 401로 막습니다.
+ * 판매량(`quantitySold`)이 많은 순으로 정렬됩니다. 취소된 주문은 집계에서
+ * 제외합니다. 관리자 세션이 없으면 `requireAdmin`에서 401로 막습니다.
  * @route GET /api/orders/stats/monthly/:month
  * @param req.params.month - 'YYYY-MM' 형식(KST 기준)
  */
@@ -187,7 +259,7 @@ ordersRouter.get(
       const { start, end } = getKstMonthRange(req.params.month);
       const rows: { _id: string; name: string; imageUrl: string; quantitySold: number; revenue: number }[] =
         await Order.aggregate([
-          { $match: { createdAt: { $gte: start, $lt: end } } },
+          { $match: { createdAt: { $gte: start, $lt: end }, isCancelled: { $ne: true } } },
           { $unwind: '$items' },
           {
             $group: {

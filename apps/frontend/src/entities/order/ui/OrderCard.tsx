@@ -4,8 +4,12 @@ import type { Order, PaymentMethod } from '@repo/types';
 
 interface OrderCardProps {
   order: Order;
-  /** 전달하면 카드에 "완료" 버튼이 표시되고, 클릭 시 호출됩니다. */
+  /** 전달하면 카드에 "완료" 버튼이 표시되고, 클릭 시 호출됩니다(진행중 주문 카드용). */
   onComplete?: () => void;
+  /** 전달하면 카드에 "취소" 버튼이 표시되고, 클릭 시 호출됩니다(진행중 주문 카드용). */
+  onCancel?: () => void;
+  /** 전달하면 카드에 "되돌리기" 버튼이 표시되고, 클릭 시 호출됩니다(지난 주문 카드용). */
+  onUncomplete?: () => void;
 }
 
 // 결제수단을 한눈에 구분할 수 있도록 브랜드 색상에 맞춰 배지 색을 다르게 합니다.
@@ -16,7 +20,7 @@ const PAYMENT_METHOD_BADGE_CLASS: Record<PaymentMethod, string> = {
   'Kakao Pay': 'bg-yellow-200 text-yellow-800',
 };
 
-export function OrderCard({ order, onComplete }: OrderCardProps) {
+export function OrderCard({ order, onComplete, onCancel, onUncomplete }: OrderCardProps) {
   const createdAt = new Date(order.createdAt);
   const date = createdAt.toLocaleDateString('ko-KR', {
     month: '2-digit',
@@ -40,6 +44,9 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
           </span>
           {order.orderNumber != null && (
             <span className="text-xl font-extrabold text-gray-700">No. {order.orderNumber}</span>
+          )}
+          {order.isCancelled && (
+            <span className="rounded-full bg-red-100 px-3 py-1 text-sm font-bold text-red-600">❌ 취소됨</span>
           )}
         </div>
         {order.paymentMethod && (
@@ -121,13 +128,35 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
         <span>합계</span>
         <span>{order.totalPrice.toLocaleString()}원</span>
       </div>
-      {onComplete && (
+      {(onComplete || onCancel) && (
+        <div className="mt-4 flex gap-3">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 rounded-lg border border-gray-300 py-2.5 text-lg font-semibold text-gray-500 transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-500"
+            >
+              취소
+            </button>
+          )}
+          {onComplete && (
+            <button
+              type="button"
+              onClick={onComplete}
+              className="flex-1 rounded-lg border border-gray-300 py-2.5 text-lg font-semibold text-gray-500 transition-colors hover:border-pink-300 hover:bg-pink-50 hover:text-pink-500"
+            >
+              완료
+            </button>
+          )}
+        </div>
+      )}
+      {onUncomplete && (
         <button
           type="button"
-          onClick={onComplete}
-          className="mt-4 w-full rounded-lg border border-gray-300 py-2.5 text-lg font-semibold text-gray-500 transition-colors hover:border-pink-300 hover:bg-pink-50 hover:text-pink-500"
+          onClick={onUncomplete}
+          className="mt-4 w-full rounded-lg border border-gray-300 py-2.5 text-lg font-semibold text-gray-500 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600"
         >
-          완료
+          ↩ 되돌리기
         </button>
       )}
     </div>

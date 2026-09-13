@@ -7,11 +7,12 @@ import { LoginForm, useAdminAuthStore } from '../../../features/admin-auth';
 import { KitchenPushToggle } from '../../../features/kitchen-push-notification';
 import { OrderList } from '../../../widgets/order-list';
 
-type KitchenTab = 'orders' | 'history';
+type KitchenTab = 'orders' | 'history' | 'cancelled';
 
 const TABS: { key: KitchenTab; label: string }[] = [
   { key: 'orders', label: '진행중 주문' },
   { key: 'history', label: '지난 주문' },
+  { key: 'cancelled', label: '취소된 주문' },
 ];
 
 /**
@@ -85,6 +86,7 @@ export function KitchenPage() {
 
       {activeTab === 'orders' && <OrderList status="pending" />}
       {activeTab === 'history' && <OrderList status="completed" />}
+      {activeTab === 'cancelled' && <OrderList status="cancelled" />}
     </div>
   );
 }

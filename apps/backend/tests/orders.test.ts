@@ -133,4 +133,74 @@ describe('주문', () => {
     const invalid = await agent.get('/api/orders?date=2026-9-1');
     expect(invalid.status).toBe(400);
   });
+
+  it('진행중 주문을 취소하면 취소 목록으로 이동하고 차감된 재고가 복원된다', async () => {
+    const productsBefore = await request(app).get('/api/products');
+    const stockBefore = productsBefore.body.find((p: { _id: string }) => p._id === productId).stock;
+
+    const created = await request(app).post('/api/orders').send(orderPayload(2));
+    expect(created.status).toBe(201);
+    const orderId = created.body._id;
+
+    const productsAfterOrder = await request(app).get('/api/products');
+    expect(productsAfterOrder.body.find((p: { _id: string }) => p._id === productId).stock).toBe(
+      stockBefore - 2,
+    );
+
+    const cancelled = await agent.patch(`/api/orders/${orderId}/cancel`);
+    expect(cancelled.status).toBe(200);
+    expect(cancelled.body.isCancelled).toBe(true);
+
+    const pendingList = await agent.get('/api/orders?status=pending');
+    expect(pendingList.body.some((o: { _id: string }) => o._id === orderId)).toBe(false);
+
+    const cancelledList = await agent.get('/api/orders?status=cancelled');
+    expect(cancelledList.body.some((o: { _id: string }) => o._id === orderId)).toBe(true);
+
+    const productsAfterCancel = await request(app).get('/api/products');
+    expect(productsAfterCancel.body.find((p: { _id: string }) => p._id === productId).stock).toBe(
+      stockBefore,
+    );
+  });
+
+  it('이미 완료되었거나 이미 취소된 주문은 취소할 수 없다', async () => {
+    const created = await request(app).post('/api/orders').send(orderPayload(1));
+    const orderId = created.body._id;
+    await agent.patch(`/api/orders/${orderId}/complete`);
+
+    const res = await agent.patch(`/api/orders/${orderId}/cancel`);
+    expect(res.status).toBe(400);
+  });
+
+  it('완료된 주문을 되돌리기 하면 다시 진행중 목록에 나타난다', async () => {
+    const created = await request(app).post('/api/orders').send(orderPayload(1));
+    const orderId = created.body._id;
+    await agent.patch(`/api/orders/${orderId}/complete`);
+
+    const uncompleted = await agent.patch(`/api/orders/${orderId}/uncomplete`);
+    expect(uncompleted.status).toBe(200);
+    expect(uncompleted.body.isCompleted).toBe(false);
+
+    const pendingList = await agent.get('/api/orders?status=pending');
+    expect(pendingList.body.some((o: { _id: string }) => o._id === orderId)).toBe(true);
+  });
+
+  it('취소된 주문은 월별 매출 통계에서 제외된다', async () => {
+    const before = await agent.get('/api/orders/stats/monthly');
+    const totalBefore = before.body.reduce(
+      (sum: number, m: { totalRevenue: number }) => sum + m.totalRevenue,
+      0,
+    );
+
+    const created = await request(app).post('/api/orders').send(orderPayload(5));
+    const orderId = created.body._id;
+    await agent.patch(`/api/orders/${orderId}/cancel`);
+
+    const after = await agent.get('/api/orders/stats/monthly');
+    const totalAfter = after.body.reduce(
+      (sum: number, m: { totalRevenue: number }) => sum + m.totalRevenue,
+      0,
+    );
+    expect(totalAfter).toBe(totalBefore);
+  });
 });

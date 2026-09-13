@@ -26,6 +26,27 @@ export async function completeOrder(orderId: string): Promise<Order> {
 }
 
 /**
+ * 완료 처리를 취소하고 주문을 다시 진행중 상태로 되돌립니다.
+ * @param orderId - 되돌릴 주문의 id
+ * @returns 수정된 주문
+ */
+export async function uncompleteOrder(orderId: string): Promise<Order> {
+  const response = await apiClient.patch<Order>(`/orders/${orderId}/uncomplete`);
+  return response.data;
+}
+
+/**
+ * 아직 완료되지 않은(진행중) 주문을 취소합니다. 서버에서 차감했던 재고를
+ * 되돌려줍니다.
+ * @param orderId - 취소할 주문의 id
+ * @returns 수정된 주문
+ */
+export async function cancelOrder(orderId: string): Promise<Order> {
+  const response = await apiClient.patch<Order>(`/orders/${orderId}/cancel`);
+  return response.data;
+}
+
+/**
  * 특정 연도 1~12월의 월별 매출/판매량 추이를 조회합니다(KST 기준,
  * 주문 없는 달도 0으로 채워서 내려옴). 관리자 세션이 필요합니다.
  * @param year - 조회할 연도(생략하면 서버가 올해로 취급)

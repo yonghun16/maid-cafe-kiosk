@@ -167,13 +167,14 @@ export interface Order {
   totalPrice: number;
   orderType: OrderType;
   isCompleted: boolean; // true면 지난 주문(완료)으로 취급
+  isCancelled: boolean; // true면 취소된 주문 — 완료 전(진행중) 주문만 취소 가능
   createdAt: Date;
   // 주문 시 고른 결제 수단. 이 필드가 생기기 전 주문에는 값이 없습니다.
   paymentMethod?: PaymentMethod;
 }
 
-// 주문 목록 조회(GET /api/orders) 시 진행중/지난 주문을 나누는 필터 값
-export type OrderStatusFilter = 'pending' | 'completed';
+// 주문 목록 조회(GET /api/orders) 시 진행중/지난/취소된 주문을 나누는 필터 값
+export type OrderStatusFilter = 'pending' | 'completed' | 'cancelled';
 
 // 주문 목록 조회(GET /api/orders)의 쿼리 파라미터 — 전부 선택이며
 // 생략한 조건은 걸지 않습니다(AND 조합). `date`는 'YYYY-MM-DD'
