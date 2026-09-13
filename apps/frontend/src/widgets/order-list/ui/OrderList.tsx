@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Order, OrderStatusFilter, OrderType } from '@repo/types';
 import { cancelOrder, completeOrder, getOrders, OrderCard, uncompleteOrder } from '../../../entities/order';
+import { Modal } from '../../../shared/ui';
 
 const POLL_INTERVAL_MS = 10_000;
 
@@ -40,6 +41,9 @@ export function OrderList({ status }: OrderListProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [dateFilter, setDateFilter] = useState('');
   const [orderTypeFilter, setOrderTypeFilter] = useState<OrderTypeFilter>('all');
+  // ✅ 취소는 되돌리기 어려운 동작이라, 브라우저 기본 confirm() 대신
+  // 앱과 같은 스타일의 확인 모달을 한 번 거칩니다.
+  const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -99,8 +103,10 @@ export function OrderList({ status }: OrderListProps) {
     }
   };
 
-  const handleCancel = async (orderId: string) => {
-    if (!window.confirm('이 주문을 취소할까요? 차감된 재고는 되돌려집니다.')) return;
+  const handleConfirmCancel = async () => {
+    const orderId = cancelTargetId;
+    if (!orderId) return;
+    setCancelTargetId(null);
     try {
       await cancelOrder(orderId);
       toast.success('주문을 취소했습니다.');
@@ -185,12 +191,32 @@ export function OrderList({ status }: OrderListProps) {
               key={order._id}
               order={order}
               onComplete={status === 'pending' ? () => handleComplete(order._id) : undefined}
-              onCancel={status === 'pending' ? () => handleCancel(order._id) : undefined}
+              onCancel={status === 'pending' ? () => setCancelTargetId(order._id) : undefined}
               onUncomplete={status === 'completed' ? () => handleUncomplete(order._id) : undefined}
             />
           ))}
         </div>
       )}
+
+      <Modal isOpen={cancelTargetId !== null} onClose={() => setCancelTargetId(null)} title="주문 취소">
+        <p className="text-sm text-gray-600">이 주문을 취소할까요? 차감된 재고는 되돌려집니다.</p>
+        <div className="mt-5 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setCancelTargetId(null)}
+            className="flex-1 rounded-md border border-gray-300 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+          >
+            닫기
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirmCancel}
+            className="flex-1 rounded-md bg-red-500 py-2.5 text-sm font-bold text-white transition-colors hover:bg-red-600"
+          >
+            주문 취소
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
