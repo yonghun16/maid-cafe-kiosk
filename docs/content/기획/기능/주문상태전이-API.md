@@ -43,7 +43,7 @@ status: active
 - `GET /api/orders`는 `status=pending|completed|cancelled` 쿼리로 세
   상태를 나눠 조회할 수 있습니다. `pending`/`completed`는 취소된
   주문을 제외하고, `cancelled`는 취소된 주문만 반환합니다.
-  [[주문내역조회]]의 "진행중 주문"/"지난 주문"/"취소된 주문" 3개 탭이
+  [[주문내역조회]]의 "진행중 주문"/"완료한 주문"/"취소된 주문" 3개 탭이
   이 API를 사용합니다.
 - 취소된 주문은 완료로 전이될 수 없는 종결 상태입니다 — 상태 전이는
   `진행중 ⇄ 완료`, `진행중 → 취소`(단방향)만 존재합니다.
@@ -63,7 +63,7 @@ status: active
 - `apps/frontend/src/entities/order/api/orderApi.ts` (`uncompleteOrder`,
   `cancelOrder`)
 - `apps/frontend/src/entities/order/ui/OrderCard.tsx` (진행중 주문의
-  "취소"/"완료" 버튼, 지난 주문의 "되돌리기" 버튼, 취소된 주문의
+  "취소"/"완료" 버튼, 완료한 주문의 "되돌리기" 버튼, 취소된 주문의
   "❌ 취소됨" 배지)
 
 ## 범위 밖

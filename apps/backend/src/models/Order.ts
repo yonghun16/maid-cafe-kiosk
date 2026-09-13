@@ -52,8 +52,8 @@ const orderSchema = new Schema<OrderDocument>({
   totalPrice: { type: Number, required: true },
   orderType: { type: String, required: true, enum: ['dine-in', 'takeout'] },
   // 주방/관리자가 "완료" 처리했는지 여부. true가 되면 진행중 목록에서
-  // 빠지고 지난 주문 목록으로 이동합니다. 완료된 주문은 "되돌리기"로 다시
-  // false가 될 수 있습니다.
+  // 빠지고 완료한 주문 목록으로 이동합니다. 완료된 주문은 "되돌리기"로
+  // 다시 false가 될 수 있습니다.
   isCompleted: { type: Boolean, default: false },
   // 주문 취소 여부. 완료 전(진행중) 주문만 취소할 수 있고, 취소되면 차감된
   // 재고를 되돌립니다([[주문취소]] 참고). 취소된 주문은 판매 통계 집계에서

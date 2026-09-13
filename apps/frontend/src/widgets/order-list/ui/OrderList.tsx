@@ -21,7 +21,7 @@ const ORDER_TYPE_FILTERS: { value: OrderTypeFilter; label: string }[] = [
 
 const STATUS_LABEL: Record<OrderStatusFilter, string> = {
   pending: '진행중 주문',
-  completed: '지난 주문',
+  completed: '완료한 주문',
   cancelled: '취소된 주문',
 };
 

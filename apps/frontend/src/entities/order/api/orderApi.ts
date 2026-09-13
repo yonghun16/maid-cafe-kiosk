@@ -4,7 +4,7 @@ import { apiClient } from '../../../shared/api';
 
 /**
  * 주문 목록을 최신순으로 조회합니다. 관리자 세션이 필요합니다.
- * @param query - `status`(진행중/지난 주문)/`orderType`(매장/포장)/
+ * @param query - `status`(진행중/완료/취소)/`orderType`(매장/포장)/
  *   `date`('YYYY-MM-DD', KST 기준 하루) 필터. 전부 선택이며 생략하면
  *   해당 조건 없이 전체 조회
  * @returns 주문 배열
@@ -15,7 +15,7 @@ export async function getOrders(query?: OrderListQuery): Promise<Order[]> {
 }
 
 /**
- * 주문을 완료 처리합니다. 완료되면 진행중 목록에서 빠지고 지난 주문
+ * 주문을 완료 처리합니다. 완료되면 진행중 목록에서 빠지고 완료한 주문
  * 목록으로 이동합니다.
  * @param orderId - 완료 처리할 주문의 id
  * @returns 수정된 주문

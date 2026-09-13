@@ -11,7 +11,7 @@ type KitchenTab = 'orders' | 'history' | 'cancelled';
 
 const TABS: { key: KitchenTab; label: string }[] = [
   { key: 'orders', label: '진행중 주문' },
-  { key: 'history', label: '지난 주문' },
+  { key: 'history', label: '완료한 주문' },
   { key: 'cancelled', label: '취소된 주문' },
 ];
 
