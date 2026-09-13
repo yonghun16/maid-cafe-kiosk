@@ -2,7 +2,7 @@
 configuration:
   pageTitle: 메이드 카페 키오스크
   pageTitleSuffix: ""
-  enableSPA: true
+  enableSPA: false
   enablePopovers: true
   analytics:
     provider: plausible
