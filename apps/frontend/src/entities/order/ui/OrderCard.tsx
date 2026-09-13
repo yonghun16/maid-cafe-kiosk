@@ -55,21 +55,23 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
       </div>
       <ul className="mt-4 space-y-3">
         {order.items.map((item, index) => (
-          <li key={item._id ?? `${item.productId}-${index}`} className="flex items-center gap-3">
-            {item.imageUrl && (
-              <div className="relative h-16 w-16 shrink-0">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.name}
-                  fill
-                  sizes="64px"
-                  className="rounded-lg object-cover"
-                />
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <span className="text-lg font-semibold text-gray-800">{item.name}</span>
-              <div className="mt-1 flex flex-col items-start gap-1">
+          <li key={item._id ?? `${item.productId}-${index}`} className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              {item.imageUrl && (
+                <div className="relative h-16 w-16 shrink-0">
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.name}
+                    fill
+                    sizes="64px"
+                    className="rounded-lg object-cover"
+                  />
+                </div>
+              )}
+              <span className="min-w-0 flex-1 text-lg font-semibold text-gray-800">{item.name}</span>
+            </div>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-1.5">
                 {item.temperature && (
                   <span
                     className={`rounded-full px-2 py-0.5 text-sm font-semibold ${
@@ -103,13 +105,15 @@ export function OrderCard({ order, onComplete }: OrderCardProps) {
                   </span>
                 ))}
               </div>
-              <p className="mt-1 text-base text-gray-500">
-                {item.price.toLocaleString()}원 × {item.quantity}
-              </p>
+              <div className="shrink-0 text-right">
+                <p className="text-base text-gray-500">
+                  {item.price.toLocaleString()}원 × {item.quantity}
+                </p>
+                <span className="text-lg font-bold text-gray-700">
+                  {(item.price * item.quantity).toLocaleString()}원
+                </span>
+              </div>
             </div>
-            <span className="shrink-0 text-lg font-bold text-gray-700">
-              {(item.price * item.quantity).toLocaleString()}원
-            </span>
           </li>
         ))}
       </ul>
