@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://maid-cafe-kiosk-frontend.vercel.app/">
-    <img src="image%20asset/layout/desktop.png" alt="Maid Kiosk Preview" width="700"/>
+    <img src="image%20asset/layout/main.png" alt="Maid Kiosk Preview" width="700"/>
   </a>
 </p>
 
